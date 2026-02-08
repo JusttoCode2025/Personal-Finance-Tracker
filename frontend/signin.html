@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sign Up | Personal Finance Tracker</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      width: 380px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 12px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #2980b9;
+      color: white;
+      border: navy;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: navy;
+    }
+
+    .small {
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 10px;
+    }
+
+    .checkbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h2>Create Account</h2>
+
+    <form onsubmit="return handleSignup()">
+
+      <!-- First Name -->
+      <input type="text" name="first_name" placeholder="First Name"
+             required pattern="[A-Za-z]{2,}"
+             title="At least 2 letters">
+
+      <!-- Last Name -->
+      <input type="text" name="last_name" placeholder="Last Name"
+             required pattern="[A-Za-z]{2,}"
+             title="At least 2 letters">
+
+      <!-- Username -->
+      <input type="text" name="username" placeholder="Username"
+             required minlength="4" maxlength="15"
+             pattern="[A-Za-z0-9]+"
+             title="4–15 characters, letters and numbers only">
+
+      <!-- Email -->
+      <input type="email" name="email" placeholder="Email Address" required>
+
+      <!-- Password -->
+      <input type="password" name="password" placeholder="Password"
+             required minlength="8"
+             pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*"
+             title="At least 8 characters, 1 uppercase, 1 lowercase, 1 number">
+
+      <div class="small">
+        Password must be at least 8 characters and include an uppercase letter,
+        lowercase letter, and number.
+      </div>
+
+      <!-- Age Range -->
+      <select name="age_range" required>
+        <option value="">Select Age Range</option>
+        <option>Under 18</option>
+        <option>18–25</option>
+        <option>26–35</option>
+        <option>36–50</option>
+        <option>50+</option>
+      </select>
+
+      <!-- Favorite Category -->
+      <input type="text" name="favorite_category"
+             placeholder="Favorite Budget Category (optional)"
+             pattern="[A-Za-z]{3,}"
+             title="At least 3 letters">
+
+      <!-- Newsletter -->
+      <div class="checkbox">
+        <input type="checkbox" id="newsletter">
+        <label for="newsletter">Subscribe to budget tips newsletter</label>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit">Sign Up</button>
+
+    </form>
+  </div>
+
+  <script>
+    function handleSignup() {
+      alert("Thank you for signing up! Redirecting to login page...");
+      window.location.href = "index.html"; 
+      return false;
+    } <!-- in the future change to login.html -->
+  </script>
+
+</body>
+</html>
