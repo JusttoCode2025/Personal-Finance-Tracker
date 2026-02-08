@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Personal Finance Tracker</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f4f6f8;
+        color: #333;
+        margin: 0;
+        padding: 0;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: 40px auto;
+        background-color: #fff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+        text-align: center;
+        color: #2c3e50;
+    }
+
+    h3 {
+        color: #34495e;
+        margin-top: 30px;
+    }
+
+    input {
+        margin: 5px 10px 5px 0;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+    }
+
+    button {
+        padding: 8px 15px;
+        border-radius: 6px;
+        border: none;
+        background-color: #3498db;
+        color: #fff;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    button:hover {
+        background-color: #2980b9;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+    }
+
+    th, td {
+        padding: 12px;
+        text-align: left;
+    }
+
+    thead {
+        background-color: #3498db;
+        color: #fff;
+    }
+
+    tbody tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    tbody tr:hover {
+        background-color: #e0e0e0;
+    }
+
+    #budgetChart {
+        display: block;
+        max-width: 400px;
+        margin: 20px auto;
+    }
+
+    pre {
+        background-color: #f2f2f2;
+        padding: 15px;
+        border-radius: 6px;
+        overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Personal Finance Tracker</h1>
+
+  <!-- Set Spending Limit -->
+  <h3>Set Spending Limit</h3>
+  <input id="limit-category" placeholder="Category">
+  <input id="limit-amount" type="number" placeholder="Amount">
+  <button onclick="setLimit()">Set Limit</button>
+
+  <!-- Add Purchase -->
+  <h3>Add Purchase</h3>
+  <input id="purchase-category" placeholder="Category">
+  <input id="purchase-amount" type="number" placeholder="Amount">
+  <button onclick="addPurchase()">Add Purchase</button>
+
+  <!-- View All Limits -->
+  <h3>All Spending Limits</h3>
+  <button onclick="viewLimits()">Refresh Limits</button>
+  <table>
+    <thead>
+      <tr>
+        <th>Category</th>
+        <th>Limit</th>
+        <th>Remaining</th>
+      </tr>
+    </thead>
+    <tbody id="limits-table">
+      <!-- Table rows populate here -->
+    </tbody>
+  </table>
+
+  <!-- Pie Chart -->
+  <h3>Budget Distribution</h3>
+  <canvas id="budgetChart" width="400" height="400"></canvas>
+
+  <!-- Result / messages -->
+  <h3>Result:</h3>
+  <pre id="result"></pre>
+</div>
+
+<script>
+  let chart; // global chart reference
+
+  // Set limit
+  function setLimit() {
+    const category = document.getElementById("limit-category").value.trim().toLowerCase();
+    const amount = parseFloat(document.getElementById("limit-amount").value);
+    fetch("/limit", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({category, limit_amount: amount})
+    })
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("result").innerText = JSON.stringify(data, null, 2);
+      viewLimits();
+    });
+  }
+
+  // Add purchase
+  function addPurchase() {
+    const category = document.getElementById("purchase-category").value.trim().toLowerCase();
+    const amount = parseFloat(document.getElementById("purchase-amount").value);
+    fetch("/purchase", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({category, amount})
+    })
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("result").innerText = JSON.stringify(data, null, 2);
+      viewLimits();
+    });
+  }
+
+  // View all limits
+  function viewLimits() {
+    fetch("/limits")
+    .then(res => res.json())
+    .then(data => {
+      const tbody = document.getElementById("limits-table");
+      tbody.innerHTML = "";
+      data.forEach(limit => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${limit.category}</td>
+          <td>$${limit.limit_amount.toFixed(2)}</td>
+          <td>$${limit.remaining.toFixed(2)}</td>
+        `;
+        tbody.appendChild(row);
+      });
+      drawChart(data);
+    });
+  }
+
+  // Draw pie chart
+  function drawChart(data) {
+    const ctx = document.getElementById('budgetChart').getContext('2d');
+    const labels = data.map(item => item.category);
+    const amounts = data.map(item => item.limit_amount);
+    const totalBudget = amounts.reduce((sum, a) => sum + a, 0);
+    const percentages = amounts.map(a => ((a / totalBudget) * 100).toFixed(1));
+
+    if (chart) chart.destroy();
+
+    chart = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: labels.map((label, i) => `${label} (${percentages[i]}%)`),
+        datasets: [{
+          data: amounts,
+          backgroundColor: [
+            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
+          ]
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } }
+      }
+    });
+  }
+
+  window.onload = viewLimits;
+</script>
+</body>
+</html>
