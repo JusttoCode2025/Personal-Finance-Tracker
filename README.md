@@ -49,3 +49,16 @@ The Personal Finance Tracker provides a clean dashboard, goal tracking, and help
 - **Backend:** Python 
 - **Database:** SQLite
 - **Version Control:** GitHub
+
+
+## Work Plan
+- Fairooz Siddiquee: Acts as the primary point of contact between development team and the professor. Responsible for delivering weekly status reports regarding the Finance Tracker's development milestones, communicating technical or resource-based roadblocks, and ensuring the project's trajectory aligns with the grading rubric and course objectives.
+
+  
+- Jasmine Anike: Responsible for the end-to-end development of the Contact and About pages, managing both Frontend and backend logic. Contact page shoup provide hyperlinks that allows the user to report a bug or ask for help while the about page explains the purpose of the tool and provides credit to the developers. 
+
+- Jana Saleh: Responsible for the end-to-end architecture of the Main Dashboard, which serves as the central nervous system of the Finance Tracker. The dashboard should automatically calculate the breakdown for all categories
+
+- Keyana Bernard: Responsible for the end-to-end development of the Budget Limits page. This member owns both the back and front end implementation of the category-based budgeting system, where users can set maximum spending caps for specific areas (e.g., Food, Rent, Entertainment) and add purchases that deduct for spending limits. 
+
+- Daniela Jaggan: Responsible for the end-to-end development of the Secure Login Gateway. owning both the UI of the login screen and the Backend Authentication Logic. As the project is currently designed for a single-user environment, this member must ensure that only the correct credentials grant entry to the homepage, while all unauthorized attempts are securely blocked with clear user feedback.
