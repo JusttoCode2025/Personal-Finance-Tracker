@@ -50,6 +50,15 @@ def db_connection():
 # ================= PAGE ROUTES =================
 
 @app.route("/")
+@app.route("/login")
+def login():
+    return render_template("login.html")
+
+@app.route("/home")
+def home():
+    return render_template("home.html")
+
+
 @app.route("/budget")
 def budget():
     return render_template("budget.html")
@@ -69,17 +78,9 @@ def about():
 def contact():
     return render_template("contact.html")
 
-@app.route("/login")
-def login():
-    return render_template("login.html")
-
 @app.route("/signup")
 def signup():
     return render_template("signup.html")
-    
-@app.route("/home")
-def signup():
-    return render_template("home.html")
 
 
 # ================= API ROUTES =================
@@ -208,5 +209,6 @@ def view_limits():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
