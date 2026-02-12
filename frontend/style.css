@@ -1,0 +1,276 @@
+/* ================= RESET ================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ================= PAGE BASE ================= */
+body {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    background: #f5f1ee;
+    color: #2f1e17;
+}
+
+/* ================= NAV BAR ================= */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #7a4a3b;
+    padding: 14px 30px;
+    color: white;
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+.logo {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-right: 10px;
+}
+
+.navbar a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    padding-bottom: 4px;
+    position: relative;
+}
+
+/* Hover underline animation */
+.navbar a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -4px;
+    width: 0%;
+    height: 2px;
+    background: #ffd9b3;
+    transition: width 0.25s ease;
+}
+
+.navbar a:hover::after {
+    width: 100%;
+}
+
+/* ACTIVE PAGE */
+.navbar a.active {
+    font-weight: 700;
+}
+
+.navbar a.active::after {
+    width: 100%;
+}
+
+/* Nav center summary */
+.nav-center {
+    display: flex;
+    gap: 20px;
+    font-weight: 600;
+}
+
+/* ================= MAIN CONTAINER ================= */
+.container {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 0 20px;
+    animation: fadeIn 0.6s ease-in-out;
+}
+
+/* Page fade-in */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+h1 {
+    font-size: 2.2rem;
+    margin-bottom: 30px;
+}
+
+/* ================= SECTIONS / CARDS ================= */
+.section {
+    background: white;
+    padding: 28px;
+    border-radius: 14px;
+    margin-bottom: 30px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.section:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 26px rgba(0,0,0,0.15);
+}
+
+.section h2 {
+    font-size: 1.5rem;
+    margin-bottom: 18px;
+}
+
+/* ================= FORM ROW ================= */
+.form-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* INPUTS */
+input,
+select {
+    height: 44px;
+    padding: 0 14px;
+    border-radius: 6px;
+    border: 1px solid #aaa;
+    font-size: 1rem;
+    min-width: 160px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus,
+select:focus {
+    outline: none;
+    border-color: #7a4a3b;
+    box-shadow: 0 0 0 2px rgba(122, 74, 59, 0.2);
+}
+
+/* BUTTONS */
+button {
+    height: 44px;
+    background: #7a4a3b;
+    color: white;
+    border: none;
+    padding: 0 18px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+button:hover {
+    background: #5f372c;
+    box-shadow: 0 4px 12px rgba(122, 74, 59, 0.4);
+}
+
+button:active {
+    transform: scale(0.97);
+}
+
+/* ================= TEXT ================= */
+#remaining {
+    margin-top: 14px;
+    font-weight: 600;
+}
+
+/* ================= EXPENSE LIST ================= */
+.expenses-list {
+    list-style: none;
+    margin-top: 10px;
+}
+
+.expenses-list li {
+    background: #faf8f6;
+    padding: 16px 18px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 5px solid #7a4a3b;
+    font-weight: 500;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.expenses-list li:hover {
+    transform: translateX(4px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+
+/* ================= FLEXBOX LAYOUT ================= */
+
+.flex-row {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+    margin-bottom: 30px;
+}
+
+.flex-item {
+    flex: 1;
+}
+
+/* Stack vertically on smaller screens */
+@media (max-width: 800px) {
+    .flex-row {
+        flex-direction: column;
+    }
+}
+
+/* ================= FLEXBOX INPUT ROW ================= */
+
+.flex-row {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+    margin-bottom: 30px;
+}
+
+.flex-item {
+    flex: 1;
+}
+
+/* Prevent inputs from stretching */
+.form-row select,
+.form-row input {
+    max-width: 180px;
+}
+
+/* Mobile fallback */
+@media (max-width: 800px) {
+    .flex-row {
+        flex-direction: column;
+    }
+}
+
+#categoryTable li {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr 1fr;
+    align-items: center;
+    gap: 14px;
+}
+
+
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 700px) {
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .nav-center {
+        align-self: center;
+    }
+
+    .container {
+        margin: 25px auto;
+    }
+
+    h1 {
+        font-size: 1.8rem;
+    }
+}
