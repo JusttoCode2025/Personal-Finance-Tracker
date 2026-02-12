@@ -48,17 +48,11 @@ def db_connection():
 @app.route("/")
 @app.route("/budget")
 def budget():
-    """
-    Main Budget Tracker page
-    """
     return render_template("budget.html")
 
 
 @app.route("/dashboard")
 def dashboard():
-    """
-    Placeholder for future dashboard page
-    """
     return render_template("dashboard.html")
 
 
@@ -78,6 +72,10 @@ def login():
 @app.route("/signup")
 def signup():
     return render_template("signup.html")
+    
+@app.route("/home")
+def signup():
+    return render_template("home.html")
 
 
 # ================= API ROUTES =================
@@ -206,3 +204,4 @@ def view_limits():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
