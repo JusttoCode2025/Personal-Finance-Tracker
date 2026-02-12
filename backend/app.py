@@ -2,7 +2,11 @@ from flask import Flask, request, jsonify, render_template, redirect
 import sqlite3
 from datetime import datetime
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    template_folder="../frontend/templates",
+    static_folder="../frontend/static"
+)
 DB_NAME = "finance_tracker1.db"
 
 
@@ -204,4 +208,5 @@ def view_limits():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
