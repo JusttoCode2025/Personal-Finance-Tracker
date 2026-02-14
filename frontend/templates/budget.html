@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Budget Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<!-- ================= NAV BAR ================= -->
+<nav class="navbar">
+    <div class="nav-left">
+        <span class="logo">FinanceTracker</span>
+
+        <a href="/home">Home</a>
+        <a href="/Budget" class="active">Budget</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/about">About</a>
+        <a href="/contact">Contact</a>
+    </div>
+
+    <div class="nav-right">
+        <a href="/login">Sign Out</a>
+    </div>
+</nav>
+
+<!-- ================= MAIN CONTENT ================= -->
+<div class="container">
+
+    <h1>Budget Tracker</h1>
+
+   <!-- ================= FLEX ROW: INPUTS ================= -->
+<div class="flex-row">
+
+    <!-- SET CATEGORY LIMIT -->
+    <section class="section flex-item">
+        <h2>Set Category Limit</h2>
+
+        <div class="form-row">
+            <select id="limitCategory">
+                <option value="">Select Category</option>
+                <option>Rent</option>
+                <option>Groceries</option>
+                <option>Utilities</option>
+                <option>Transportation</option>
+                <option>Entertainment</option>
+                <option>Other</option>
+            </select>
+
+            <input
+                id="categoryLimit"
+                type="number"
+                placeholder="Monthly Limit"
+            >
+
+            <button onclick="setCategoryLimit()">Set Limit</button>
+        </div>
+    </section>
+
+    <!-- ADD PURCHASE -->
+    <section class="section flex-item">
+        <h2>Add Purchase</h2>
+
+        <div class="form-row">
+            <select id="purchaseCategory">
+                <option value="">Select Category</option>
+                <option>Rent</option>
+                <option>Groceries</option>
+                <option>Utilities</option>
+                <option>Transportation</option>
+                <option>Entertainment</option>
+                <option>Other</option>
+            </select>
+
+            <input
+                id="purchaseAmount"
+                type="number"
+                placeholder="Amount"
+            >
+
+            <button onclick="addPurchase()">Add Purchase</button>
+        </div>
+
+        <p id="purchaseMessage"></p>
+    </section>
+
+</div>
+
+<!-- ================= CATEGORY OVERVIEW ================= -->
+<section class="section">
+    <h2>Category Overview</h2>
+
+    <ul id="categoryTable" class="expenses-list">
+        <li class="empty-state">
+            No categories yet — set a limit to begin
+        </li>
+    </ul>
+</section>
+
+
+<!-- ================= JAVASCRIPT ================= -->
+<script>
+/* ---------- Set Category Limit ---------- */
+async function setCategoryLimit() {
+    const category = document.getElementById("limitCategory").value;
+    const limit = document.getElementById("categoryLimit").value;
+
+    if (!category || !limit) {
+        alert("Please select a category and enter a limit.");
+        return;
+    }
+
+    await fetch("/limit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            category: category,
+            limit_amount: limit
+        })
+    });
+
+    loadCategories();
+}
+
+/* ---------- Load Category Cards ---------- */
+async function loadCategories() {
+    const res = await fetch("/limits");
+    const data = await res.json();
+
+    const list = document.getElementById("categoryTable");
+    list.innerHTML = "";
+
+    data.forEach(c => {
+        const spent = c.limit_amount - c.remaining;
+
+        list.innerHTML += `
+            <li>
+                <span><strong>${c.category}</strong></span>
+                <span>Limit: $${c.limit_amount}</span>
+                <span>Spent: $${spent}</span>
+                <span>Remaining: $${c.remaining}</span>
+            </li>
+        `;
+    });
+}
+
+/* ---------- Add Purchase ---------- */
+async function addPurchase() {
+    const category = document.getElementById("purchaseCategory").value;
+    const amount = document.getElementById("purchaseAmount").value;
+    const msg = document.getElementById("purchaseMessage");
+
+    if (!category || !amount) {
+        msg.textContent = "Please select a category and enter an amount.";
+        msg.style.color = "red";
+        return;
+    }
+
+    const res = await fetch("/purchase", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            category: category,
+            amount: amount
+        })
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+        msg.textContent = data.error;
+        msg.style.color = "red";
+    } else {
+        msg.textContent = data.message;
+        msg.style.color = "green";
+        loadCategories();
+    }
+}
+
+/* ---------- Initial Load ---------- */
+loadCategories();
+</script>
+
+</body>
+</html>
+
