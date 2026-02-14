@@ -62,3 +62,98 @@ The Personal Finance Tracker provides a clean dashboard, goal tracking, and help
 - Keyana Bernard: Responsible for the end-to-end development of the Budget Limits page. This member owns both the back and front end implementation of the category-based budgeting system, where users can set maximum spending caps for specific areas (e.g., Food, Rent, Entertainment) and add purchases that deduct for spending limits. 
 
 - Daniela Jaggan: Responsible for the end-to-end development of the Secure Login Gateway. owning both the UI of the login screen and the Backend Authentication Logic. As the project is currently designed for a single-user environment, this member must ensure that only the correct credentials grant entry to the homepage, while all unauthorized attempts are securely blocked with clear user feedback.
+
+
+
+  Work-flow
+
+Sign-in Page - Fairooz
+Purpose: Allow new users to create an account.
+Functionality:
+User can enter:
+First name
+Last name
+Email address
+Username
+Password
+
+Basic form validation (required fields, password length).
+- After successful sign-up:
+    User is redirected to the Login page.
+- If the user already has an account:
+   A link directs them to the Login page.
+
+Login page - Daniela
+Purpose: Authenticate existing users.
+Functionality:
+User enters:
+Username or email
+Password
+If credentials are correct:
+- User is redirected to the Homepage.
+If credentials are incorrect:
+- An error message is displayed.
+If the user does not have an account:
+- A link redirects them to the Sign-Up page.
+
+
+Homepage - Fairooz home.html
+Purpose: Overview and starting point for budgeting.
+Functionality:
+Displays a progress indicator for money saved toward a goal.
+User can:
+Set an income amount (optional).
+Set a savings goal.
+Provides navigation buttons to:
+Budget page
+Dashboard page
+About page
+Contact page
+Purpose: Core budgeting functionality.
+
+Budget page- Keyanna budget.html
+Nav bar that goes to other pages
+Functionality:
+Users can:
+Set spending limits for categories (e.g., Food, Rent, Entertainment).
+Enter purchases under selected categories.
+Displays a Category Overview Table showing:
+Category
+Spending limit
+Amount spent
+Remaining balance
+Optiona:
+Table showing last 5 purchases
+Table showing highest purchase per category
+
+Dashboard page- Jana dashboard.html
+Nav bar that goes to other pages
+Purpose: Visual analysis of spending habits.
+Functionality:
+Pie chart showing:
+Percentage of total budget spent per category.
+
+Bar chart showing:
+Budgeted amount vs amount spent per category.
+Additional optional visualizations:
+Monthly spending trends
+Category comparison insights
+
+Contact page- Jasmine contact.html
+Nav bar that goes to other pages
+Purpose: User communication and feedback.
+Functionality:
+Displays:
+Website email
+Phone number
+Users can submit feedback through a form.
+Form submissions are handled via a third-party service.
+
+About us page - Jasmine about.html
+Nav bar that goes to other pages
+Purpose: Inform users about the application.
+Functionality:
+Explains:
+Purpose of the website
+Goals of the budgeting tool
+How it helps users manage finances
