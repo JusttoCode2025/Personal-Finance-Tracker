@@ -123,7 +123,7 @@ Category
 - Spending limit
 - Amount spent
 - Remaining balance
-Options:
+- Options:
 - Table showing the last 5 purchases
 - Table showing the highest purchase per category
 
