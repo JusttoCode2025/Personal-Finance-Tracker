@@ -65,7 +65,7 @@ The Personal Finance Tracker provides a clean dashboard, goal tracking, and help
 
 
 
-  Work-flow
+## Work-flow
 
 Sign-in Page - Fairooz
 Purpose: Allow new users to create an account.
