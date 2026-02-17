@@ -125,6 +125,31 @@ def set_limit():
         "limit_amount": limit_amount
     }), 200
 
+@app.route("/recent_purchases")
+def recent_purchases():
+    conn = db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT category, amount, date
+        FROM purchases
+        ORDER BY date DESC
+        LIMIT 5
+    """)
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    purchases = [
+        {
+            "category": r["category"],
+            "amount": r["amount"],
+            "date": r["date"]
+        }
+        for r in rows
+    ]
+
+    return jsonify(purchases)
 
 @app.route("/purchase", methods=["POST"])
 def add_purchase():
@@ -207,6 +232,7 @@ def view_limits():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
