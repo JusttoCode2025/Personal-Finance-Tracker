@@ -65,17 +65,17 @@ The Personal Finance Tracker provides a clean dashboard, goal tracking, and help
 
 
 
-  Work-flow
+## Work-flow
 
 Sign-in Page - Fairooz
 Purpose: Allow new users to create an account.
 Functionality:
-User can enter:
-First name
-Last name
-Email address
-Username
-Password
+- User can enter:
+  First name
+  Last name
+  Email address
+  Username
+  Password
 
 Basic form validation (required fields, password length).
 - After successful sign-up:
@@ -86,9 +86,9 @@ Basic form validation (required fields, password length).
 Login page - Daniela
 Purpose: Authenticate existing users.
 Functionality:
-User enters:
-Username or email
-Password
+- User enters:
+- Username or email
+- Password
 If credentials are correct:
 - User is redirected to the Homepage.
 If credentials are incorrect:
@@ -102,58 +102,59 @@ Purpose: Overview and starting point for budgeting.
 Functionality:
 Displays a progress indicator for money saved toward a goal.
 User can:
-Set an income amount (optional).
-Set a savings goal.
+- Set an income amount (optional).
+- Set a savings goal.
 Provides navigation buttons to:
-Budget page
-Dashboard page
-About page
-Contact page
-Purpose: Core budgeting functionality.
+- Budget page
+- Dashboard page
+- About page
+- Contact page
+
 
 Budget page- Keyanna budget.html
-Nav bar that goes to other pages
+Purpose: Core budgeting functionality.
 Functionality:
+- Nav bar that goes to other pages
 Users can:
-Set spending limits for categories (e.g., Food, Rent, Entertainment).
-Enter purchases under selected categories.
-Displays a Category Overview Table showing:
+- Set spending limits for categories (e.g., Food, Rent, Entertainment).
+- Enter purchases under selected categories.
+- Displays a Category Overview Table showing:
 Category
-Spending limit
-Amount spent
-Remaining balance
-Optiona:
-Table showing last 5 purchases
-Table showing highest purchase per category
+- Spending limit
+- Amount spent
+- Remaining balance
+- Options:
+- Table showing the last 5 purchases
+- Table showing the highest purchase per category
 
 Dashboard page- Jana dashboard.html
-Nav bar that goes to other pages
 Purpose: Visual analysis of spending habits.
 Functionality:
+- Nav bar that goes to other pages
 Pie chart showing:
-Percentage of total budget spent per category.
-
+- Percentage of total budget spent per category.
 Bar chart showing:
-Budgeted amount vs amount spent per category.
+- Budgeted amount vs amount spent per category.
+
 Additional optional visualizations:
-Monthly spending trends
-Category comparison insights
+- Monthly spending trends
+- Category comparison insights
 
 Contact page- Jasmine contact.html
-Nav bar that goes to other pages
 Purpose: User communication and feedback.
 Functionality:
+- Nav bar that goes to other pages
 Displays:
-Website email
-Phone number
-Users can submit feedback through a form.
-Form submissions are handled via a third-party service.
+- Website email
+- Phone number
+- Users can submit feedback through a form.
+  Form submissions are handled via a third-party service.
 
 About us page - Jasmine about.html
-Nav bar that goes to other pages
 Purpose: Inform users about the application.
 Functionality:
+- Nav bar that goes to other pages
 Explains:
-Purpose of the website
-Goals of the budgeting tool
-How it helps users manage finances
+- Purpose of the website
+- Goals of the budgeting tool
+- How it helps users manage finances
