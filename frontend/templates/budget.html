@@ -10,7 +10,7 @@
 
 <body>
 
-<!-- ================= NAV BAR ================= -->
+<!--NAV BAR -->
 <nav class="navbar">
     <div class="nav-left">
         <span class="logo">FinanceTracker</span>
@@ -27,12 +27,11 @@
     </div>
 </nav>
 
-<!-- ================= MAIN CONTENT ================= -->
+<!-- MAIN CONTENT  -->
 <div class="container">
 
     <h1>Budget Tracker</h1>
-
-   <!-- ================= FLEX ROW: INPUTS ================= -->
+    
 <div class="flex-row">
 
     <!-- SET CATEGORY LIMIT -->
@@ -89,7 +88,7 @@
 
 </div>
 
-<!-- ================= CATEGORY OVERVIEW ================= -->
+<!--CATEGORY OVERVIEW  -->
 <section class="section">
     <h2>Category Overview</h2>
 
@@ -101,13 +100,26 @@
 </section>
 
 
-<!-- ================= JAVASCRIPT ================= -->
+<!-- JAVASCRIPT -->
 <script>
-/* ---------- Set Category Limit ---------- */
+/* Set Category Limit */
 async function setCategoryLimit() {
     const category = document.getElementById("limitCategory").value;
     const limit = document.getElementById("categoryLimit").value;
 
+    const HIGH_LIMIT_WARNING = 10000; 
+
+
+    if (limit >= HIGH_LIMIT_WARNING) {
+        const confirmLimit = confirm(
+            "⚠ This limit ($" + limit + ") seems very high.\n\n" +
+            "Are you sure this is correct?"
+        );
+
+        if (!confirmLimit) {
+             return;
+        }
+    }
     if (!category || !limit) {
         alert("Please select a category and enter a limit.");
         return;
@@ -125,7 +137,7 @@ async function setCategoryLimit() {
     loadCategories();
 }
 
-/* ---------- Load Category Cards ---------- */
+/* Load Category Cards  */
 async function loadCategories() {
     const res = await fetch("/limits");
     const data = await res.json();
@@ -145,18 +157,44 @@ async function loadCategories() {
             </li>
         `;
     });
+    if (data.length === 0) {
+    list.innerHTML = 
+        `  <li class="empty-state">
+            No categories yet — set a limit to begin
+        </li> `;
+    return;
 }
 
-/* ---------- Add Purchase ---------- */
+}
+
+/* Add Purchase */
 async function addPurchase() {
+
     const category = document.getElementById("purchaseCategory").value;
-    const amount = document.getElementById("purchaseAmount").value;
+    const amount = parseFloat(
+        document.getElementById("purchaseAmount").value
+    );
+
     const msg = document.getElementById("purchaseMessage");
 
-    if (!category || !amount) {
-        msg.textContent = "Please select a category and enter an amount.";
+    if (!category || !amount || amount <= 0) {
+        msg.textContent = "Please select a category and enter a valid amount.";
         msg.style.color = "red";
         return;
+    }
+    const HIGH_PURCHASE_WARNING = 1000;
+
+    if (amount >= HIGH_PURCHASE_WARNING) {
+        const confirmHigh = confirm(
+            "⚠ This purchase amount ($" + amount +
+            ") seems unusually high.\n\nAre you sure this is correct?"
+        );
+
+        if (!confirmHigh) {
+            msg.textContent = "Purchase cancelled.";
+            msg.style.color = "orange";
+            return;
+        }
     }
 
     const res = await fetch("/purchase", {
@@ -170,20 +208,28 @@ async function addPurchase() {
 
     const data = await res.json();
 
-    if (data.error) {
-        msg.textContent = data.error;
-        msg.style.color = "red";
-    } else {
-        msg.textContent = data.message;
-        msg.style.color = "green";
-        loadCategories();
+    if (data.warning) {
+        const confirmSpend = confirm(
+            data.warning +
+            "\n\nDo you want to continue anyway?"
+        );
+
+        if (!confirmSpend) {
+            msg.textContent = "Purchase cancelled.";
+            msg.style.color = "orange";
+            return;
+        }
     }
+
+    msg.textContent = data.message;
+    msg.style.color = "green";
+
+    loadCategories();
 }
 
-/* ---------- Initial Load ---------- */
-loadCategories();
 </script>
 
 </body>
 </html>
+
 
