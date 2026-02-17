@@ -10,7 +10,7 @@ app = Flask(
 DB_NAME = "finance_tracker1.db"
 
 
-# ================= DATABASE SETUP =================
+#DATABASE SETUP
 
 def init_db():
     conn = sqlite3.connect(DB_NAME)
@@ -47,7 +47,7 @@ def db_connection():
     return conn
 
 
-# ================= PAGE ROUTES =================
+# PAGE ROUTE
 
 @app.route("/")
 @app.route("/login")
@@ -83,7 +83,7 @@ def signup():
     return render_template("signup.html")
 
 
-# ================= API ROUTES =================
+#  API
 
 @app.route("/limit", methods=["POST"])
 def set_limit():
@@ -205,10 +205,9 @@ def view_limits():
     return jsonify(limits), 200
 
 
-# ================= RUN APP =================
-
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
