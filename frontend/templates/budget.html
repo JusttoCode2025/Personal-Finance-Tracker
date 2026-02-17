@@ -89,15 +89,31 @@
 </div>
 
 <!--CATEGORY OVERVIEW  -->
-<section class="section">
-    <h2>Category Overview</h2>
+<!-- FLEX ROW: TABLES -->
+<div class="flex-row">
 
-    <ul id="categoryTable" class="expenses-list">
-        <li class="empty-state">
-            No categories yet — set a limit to begin
-        </li>
-    </ul>
-</section>
+    <section class="section flex-item">
+        <h2>Category Overview</h2>
+
+        <ul id="categoryTable" class="expenses-list">
+            <li class="empty-state">
+                No categories yet — set a limit to begin
+            </li>
+        </ul>
+    </section>
+
+    <section class="section flex-item">
+        <h2>Last 5 Purchases</h2>
+
+        <ul id="recentPurchases" class="expenses-list">
+            <li class="empty-state">
+                No purchases yet.
+            </li>
+        </ul>
+    </section>
+
+</div>
+
 
 
 <!-- JAVASCRIPT -->
@@ -137,7 +153,7 @@ async function setCategoryLimit() {
     loadCategories();
 }
 
-/* Load Category Cards  */
+/* Load Cards  */
 async function loadCategories() {
     const res = await fetch("/limits");
     const data = await res.json();
@@ -164,8 +180,33 @@ async function loadCategories() {
         </li> `;
     return;
 }
+    
+async function loadRecentPurchases() {
 
+    const res = await fetch("/recent_purchases");
+    const data = await res.json();
+
+    const list = document.getElementById("recentPurchases");
+    list.innerHTML = "";
+
+    if (data.length === 0) {
+        list.innerHTML = `
+            <li class="empty-state">No purchases yet.</li>
+        `;
+        return;
+    }
+
+    data.forEach(p => {
+        list.innerHTML += `
+            <li>
+                <span><strong>${p.category}</strong></span>
+                <span>$${p.amount}</span>
+                <span>${p.date}</span>
+            </li>
+        `;
+    });
 }
+    
 
 /* Add Purchase */
 async function addPurchase() {
@@ -231,5 +272,6 @@ async function addPurchase() {
 
 </body>
 </html>
+
 
 
