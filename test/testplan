@@ -1,1 +1,92 @@
+# Test Plan – FinanceTracker Web Application
 
+## Test Plan Title
+FinanceTracker – M2 Feature Testing
+
+## 1. Introduction
+
+**Purpose / Executive Summary**
+
+This test plan defines the strategy for validating the FinanceTracker website
+The purpose of this page is to ensure that core features function correctly before each milestone 
+
+## 2. Scope of Testing
+
+### In Scope
+- Login page works
+- Goal creation and progress tracking
+- Limit setting is correct
+- Purchases and  remaining balance works
+- Category overview display
+- Navigation between pages
+- Goal Bar progressing graph
+- Database interaction
+- Backend code function
+
+### Out of Scope
+- Full authentication database integration
+- Security testing
+
+## 3. Test Objectives
+
+- Correct  login behavior for valid and invalid credentials
+- Make sure users can create and update savings goals
+- Category limits are correctly stored and updated
+- Purchases reduce remaining budget amounts
+- Warning messeages for certain input
+- Ensure navigation links load correct pages
+- SQLite database has correct data
+
+## 4. Testing Approach
+
+### Methodologies
+- Manual Testing
+- Incremental Testing during development
+
+### Types of Testing
+- Functional Testing
+- Integration Testing
+
+### Tools Used
+- Manual Browser Testing
+- Flask 
+
+
+## 5. Test Schedule (To be determined)
+
+| Phase | Start Date | End Date |
+
+## 6. Test Environment
+Environment
+- Local Flask Development Server
+- Render Deployment Environment
+
+Test Data Sources
+- Mock categories (Rent, Groceries, Entertainment)
+- Sample purchase values
+- Test goal values
+
+
+## 6. Test Deliverables
+
+- Test Plan Document
+- Bug reports/issues
+- Updated test results
+
+## 7. Entry & Exit Criteria
+
+### Entry Criteria
+- Core features implemented
+- Routes functional
+
+### Exit Criteria
+- User flow works
+- Core features functional:
+  - Login
+  - Goal tracking
+  - Budget management
+  - Working navigation
+  - Dashboard is an accurate representation of spending habits
+
+### References
+- https://www.testrail.com/blog/create-a-test-plan/
