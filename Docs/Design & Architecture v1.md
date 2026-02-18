@@ -17,14 +17,14 @@
   - *Use Mermaid diagram here.*
   - Example placeholder:
     ```mermaid
-<img width="707" height="1730" alt="image" src="https://github.com/user-attachments/assets/25fb445c-bde7-42e5-aca8-1aa42288c59d" />
+<img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/25fb445c-bde7-42e5-aca8-1aa42288c59d" />
 
     ```
 ---
 
 ## 3. Architectural Design
 - **System Architecture Diagram**:
-  - <img width="1080" height="1255" alt="image" src="https://github.com/user-attachments/assets/c7ced76c-080e-4ce0-8004-332c3adf1ad7" />
+  - <img width="100" height="100" alt="image" src="https://github.com/user-attachments/assets/c7ced76c-080e-4ce0-8004-332c3adf1ad7" />
 - **Component Breakdown**:
   - - Html, Java, and CSS: Displays system UI, sends a request, and updates data
   - - Flask: Routing and validation
