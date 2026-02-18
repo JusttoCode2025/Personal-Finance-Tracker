@@ -152,10 +152,16 @@
             position: relative;
             background-size: cover;
             background-position: center;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
         }
 
         .summary-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(62, 39, 35, 0.3);
+        }
+
+        .summary-card:active {
             transform: translateY(-5px);
         }
 
@@ -176,7 +182,8 @@
 
         .summary-card.travel {
             background-image: linear-gradient(rgba(93, 64, 55, 0.7), rgba(93, 64, 55, 0.7)),
-                              url('Just Berlin nights🐈_⬛🎞️.jpg')
+                              url('Just Berlin nights🐈_⬛🎞️.jpg');
+        }
 
         .summary-overlay {
             position: absolute;
@@ -199,166 +206,6 @@
             font-size: 2.2em;
             font-weight: bold;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        /* Sections */
-        .section {
-            background: #F5F1E8;
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 25px;
-            box-shadow: 0 5px 15px rgba(62, 39, 35, 0.1);
-        }
-
-        .section h2 {
-            color: #3E2723;
-            margin-bottom: 20px;
-            font-size: 1.4em;
-            font-weight: 400;
-            letter-spacing: 1px;
-            border-bottom: 2px solid #8D6E63;
-            padding-bottom: 10px;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-        }
-
-        .input-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: #4E342E;
-            font-weight: 500;
-            font-size: 0.95em;
-        }
-
-        input[type="number"],
-        input[type="text"],
-        select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #D7CCC8;
-            border-radius: 8px;
-            font-size: 1em;
-            background: white;
-            transition: border-color 0.3s;
-        }
-
-        input[type="number"]:focus,
-        input[type="text"]:focus,
-        select:focus {
-            outline: none;
-            border-color: #6D4C41;
-        }
-
-        button {
-            background: linear-gradient(135deg, #6D4C41 0%, #5D4037 100%);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
-            font-size: 1em;
-            cursor: pointer;
-            transition: all 0.3s;
-            letter-spacing: 0.5px;
-        }
-
-        button:hover {
-            background: linear-gradient(135deg, #5D4037 0%, #4E342E 100%);
-            box-shadow: 0 5px 15px rgba(93, 64, 55, 0.3);
-        }
-
-        button:active {
-            transform: scale(0.98);
-        }
-
-        .expenses-list {
-            margin-top: 20px;
-        }
-
-        .expense-item {
-            background: white;
-            border: 2px solid #D7CCC8;
-            border-left: 5px solid #6D4C41;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.3s;
-        }
-
-        .expense-item:hover {
-            border-left-color: #5D4037;
-            box-shadow: 0 3px 10px rgba(62, 39, 35, 0.1);
-        }
-
-        .expense-info {
-            flex: 1;
-        }
-
-        .expense-name {
-            font-weight: bold;
-            color: #3E2723;
-            margin-bottom: 5px;
-            font-size: 1.1em;
-        }
-
-        .expense-frequency {
-            font-size: 0.9em;
-            color: #6D4C41;
-        }
-
-        .expense-amount {
-            font-size: 1.4em;
-            font-weight: bold;
-            color: #5D4037;
-            margin-right: 15px;
-        }
-
-        .delete-btn {
-            background: #8D6E63;
-            padding: 8px 16px;
-            font-size: 0.9em;
-        }
-
-        .delete-btn:hover {
-            background: #6D4C41;
-        }
-
-        .warning {
-            background: #FFF3E0;
-            border: 2px solid #FF9800;
-            color: #E65100;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-        }
-
-        .toggle-btn {
-            background: transparent;
-            border: 2px solid #6D4C41;
-            color: #6D4C41;
-            padding: 10px 20px;
-            font-size: 0.95em;
-            margin-bottom: 15px;
-        }
-
-        .toggle-btn:hover {
-            background: #6D4C41;
-            color: white;
-        }
-
-        .hidden {
-            display: none;
         }
 
         @media (max-width: 600px) {
@@ -400,328 +247,78 @@
                 <div class="budget-bar-stats">
                     <div class="budget-stat">
                         <div class="budget-stat-label">Spent</div>
-                        <div class="budget-stat-value">$<span id="bar-spent">0</span></div>
+                        <div class="budget-stat-value">$<span id="bar-spent">1020</span></div>
                     </div>
                     <div class="budget-stat">
                         <div class="budget-stat-label">Remaining</div>
-                        <div class="budget-stat-value">$<span id="bar-remaining">0</span></div>
+                        <div class="budget-stat-value">$<span id="bar-remaining">780</span></div>
                     </div>
                 </div>
             </div>
             <div class="progress-bar-wrapper">
-                <div class="progress-bar-fill" id="progress-bar-fill" style="width: 0%;">
-                    <span class="progress-bar-text"><span id="progress-percentage">0</span>% spent</span>
+                <div class="progress-bar-fill" id="progress-bar-fill" style="width: 57%;">
+                    <span class="progress-bar-text"><span id="progress-percentage">57</span>% spent</span>
                 </div>
-                <span class="progress-bar-remaining" id="progress-remaining-display" style="display: none;">$<span id="progress-remaining-amount">0</span> left</span>
+                <span class="progress-bar-remaining" id="progress-remaining-display">$<span id="progress-remaining-amount">780</span> left</span>
             </div>
         </div>
 
-        <!-- Summary Cards -->
+        <!-- Summary Cards (Clickable) -->
         <div class="summary">
-            <div class="summary-card income">
+            <div class="summary-card income" onclick="goToIncome()">
                 <div class="summary-overlay">
                     <div class="summary-label">MONTHLY INCOME</div>
-                    <div class="summary-amount">$<span id="total-income">0</span></div>
+                    <div class="summary-amount">$<span id="total-income">1800</span></div>
                 </div>
             </div>
-            <div class="summary-card expenses">
+            <div class="summary-card expenses" onclick="goToExpenses()">
                 <div class="summary-overlay">
                     <div class="summary-label">TOTAL EXPENSES</div>
-                    <div class="summary-amount">$<span id="total-expenses">0</span></div>
+                    <div class="summary-amount">$<span id="total-expenses">1020</span></div>
                 </div>
             </div>
-            <div class="summary-card remaining">
+            <div class="summary-card remaining" onclick="goToRemaining()">
                 <div class="summary-overlay">
                     <div class="summary-label">AVAILABLE</div>
-                    <div class="summary-amount">$<span id="remaining">0</span></div>
+                    <div class="summary-amount">$<span id="remaining">780</span></div>
                 </div>
             </div>
-            <div class="summary-card travel hidden" id="travel-card">
+            <div class="summary-card travel" onclick="goToTravel()">
                 <div class="summary-overlay">
                     <div class="summary-label">TRAVEL FUND</div>
-                    <div class="summary-amount">$<span id="travel-saved">0</span></div>
+                    <div class="summary-amount">$<span id="travel-saved">300</span></div>
                     <div style="font-size: 0.85em; margin-top: 5px; opacity: 0.9;">
-                        <span id="travel-percentage">0</span>% of $<span id="travel-goal-display">0</span>
+                        <span id="travel-percentage">25</span>% of $<span id="travel-goal-display">1200</span>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Income Section -->
-        <div class="section">
-            <h2>INCOME</h2>
-            <div class="input-group">
-                <div class="input-row">
-                    <div>
-                        <label for="income">Monthly Income</label>
-                        <input type="number" id="income" placeholder="1500" value="0">
-                    </div>
-                    <div style="display: flex; align-items: flex-end;">
-                        <button onclick="updateIncome()">Set Income</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Travel Savings Section -->
-        <div class="section">
-            <h2>TRAVEL FUND</h2>
-            <button class="toggle-btn" onclick="toggleTravelSection()">
-                <span id="travel-toggle-text">+ Enable Travel Savings</span>
-            </button>
-            <div id="travel-section" class="hidden">
-                <div class="input-group">
-                    <div class="input-row">
-                        <div>
-                            <label for="trip-goal">Travel Goal ($)</label>
-                            <input type="number" id="trip-goal" placeholder="1200">
-                        </div>
-                        <div>
-                            <label for="trip-monthly">Monthly Savings ($)</label>
-                            <input type="number" id="trip-monthly" placeholder="100">
-                        </div>
-                        <div style="display: flex; align-items: flex-end;">
-                            <button onclick="setTripGoal()">Set Goal</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Expenses Section -->
-        <div class="section">
-            <h2>EXPENSES</h2>
-            <div class="input-group">
-                <div class="input-row">
-                    <div>
-                        <label for="expense-name">Expense Name</label>
-                        <input type="text" id="expense-name" placeholder="Rent">
-                    </div>
-                    <div>
-                        <label for="expense-amount">Amount ($)</label>
-                        <input type="number" id="expense-amount" placeholder="600">
-                    </div>
-                    <div>
-                        <label for="expense-frequency">Frequency</label>
-                        <select id="expense-frequency">
-                            <option value="monthly">Monthly</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="daily">Daily</option>
-                        </select>
-                    </div>
-                </div>
-                <button onclick="addExpense()">Add Expense</button>
-            </div>
-
-            <div class="expenses-list" id="expenses-list"></div>
-
-            <div id="budget-warning" style="display: none;" class="warning">
-                ⚠️ Warning: Expenses exceed income. Consider adjusting your budget.
             </div>
         </div>
     </div>
 
     <script>
-        let income = 0;
-        let expenses = [];
-        let tripGoal = 0;
-        let tripMonthlySavings = 0;
-        let tripSaved = 0;
-        let travelEnabled = false;
-
-        function toggleTravelSection() {
-            const section = document.getElementById('travel-section');
-            const toggleText = document.getElementById('travel-toggle-text');
-            const travelCard = document.getElementById('travel-card');
-
-            travelEnabled = !travelEnabled;
-
-            if (travelEnabled) {
-                section.classList.remove('hidden');
-                toggleText.textContent = '− Disable Travel Savings';
-            } else {
-                section.classList.add('hidden');
-                toggleText.textContent = '+ Enable Travel Savings';
-                travelCard.classList.add('hidden');
-
-                // Remove travel savings from expenses
-                const travelIndex = expenses.findIndex(e => e.name === 'Travel Fund');
-                if (travelIndex >= 0) {
-                    expenses.splice(travelIndex, 1);
-                    renderExpenses();
-                    updateSummary();
-                }
-            }
+        // Functions for when cards are clicked
+        // Change these URLs to wherever you want each card to link to
+        
+        function goToIncome() {
+            // Change this to your income page URL
+            window.location.href = 'income.html';
+            // Or if all on one page: window.location.href = '#income-section';
         }
 
-        function updateIncome() {
-            income = parseFloat(document.getElementById('income').value) || 0;
-            updateSummary();
+        function goToExpenses() {
+            // Change this to your expenses page URL
+            window.location.href = 'expenses.html';
         }
 
-        function setTripGoal() {
-            tripGoal = parseFloat(document.getElementById('trip-goal').value) || 0;
-            tripMonthlySavings = parseFloat(document.getElementById('trip-monthly').value) || 0;
-
-            if (tripGoal > 0 && tripMonthlySavings > 0) {
-                document.getElementById('travel-card').classList.remove('hidden');
-
-                // Update trip progress
-                tripSaved = 0; // Reset for demo
-                updateTravelDisplay();
-
-                // Add/update travel savings as expense
-                const existingTravelExpense = expenses.findIndex(e => e.name === 'Travel Fund');
-                if (existingTravelExpense >= 0) {
-                    expenses[existingTravelExpense].amount = tripMonthlySavings;
-                    expenses[existingTravelExpense].monthlyAmount = tripMonthlySavings;
-                } else {
-                    expenses.push({
-                        name: 'Travel Fund',
-                        amount: tripMonthlySavings,
-                        frequency: 'monthly',
-                        monthlyAmount: tripMonthlySavings
-                    });
-                }
-                renderExpenses();
-                updateSummary();
-            }
+        function goToRemaining() {
+            // Change this to your remaining/available funds page URL
+            window.location.href = 'remaining.html';
         }
 
-        function updateTravelDisplay() {
-            const percentage = Math.min((tripSaved / tripGoal) * 100, 100);
-
-            document.getElementById('travel-saved').textContent = tripSaved.toFixed(0);
-            document.getElementById('travel-goal-display').textContent = tripGoal.toFixed(0);
-            document.getElementById('travel-percentage').textContent = percentage.toFixed(0);
+        function goToTravel() {
+            // Change this to your travel fund page URL
+            window.location.href = 'travel.html';
         }
-
-        function addExpense() {
-            const name = document.getElementById('expense-name').value;
-            const amount = parseFloat(document.getElementById('expense-amount').value);
-            const frequency = document.getElementById('expense-frequency').value;
-
-            if (name && amount) {
-                let monthlyAmount = amount;
-                if (frequency === 'weekly') {
-                    monthlyAmount = amount * 4.33;
-                } else if (frequency === 'daily') {
-                    monthlyAmount = amount * 30;
-                }
-
-                expenses.push({
-                    name,
-                    amount,
-                    frequency,
-                    monthlyAmount
-                });
-
-                document.getElementById('expense-name').value = '';
-                document.getElementById('expense-amount').value = '';
-
-                renderExpenses();
-                updateSummary();
-            }
-        }
-
-        function deleteExpense(index) {
-            expenses.splice(index, 1);
-            renderExpenses();
-            updateSummary();
-        }
-
-        function renderExpenses() {
-            const list = document.getElementById('expenses-list');
-            list.innerHTML = '';
-
-            expenses.forEach((expense, index) => {
-                const div = document.createElement('div');
-                div.className = 'expense-item';
-                div.innerHTML = `
-                    <div class="expense-info">
-                        <div class="expense-name">${expense.name}</div>
-                        <div class="expense-frequency">${expense.frequency} • $${expense.amount.toFixed(2)} ${expense.frequency !== 'monthly' ? '(Monthly: $' + expense.monthlyAmount.toFixed(2) + ')' : ''}</div>
-                    </div>
-                    <div class="expense-amount">$${expense.monthlyAmount.toFixed(2)}</div>
-                    <button class="delete-btn" onclick="deleteExpense(${index})">Remove</button>
-                `;
-                list.appendChild(div);
-            });
-        }
-
-        function updateSummary() {
-            const totalExpenses = expenses.reduce((sum, expense) => sum + expense.monthlyAmount, 0);
-            const remaining = income - totalExpenses;
-            const percentageSpent = income > 0 ? ((totalExpenses / income) * 100) : 0;
-            const percentageRemaining = income > 0 ? ((remaining / income) * 100) : 0;
-
-            document.getElementById('total-income').textContent = income.toFixed(0);
-            document.getElementById('total-expenses').textContent = totalExpenses.toFixed(0);
-            document.getElementById('remaining').textContent = remaining.toFixed(0);
-
-            // Update bar progress display
-            document.getElementById('bar-spent').textContent = totalExpenses.toFixed(0);
-            document.getElementById('bar-remaining').textContent = remaining.toFixed(0);
-
-            const progressBar = document.getElementById('progress-bar-fill');
-            const progressText = document.getElementById('progress-percentage');
-            const remainingDisplay = document.getElementById('progress-remaining-display');
-
-            // Cap percentage at 100% for display
-            const displayPercentage = Math.min(percentageSpent, 100);
-            progressBar.style.width = displayPercentage + '%';
-            progressText.textContent = percentageSpent.toFixed(0);
-
-            // Show remaining amount on the right side if not over budget
-            if (percentageSpent < 100) {
-                remainingDisplay.style.display = 'block';
-                document.getElementById('progress-remaining-amount').textContent = remaining.toFixed(0);
-            } else {
-                remainingDisplay.style.display = 'none';
-            }
-
-            // Change bar color based on budget status
-            if (percentageSpent >= 100) {
-                progressBar.style.background = 'linear-gradient(90deg, #c62828 0%, #b71c1c 50%, #8e0000 100%)';
-            } else if (percentageSpent >= 80) {
-                progressBar.style.background = 'linear-gradient(90deg, #f57c00 0%, #ef6c00 50%, #e65100 100%)';
-            } else {
-                progressBar.style.background = 'linear-gradient(90deg, #6D4C41 0%, #5D4037 50%, #4E342E 100%)';
-            }
-
-            // Show warning if over budget
-            if (remaining < 0) {
-                document.getElementById('budget-warning').style.display = 'block';
-            } else {
-                document.getElementById('budget-warning').style.display = 'none';
-            }
-        }
-
-        // Initialize with demo data
-        document.getElementById('income').value = 1800;
-        updateIncome();
-
-        const sampleExpenses = [
-            { name: 'Rent', amount: 650, frequency: 'monthly' },
-            { name: 'Groceries', amount: 80, frequency: 'weekly' },
-            { name: 'Gym Membership', amount: 45, frequency: 'monthly' },
-            { name: 'Phone Bill', amount: 55, frequency: 'monthly' },
-            { name: 'Entertainment', amount: 120, frequency: 'monthly' },
-            { name: 'Transportation', amount: 90, frequency: 'monthly' }
-        ];
-
-        sampleExpenses.forEach(exp => {
-            let monthlyAmount = exp.amount;
-            if (exp.frequency === 'weekly') {
-                monthlyAmount = exp.amount * 4.33;
-            } else if (exp.frequency === 'daily') {
-                monthlyAmount = exp.amount * 30;
-            }
-            expenses.push({ ...exp, monthlyAmount });
-        });
-
-        renderExpenses();
-        updateSummary();
     </script>
 </body>
 </html>
