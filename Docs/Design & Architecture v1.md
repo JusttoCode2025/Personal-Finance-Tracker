@@ -33,6 +33,8 @@
 
 - **Data Flow and Control Flow**:
   - *Use Mermaid sequence or flow diagrams here.*
+  - <img width="700" height="518" alt="image" src="https://github.com/user-attachments/assets/d91c038a-601e-4c36-a450-829c613974aa" />
+
 
 ---
 
