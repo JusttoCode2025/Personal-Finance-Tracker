@@ -1,54 +1,23 @@
-async function loadExpenses() {
-    const res = await fetch("/expenses");
-    const data = await res.json();
+// Wait for the DOM to load to ensure elements exist
+document.addEventListener('DOMContentLoaded', () => {
+    const submitBtn = document.getElementById('submit-btn');
+    
+    if (submitBtn) {
+        submitBtn.addEventListener('click', () => {
+            
+            const emailInput = document.querySelector('input[placeholder="Email"]');
+            const passwordInput = document.querySelector('input[placeholder="Password"]');
 
-    const list = document.getElementById("expenseList");
-    list.innerHTML = "";
+            const validEmail = "group1@gmail.com";
+            const validPassword = "group1";
 
-    data.forEach(e => {
-        list.innerHTML += `<li>${e.name} - $${e.amount} (${e.frequency})</li>`;
-    });
-}
+            if (emailInput.value === validEmail && passwordInput.value === validPassword) {
+                alert("Success! You are now logged in.");
+                window.location.href = "/home";
+            } else {
+                alert("Error: Invalid email or password. Please try again.");
+            }
+        });
+    }
+});
 
-async function addExpense() {
-    await fetch("/expenses", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-            name: name.value,
-            amount: amount.value,
-            frequency: frequency.value
-        })
-    });
-    loadExpenses();
-}
-
-async function setLimit() {
-    await fetch("/limit", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ amount: limitInput.value })
-    });
-    loadLimit();
-}
-
-async function loadLimit() {
-    const res = await fetch("/limit");
-    const data = await res.json();
-    remaining.innerText = `Remaining: $${data.remaining}`;
-}
-
-async function addPurchase() {
-    await fetch("/purchase", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-            description: purchaseDesc.value,
-            amount: purchaseAmount.value
-        })
-    });
-    loadLimit();
-}
-
-loadExpenses();
-loadLimit();

@@ -3,65 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-
-    <!-- Flask-compatible CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='style2.css') }}">
+    <title>login</title>
+     <link rel="stylesheet" href="{{ url_for('static', filename='style1.css') }}">
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-
-<div class="login-box">
-    <div class="login-header">
-        <header>Login</header>
+    <div class="login-box">
+        <div class="login-header">
+            <header>Login</header>
+            <div class=" input-box">
+                <input type="text" class="input-field" placeholder="Email" autocomplete="off" required>
+            </div>
+            <div class=" input-box">
+                <input type="password" class="input-field" placeholder="Password" autocomplete="off" required>
+            </div>
+            <div class="forgot">
+                <section>
+                    <input type="checkbox" id="check">
+                        <label for="check">Remember me</label>
+                    </imput>
+                </section>
+                <section>
+                    <a href="#">Forgot Password</a>
+                </section>
+            </div>
+            <div class="input-submit">
+                <button type="button" class="submit-btn" id="submit-btn"></button>
+                <label for="submit-btn">Sign in</label>
+            </div>
+            <div class="sign-up-link">
+                <p>Don't have an account? <a href="#/signup">Sign Up</a></p>
+            </div>
+        </div>
     </div>
-
-    <!-- FORM -->
-    <form>
-
-        <div class="input-box">
-            <input
-                type="text"
-                class="input-field"
-                placeholder="Email"
-                autocomplete="off"
-                required
-            >
-        </div>
-
-        <div class="input-box">
-            <input
-                type="password"
-                class="input-field"
-                placeholder="Password"
-                required
-            >
-        </div>
-
-        <div class="forgot">
-            <section>
-                <input type="checkbox" id="check">
-                <label for="check">Remember me</label>
-            </section>
-
-            <section>
-                <a href="#">Forgot Password?</a>
-            </section>
-        </div>
-
-        <div class="input-submit">
-            <button type="submit" class="submit-btn" onclick="window.location.href='/budget'">
-                Sign In
-            </button>
-        </div>
-
-        <div class="sign-up-link">
-            <p>Don’t have an account? <a href="/signup">Sign Up</a>
-</p>
-        </div>
-
-    </form>
-</div>
-
+    
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
+
 </html>
+
