@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>login</title>
+     <link rel="stylesheet" href="{{ url_for('static', filename='style1.css') }}">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -31,11 +32,12 @@
                 <label for="submit-btn">Sign in</label>
             </div>
             <div class="sign-up-link">
-                <p>Dont have an account? <a href="#">Sign Up</a></p>
+                <p>Don't have an account? <a href="#">Sign Up</a></p>
             </div>
         </div>
     </div>
     
-    <script src="script.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
+
 </html>
