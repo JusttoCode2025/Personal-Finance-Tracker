@@ -13,9 +13,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (emailInput.value === validEmail && passwordInput.value === validPassword) {
                 alert("Success! You are now logged in.");
+                window.location.href = "/home";
             } else {
                 alert("Error: Invalid email or password. Please try again.");
             }
         });
     }
 });
+
