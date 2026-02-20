@@ -155,13 +155,25 @@ async function setCategoryLimit() {
 
 /* Load Cards  */
 async function loadCategories() {
+
     const res = await fetch("/limits");
     const data = await res.json();
 
     const list = document.getElementById("categoryTable");
     list.innerHTML = "";
 
+    if (data.length === 0) {
+        list.innerHTML = `
+            <li class="empty-state">
+                No categories yet — set a limit to begin
+            </li>
+        `;
+        return;
+    }
+
+
     data.forEach(c => {
+
         const spent = c.limit_amount - c.remaining;
 
         list.innerHTML += `
@@ -173,40 +185,10 @@ async function loadCategories() {
             </li>
         `;
     });
-    if (data.length === 0) {
-    list.innerHTML = 
-        `  <li class="empty-state">
-            No categories yet — set a limit to begin
-        </li> `;
-    return;
 }
     
 async function loadRecentPurchases() {
 
-    const res = await fetch("/recent_purchases");
-    const data = await res.json();
-
-    const list = document.getElementById("recentPurchases");
-    list.innerHTML = "";
-
-    if (data.length === 0) {
-        list.innerHTML = `
-            <li class="empty-state">No purchases yet.</li>
-        `;
-        return;
-    }
-
-    data.forEach(p => {
-        list.innerHTML += `
-            <li>
-                <span><strong>${p.category}</strong></span>
-                <span>$${p.amount}</span>
-                <span>${p.date}</span>
-            </li>
-        `;
-    });
-}
-    
 
 /* Add Purchase */
 async function addPurchase() {
@@ -267,11 +249,12 @@ async function addPurchase() {
     loadCategories();
  
 }
-
+loadCategories();
 </script>
 
 </body>
 </html>
+
 
 
 
