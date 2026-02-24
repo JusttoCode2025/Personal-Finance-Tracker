@@ -81,7 +81,7 @@
 
     <h1>DASHBOARD</h1>
 
-    <!-- BUDGET OVERVIEW -->
+   
     <div class="budget-bar-container">
         <h2>Budget Overview</h2>
         <div class="progress-bar-wrapper">
@@ -90,7 +90,7 @@
         <p id="dashboard-summary"></p>
     </div>
 
-    <!-- PIE CHART -->
+    
     <div class="section">
         <h2>Spending by Category</h2>
         <div style="max-width:420px;margin:0 auto;">
@@ -98,13 +98,13 @@
         </div>
     </div>
 
-    <!-- BAR CHART -->
+   
     <div class="section">
         <h2>Actual Spending (by Category)</h2>
         <canvas id="barChart"></canvas>
     </div>
 
-    <!-- LINE GRAPH -->
+    
     <div class="section">
         <h2>Spending Over Time (Last 12 Months)</h2>
         <canvas id="lineChart"></canvas>
@@ -113,33 +113,31 @@
 </div>
 
 <script>
-/* ===== READ REAL USER DATA ===== */
+
 
 const income = parseFloat(localStorage.getItem("income")) || 0;
 const expenses = JSON.parse(localStorage.getItem("expenses")) || [];
 
-/* ===== TOTALS ===== */
+
 
 const totalExpenses = expenses.reduce((sum, e) => sum + e.monthlyAmount, 0);
 const remaining = income - totalExpenses;
 const percentUsed = income > 0 ? (totalExpenses / income) * 100 : 0;
 
-/* ===== UPDATE BUDGET BAR ===== */
-
+    
 document.getElementById("dashboard-progress").style.width =
     Math.min(percentUsed, 100) + "%";
 
 document.getElementById("dashboard-summary").textContent =
-    `Income: $${income.toFixed(0)} • Spent: $${totalExpenses.toFixed(0)} • Remaining: $${remaining.toFixed(0)}`;
 
-/* ===== CATEGORY TOTALS ===== */
+    
 
 const categoryTotals = {};
 expenses.forEach(e => {
     categoryTotals[e.name] = (categoryTotals[e.name] || 0) + e.monthlyAmount;
 });
 
-/* ===== PIE CHART (TEMP RANDOM DEMO DATA) ===== */
+    
 
 new Chart(document.getElementById("pieChart"), {
     type: 'pie',
@@ -170,7 +168,7 @@ new Chart(document.getElementById("pieChart"), {
     }
 });
 
-/* ===== BAR CHART ===== */
+
 
 new Chart(document.getElementById("barChart"), {
     type: 'bar',
@@ -189,7 +187,8 @@ new Chart(document.getElementById("barChart"), {
     }
 });
 
-/* ===== LINE GRAPH: LAST 12 MONTHS ===== */
+
+
 
 const monthlyTotals = {};
 
