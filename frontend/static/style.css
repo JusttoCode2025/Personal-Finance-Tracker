@@ -1,18 +1,17 @@
-/* ================= RESET ================= */
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-/* ================= PAGE BASE ================= */
 body {
     font-family: "Helvetica Neue", Arial, sans-serif;
     background: #f5f1ee;
     color: #2f1e17;
 }
 
-/* ================= NAV BAR ================= */
+
 .navbar {
     display: flex;
     justify-content: space-between;
@@ -42,7 +41,7 @@ body {
     position: relative;
 }
 
-/* Hover underline animation */
+
 .navbar a::after {
     content: "";
     position: absolute;
@@ -58,7 +57,7 @@ body {
     width: 100%;
 }
 
-/* ACTIVE PAGE */
+
 .navbar a.active {
     font-weight: 700;
 }
@@ -74,7 +73,7 @@ body {
     font-weight: 600;
 }
 
-/* ================= MAIN CONTAINER ================= */
+
 .container {
     max-width: 1000px;
     margin: 40px auto;
@@ -82,7 +81,7 @@ body {
     animation: fadeIn 0.6s ease-in-out;
 }
 
-/* Page fade-in */
+
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -99,7 +98,7 @@ h1 {
     margin-bottom: 30px;
 }
 
-/* ================= SECTIONS / CARDS ================= */
+
 .section {
     background: white;
     padding: 28px;
@@ -119,7 +118,7 @@ h1 {
     margin-bottom: 18px;
 }
 
-/* ================= FORM ROW ================= */
+
 .form-row {
     display: flex;
     align-items: center;
@@ -127,7 +126,7 @@ h1 {
     flex-wrap: wrap;
 }
 
-/* INPUTS */
+
 input,
 select {
     height: 44px;
@@ -146,7 +145,7 @@ select:focus {
     box-shadow: 0 0 0 2px rgba(122, 74, 59, 0.2);
 }
 
-/* BUTTONS */
+
 button {
     height: 44px;
     background: #7a4a3b;
@@ -169,13 +168,13 @@ button:active {
     transform: scale(0.97);
 }
 
-/* ================= TEXT ================= */
+
 #remaining {
     margin-top: 14px;
     font-weight: 600;
 }
 
-/* ================= EXPENSE LIST ================= */
+
 .expenses-list {
     list-style: none;
     margin-top: 10px;
@@ -199,7 +198,7 @@ button:active {
     box-shadow: 0 6px 16px rgba(0,0,0,0.12);
 }
 
-/* ================= FLEXBOX LAYOUT ================= */
+
 
 .flex-row {
     display: flex;
@@ -212,14 +211,14 @@ button:active {
     flex: 1;
 }
 
-/* Stack vertically on smaller screens */
+
 @media (max-width: 800px) {
     .flex-row {
         flex-direction: column;
     }
 }
 
-/* ================= FLEXBOX INPUT ROW ================= */
+
 
 .flex-row {
     display: flex;
@@ -254,7 +253,6 @@ button:active {
 
 
 
-/* ================= RESPONSIVE ================= */
 @media (max-width: 700px) {
     .navbar {
         flex-direction: column;
@@ -274,3 +272,4 @@ button:active {
         font-size: 1.8rem;
     }
 }
+
