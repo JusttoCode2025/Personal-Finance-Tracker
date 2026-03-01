@@ -125,7 +125,7 @@ def set_limit():
         "limit_amount": limit_amount
     }), 200
 
-@app.route("/recent_purchases")
+@app.route("/recent_purchases", method=["GET"])
 def recent_purchases():
     conn = db_connection()
     cursor = conn.cursor()
@@ -149,7 +149,7 @@ def recent_purchases():
         for r in rows
     ]
 
-    return jsonify(purchases)
+    return jsonify(purchases), 200
 
 @app.route("/purchase", methods=["POST"])
 def add_purchase():
@@ -232,6 +232,7 @@ def view_limits():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
