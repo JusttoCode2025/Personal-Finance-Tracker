@@ -89,31 +89,15 @@
 </div>
 
 <!--CATEGORY OVERVIEW  -->
-<!-- FLEX ROW: TABLES -->
-<div class="flex-row">
+<section class="section">
+    <h2>Category Overview</h2>
 
-    <section class="section flex-item">
-        <h2>Category Overview</h2>
-
-        <ul id="categoryTable" class="expenses-list">
-            <li class="empty-state">
-                No categories yet — set a limit to begin
-            </li>
-        </ul>
-    </section>
-
-    <section class="section flex-item">
-        <h2>Last 5 Purchases</h2>
-
-        <ul id="recentPurchases" class="expenses-list">
-            <li class="empty-state">
-                No purchases yet.
-            </li>
-        </ul>
-    </section>
-
-</div>
-
+    <ul id="categoryTable" class="expenses-list">
+        <li class="empty-state">
+            No categories yet — set a limit to begin
+        </li>
+    </ul>
+</section>
 
 
 <!-- JAVASCRIPT -->
@@ -153,7 +137,7 @@ async function setCategoryLimit() {
     loadCategories();
 }
 
-/* Load Cards  */
+/* Load Category Cards  */
 async function loadCategories() {
 
     const res = await fetch("/limits");
@@ -186,8 +170,6 @@ async function loadCategories() {
         `;
     });
 }
-    
-async function loadRecentPurchases() {
 
 
 /* Add Purchase */
@@ -254,6 +236,9 @@ loadCategories();
 
 </body>
 </html>
+
+
+
 
 
 
