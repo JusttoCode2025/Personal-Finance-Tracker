@@ -125,7 +125,7 @@ def set_limit():
         "limit_amount": limit_amount
     }), 200
 
-@app.route("/recent_purchases", method=["GET"])
+@app.route("/recent_purchases", methods=["GET"])
 def recent_purchases():
     conn = db_connection()
     cursor = conn.cursor()
@@ -232,6 +232,7 @@ def view_limits():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
