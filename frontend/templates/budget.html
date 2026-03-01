@@ -184,6 +184,32 @@ async function loadCategories() {
     });
 }
 
+async function loadRecentPurchases() {
+    const res = await fetch("/recent");
+    const data = await res.json();
+
+    const list = document.getElementById("recentPurchases");
+    list.innerHTML = "";
+
+    if (data.length === 0) {
+        list.innerHTML = `
+            <li class="empty-state">
+                No purchases yet.
+            </li>
+        `;
+        return;
+    }
+
+    data.forEach(p => {
+        list.innerHTML += `
+            <li>
+                <span><strong>${p.category}</strong></span>
+                <span>$${p.amount}</span>
+                <span>${p.date}</span>
+            </li>
+            `;
+        });
+}
 
 /* Add Purchase */
 async function addPurchase() {
@@ -242,6 +268,7 @@ async function addPurchase() {
     msg.textContent = data.message;
     msg.style.color = "green";
     loadCategories();
+    loadRecentPurchases();
  
 }
 loadCategories();
@@ -249,6 +276,7 @@ loadCategories();
 
 </body>
 </html>
+
 
 
 
