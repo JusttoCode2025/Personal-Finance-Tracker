@@ -177,7 +177,7 @@
     .summary-card.expenses {
         background-image:
             linear-gradient(rgba(78, 52, 46, 0.7), rgba(78, 52, 46, 0.7)),
-            url("{{ url_for('static', filename='images/expenses.jpg') }}");
+            url("{{ url_for('static', filename='images/expense.jpg') }}");
         background-size: cover;
         background-position: center;
     }
@@ -192,8 +192,11 @@
 </style>
 
         .summary-card.travel {
-            background-image: linear-gradient(rgba(93, 64, 55, 0.7), rgba(93, 64, 55, 0.7)),
-                              url('Just Berlin nights🐈_⬛🎞️.jpg');
+          background-image:
+            linear-gradient(rgba(78, 52, 46, 0.7), rgba(78, 52, 46, 0.7)),
+            url("{{ url_for('static', filename='images/expense.jpg') }}");
+        background-size: cover;
+        background-position: center;  
         }
 
         .summary-overlay {
