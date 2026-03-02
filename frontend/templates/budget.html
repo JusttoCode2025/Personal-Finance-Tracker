@@ -241,14 +241,17 @@ async function addPurchase() {
 
     msg.textContent = data.message;
     msg.style.color = "green";
+    loadRecentPurchases();
     loadCategories();
  
 }
+loadRecentPurchases();
 loadCategories();
 </script>
 
 </body>
 </html>
+
 
 
 
