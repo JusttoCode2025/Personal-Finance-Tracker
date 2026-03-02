@@ -165,20 +165,31 @@
             transform: translateY(-5px);
         }
 
-        .summary-card.income {
-            background-image: linear-gradient(rgba(93, 64, 55, 0.7), rgba(93, 64, 55, 0.7)),
-                              url('Just Berlin nights🐈_⬛🎞️.jpg');
-        }
 
-        .summary-card.expenses {
-            background-image: linear-gradient(rgba(78, 52, 46, 0.7), rgba(78, 52, 46, 0.7)),
-                              url('Ampeln mit Ost-Ampelmännchen.jpg');
-        }
+    .summary-card.income {
+        background-image:
+            linear-gradient(rgba(93, 64, 55, 0.7), rgba(93, 64, 55, 0.7)),
+            url("{{ url_for('static', filename='images/income.jpg') }}");
+        background-size: cover;
+        background-position: center;
+    }
 
-        .summary-card.remaining {
-            background-image: linear-gradient(rgba(62, 39, 35, 0.7), rgba(62, 39, 35, 0.7)),
-                              url('Dresden, germany.jpg');
-        }
+    .summary-card.expenses {
+        background-image:
+            linear-gradient(rgba(78, 52, 46, 0.7), rgba(78, 52, 46, 0.7)),
+            url("{{ url_for('static', filename='images/expenses.jpg') }}");
+        background-size: cover;
+        background-position: center;
+    }
+
+    .summary-card.remaining {
+        background-image:
+            linear-gradient(rgba(62, 39, 35, 0.7), rgba(62, 39, 35, 0.7)),
+            url("{{ url_for('static', filename='images/remaining.jpg') }}");
+        background-size: cover;
+        background-position: center;
+    }
+</style>
 
         .summary-card.travel {
             background-image: linear-gradient(rgba(93, 64, 55, 0.7), rgba(93, 64, 55, 0.7)),
