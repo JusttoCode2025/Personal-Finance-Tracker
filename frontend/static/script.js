@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-/* ================= UPDATE UI FUNCTION ================= */
+/* update */
 
 function updateUI(saved, goal) {
 
@@ -151,4 +151,5 @@ function updateUI(saved, goal) {
         }
     }
 }
+
 
