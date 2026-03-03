@@ -45,6 +45,10 @@ def db_connection():
 # routes
 
 @app.route("/")
+@app.route("/login")
+def login():
+    return render_template("login.html")
+    
 @app.route("/budget")
 def budget():
     return render_template("budget.html")
@@ -58,10 +62,6 @@ def dashboard():
 @app.route("/about")
 def about():
     return render_template("about.html")
-
-@app.route("/login")
-def login():
-    return render_template("login.html")
 
 @app.route("/signup")
 def signup():
@@ -267,4 +267,5 @@ def dashboard_data():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
