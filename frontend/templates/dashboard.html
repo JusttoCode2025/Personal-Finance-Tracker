@@ -20,6 +20,52 @@
         align-items: center;
         gap: 22px;
     }
+
+    .logo {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-right: 10px;
+    }
+
+    .navbar a {
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+        padding-bottom: 4px;
+        position: relative;
+    }
+
+/* Hover underline animation */
+    .navbar a::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: -4px;
+        width: 0%;
+        height: 2px;
+        background: #ffd9b3;
+        transition: width 0.25s ease;
+    }
+
+    .navbar a:hover::after {
+        width: 100%;
+    }
+
+/* ACTIVE PAGE */
+    .navbar a.active {
+        font-weight: 700;
+    }
+
+    .navbar a.active::after {
+        width: 100%;
+    }
+
+    .nav-center {
+        display: flex;
+        gap: 20px;
+        font-weight: 600;
+}
+
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
             background: #E8DCC4;
@@ -72,21 +118,32 @@
         canvas {
             margin-top: 20px;
         }
+        button {
+            height: 20px;
+            background: #7a4a3b;
+            color: white;
+            border: none;
+            padding: 0 18px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    }
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<!--NAV BAR -->
+
 <nav class="navbar">
     <div class="nav-left">
         <span class="logo">FinanceTracker</span>
-
         <a href="/home">Home</a>
-        <a href="/budget" class="active">Budget</a>
-        <a href="/dashboard">Dashboard</a>
+        <a href="/budget">Budget</a>
+        <a href="/dashboard" class="active">Dashboard</a>
+        <a href="/travel-goal">Travel Goal</a>
         <a href="/about">About</a>
-        <a href="/contact">Contact</a>
     </div>
 
     <div class="nav-right">
@@ -94,24 +151,18 @@
     </div>
 </nav>
 
-<div style="max-width:1000px;margin:0 auto 10px auto;">
-    <a href="index.html" style="
-        text-decoration:none;
-        color:#3E2723;
-        font-size:13px;
-        background:#F5F1E8;
-        padding:6px 14px;
-        border-radius:20px;
-        box-shadow:0 2px 6px rgba(62,39,35,0.12);
-        display:inline-block;
-    ">← Home</a>
-</div>
-
 <div class="container">
 
     <h1>DASHBOARD</h1>
 
-   
+    <div class="section">
+    <h2>Set Monthly Income</h2>
+    <div style="display:flex; gap:15px; align-items:center;">
+        <input type="number" id="monthlyIncomeInput" placeholder="Enter income">
+        <button id="saveIncomeBtn">Save Income</button>
+    </div>
+    </div>
+
     <div class="budget-bar-container">
         <h2>Budget Overview</h2>
         <div class="progress-bar-wrapper">
@@ -120,7 +171,6 @@
         <p id="dashboard-summary"></p>
     </div>
 
-    
     <div class="section">
         <h2>Spending by Category</h2>
         <div style="max-width:420px;margin:0 auto;">
@@ -128,13 +178,11 @@
         </div>
     </div>
 
-   
     <div class="section">
         <h2>Actual Spending (by Category)</h2>
         <canvas id="barChart"></canvas>
     </div>
 
-    
     <div class="section">
         <h2>Spending Over Time (Last 12 Months)</h2>
         <canvas id="lineChart"></canvas>
@@ -143,126 +191,125 @@
 </div>
 
 <script>
+async function loadDashboard() {
+    const response = await fetch("/dashboard_data");
+    const data = await response.json();
 
+    const totalSpent = data.total_spent;
 
-const income = parseFloat(localStorage.getItem("income")) || 0;
-const expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+   // monthly income
+let income = parseFloat(localStorage.getItem("monthly_income")) || 0;
 
+const incomeInput = document.getElementById("monthlyIncomeInput");
+const saveIncomeBtn = document.getElementById("saveIncomeBtn");
+const progressBar = document.getElementById("dashboard-progress");
+const summaryText = document.getElementById("dashboard-summary");
 
-
-const totalExpenses = expenses.reduce((sum, e) => sum + e.monthlyAmount, 0);
-const remaining = income - totalExpenses;
-const percentUsed = income > 0 ? (totalExpenses / income) * 100 : 0;
-
-    
-document.getElementById("dashboard-progress").style.width =
-    Math.min(percentUsed, 100) + "%";
-
-document.getElementById("dashboard-summary").textContent =
-
-    
-
-const categoryTotals = {};
-expenses.forEach(e => {
-    categoryTotals[e.name] = (categoryTotals[e.name] || 0) + e.monthlyAmount;
-});
-
-    
-
-new Chart(document.getElementById("pieChart"), {
-    type: 'pie',
-    data: {
-        labels: [
-            'Rent',
-            'Groceries',
-            'Entertainment',
-            'Transportation',
-            'Utilities',
-            'Other'
-        ],
-        datasets: [{
-            data: [650, 400, 250, 150, 200, 100], // demo numbers
-            backgroundColor: [
-                '#EFE6D6',
-                '#DDCDB5',
-                '#D7CCC8',
-                '#A1887F',
-                '#6D4C41',
-                '#3E2723'
-            ]
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: true
-    }
-});
-
-
-
-new Chart(document.getElementById("barChart"), {
-    type: 'bar',
-    data: {
-        labels: Object.keys(categoryTotals),
-        datasets: [{
-            label: 'Actual Spending',
-            data: Object.values(categoryTotals),
-            backgroundColor: '#6D4C41'
-        }]
-    },
-    options: {
-        scales: {
-            y: { beginAtZero: true }
-        }
-    }
-});
-
-
-
-
-const monthlyTotals = {};
-
-expenses.forEach(e => {
-    const d = new Date(e.date);
-    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-    monthlyTotals[key] = (monthlyTotals[key] || 0) + e.monthlyAmount;
-});
-
-const labels = [];
-const values = [];
-const now = new Date();
-
-for (let i = 11; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-
-    labels.push(
-        d.toLocaleString('default', { month:'short', year:'numeric' })
-    );
-    values.push(monthlyTotals[key] || 0);
+// Pre-fill input if stored
+if (income > 0 && incomeInput) {
+    incomeInput.value = income;
 }
 
-new Chart(document.getElementById("lineChart"), {
-    type: 'line',
-    data: {
-        labels,
-        datasets: [{
-            label: 'Total Spent',
-            data: values,
-            borderColor: '#6D4C41',
-            backgroundColor: 'rgba(109,76,65,0.15)',
-            tension: 0.35,
-            fill: true,
-            pointRadius: 5,
-            pointBackgroundColor: '#3E2723'
-        }]
-    },
-    options: {
-        scales: {
-            y: { beginAtZero: true }
+// Save income button
+if (saveIncomeBtn) {
+    saveIncomeBtn.addEventListener("click", () => {
+
+        const value = parseFloat(incomeInput.value);
+
+        if (!value || value <= 0) {
+            alert("Enter a valid income amount.");
+            return;
+        }
+
+        localStorage.setItem("monthly_income", value);
+        updateIncomeBar(value);
+    });
+}
+
+// Function to update bar
+function updateIncomeBar(currentIncome) {
+
+    const remaining = currentIncome - totalSpent;
+    const percentUsed = (totalSpent / currentIncome) * 100;
+
+    progressBar.style.width = Math.min(percentUsed, 100) + "%";
+
+    summaryText.textContent =
+        `Income: $${currentIncome.toFixed(2)} | Spent: $${totalSpent.toFixed(2)} | Remaining: $${remaining.toFixed(2)} (${percentUsed.toFixed(1)}% used)`;
+}
+
+
+if (income > 0) {
+    updateIncomeBar(income);
+}
+
+    // Category Chart
+    const categoryLabels = data.categories.map(c => c.category);
+    const categoryValues = data.categories.map(c => c.total);
+
+    // Pie Chart 
+    new Chart(document.getElementById("pieChart"), {
+        type: 'pie',
+        data: {
+            labels: categoryLabels,
+            datasets: [{
+             data: categoryValues,
+             backgroundColor: [
+                '#6D4C41',
+                '#8D6E63',
+                '#A1887F',
+                '#D7CCC8',
+                '#5D4037',
+                '#4E342E'
+            ],
+             borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+            }
         }
     }
 });
+// bar chart
+    new Chart(document.getElementById("barChart"), {
+        type: 'bar',
+        data: {
+            labels: categoryLabels,
+            datasets: [{
+                label: 'Actual Spending',
+                data: categoryValues,
+                backgroundColor: '#6D4C41'
+            }]
+        },
+        options: {
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    //Line Chart 
+    const monthlyLabels = data.monthly.map(m => m.month);
+    const monthlyValues = data.monthly.map(m => m.total);
+
+    new Chart(document.getElementById("lineChart"), {
+        type: 'line',
+        data: {
+            labels: monthlyLabels,
+            datasets: [{
+                label: 'Total Spent',
+                data: monthlyValues,
+                borderColor: '#6D4C41',
+                fill: false
+            }]
+        }
+    });
+}
+
+loadDashboard();
+
 </script>
 
 </body>

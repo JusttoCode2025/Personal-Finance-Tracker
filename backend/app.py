@@ -2,16 +2,11 @@ from flask import Flask, request, jsonify, render_template, redirect
 import sqlite3
 from datetime import datetime
 
-app = Flask(
-    __name__,
-    template_folder="../frontend/templates",
-    static_folder="../frontend/static"
-)
+app = Flask(__name__)
 DB_NAME = "finance_tracker1.db"
 
 
-#DATABASE SETUP
-
+# database setup
 def init_db():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
@@ -47,25 +42,22 @@ def db_connection():
     return conn
 
 
-# PAGE ROUTE
+# routes
 
 @app.route("/")
-@app.route("/login")
-def login():
-    return render_template("login.html")
-
-@app.route("/home")
-def home():
-    return render_template("home.html")
-
-
 @app.route("/budget")
 def budget():
+    """
+    Main Budget Tracker page
+    """
     return render_template("budget.html")
 
 
 @app.route("/dashboard")
 def dashboard():
+    """
+    Placeholder for future dashboard page
+    """
     return render_template("dashboard.html")
 
 
@@ -78,12 +70,48 @@ def about():
 def contact():
     return render_template("contact.html")
 
+@app.route("/login")
+def login():
+    return render_template("login.html")
+
 @app.route("/signup")
 def signup():
     return render_template("signup.html")
 
+@app.route("/home")
+def home():
+    return render_template("home.html")
 
-#  API
+@app.route("/travel-goal")
+def travel_goal():
+    return render_template("travel_goal.html")
+# ================= API ROUTES =================
+@app.route("/recent_purchases")
+def recent_purchases():
+    conn = db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT category, amount, date
+        FROM purchases
+        ORDER BY date DESC
+        LIMIT 5
+    """)
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    purchases = [
+        {
+            "category": r["category"],
+            "amount": r["amount"],
+            "date": r["date"]
+        }
+        for r in rows
+    ]
+
+    return jsonify(purchases)
+
 
 @app.route("/limit", methods=["POST"])
 def set_limit():
@@ -124,32 +152,6 @@ def set_limit():
         "message": f"Limit set for '{category}'",
         "limit_amount": limit_amount
     }), 200
-
-@app.route("/recent_purchases", methods=["GET"])
-def recent_purchases():
-    conn = db_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT category, amount, date
-        FROM purchases
-        ORDER BY date DESC
-        LIMIT 5
-    """)
-
-    rows = cursor.fetchall()
-    conn.close()
-
-    purchases = [
-        {
-            "category": r["category"],
-            "amount": r["amount"],
-            "date": r["date"]
-        }
-        for r in rows
-    ]
-
-    return jsonify(purchases), 200
 
 @app.route("/purchase", methods=["POST"])
 def add_purchase():
@@ -229,13 +231,50 @@ def view_limits():
 
     return jsonify(limits), 200
 
+@app.route("/dashboard_data")
+def dashboard_data():
+    conn = db_connection()  
+    cursor = conn.cursor()
+
+    # Total spent
+    cursor.execute("SELECT SUM(amount) as total FROM purchases")
+    total_spent = cursor.fetchone()["total"] or 0
+
+    # Spending by category
+    cursor.execute("""
+        SELECT category, SUM(amount) as total
+        FROM purchases
+        GROUP BY category
+    """)
+    category_rows = cursor.fetchall()
+
+    categories = [
+        {"category": row["category"], "total": row["total"]}
+        for row in category_rows
+    ]
+
+    # Monthly totals
+    cursor.execute("""
+        SELECT strftime('%Y-%m', date) as month, SUM(amount) as total
+        FROM purchases
+        GROUP BY month
+        ORDER BY month DESC
+        LIMIT 12
+    """)
+    monthly_rows = cursor.fetchall()
+
+    monthly = [
+        {"month": row["month"], "total": row["total"]}
+        for row in monthly_rows
+    ]
+
+    conn.close()
+
+    return jsonify({
+        "total_spent": total_spent,
+        "categories": categories,
+        "monthly": monthly
+    })
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-
-
-
-
-
-

@@ -1,12 +1,14 @@
-// Wait for the DOM to load to ensure elements exist
 document.addEventListener('DOMContentLoaded', () => {
+
+    /*login.html*/
+
     const submitBtn = document.getElementById('submit-btn');
-    
+
     if (submitBtn) {
         submitBtn.addEventListener('click', () => {
-            
-            const emailInput = document.querySelector('input[placeholder="Email"]');
-            const passwordInput = document.querySelector('input[placeholder="Password"]');
+
+            const emailInput = document.querySelector('#email');
+            const passwordInput = document.querySelector('#password');
 
             const validEmail = "group1@gmail.com";
             const validPassword = "group1";
@@ -15,9 +17,138 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert("Success! You are now logged in.");
                 window.location.href = "/home";
             } else {
-                alert("Error: Invalid email or password. Please try again.");
+                alert("Error: Invalid email or password.");
             }
         });
     }
+
+
+    /* home.html*/
+
+    const homeSaved = parseFloat(localStorage.getItem("travel_saved")) || 0;
+    const homeGoal = parseFloat(localStorage.getItem("travel_goal")) || 0;
+
+    if (homeGoal > 0) {
+
+        const percent = (homeSaved / homeGoal) * 100;
+        const remaining = homeGoal - homeSaved;
+
+        const homeBar = document.getElementById("homeTravelProgress");
+        const homePercent = document.getElementById("homeTravelPercent");
+        const homeSavedText = document.getElementById("homeGoalSaved");
+        const homeLeftText = document.getElementById("homeGoalLeft");
+        const homeRemainingText = document.getElementById("homeGoalRemainingText");
+
+        if (homeBar) homeBar.style.width = percent + "%";
+        if (homePercent) homePercent.textContent = percent.toFixed(1) + "%";
+        if (homeSavedText) homeSavedText.textContent = "$" + homeSaved.toFixed(0);
+        if (homeLeftText) homeLeftText.textContent = "$" + remaining.toFixed(0);
+        if (homeRemainingText) homeRemainingText.textContent = "$" + remaining.toFixed(0) + " left";
+    }
+
+
+    /*Travel page */
+
+    const goalInput = document.getElementById("goalAmount");
+    const contributionInput = document.getElementById("contributionAmount");
+    const addBtn = document.getElementById("addBtn");
+    const resetBtn = document.getElementById("resetGoal");
+
+    if (goalInput && addBtn) {
+
+        let totalSaved = parseFloat(localStorage.getItem("travel_saved")) || 0;
+        let savedGoal = parseFloat(localStorage.getItem("travel_goal")) || 0;
+
+        if (savedGoal > 0) {
+            goalInput.value = savedGoal;
+            updateUI(totalSaved, savedGoal);
+        }
+
+        addBtn.addEventListener("click", () => {
+
+            const goal = parseFloat(goalInput.value);
+            const contribution = parseFloat(contributionInput.value);
+
+            if (!goal || goal <= 0) {
+                alert("Please enter a valid goal amount.");
+                return;
+            }
+
+            if (!contribution || contribution <= 0) {
+                alert("Please enter a valid contribution.");
+                return;
+            }
+
+            totalSaved += contribution;
+
+            if (totalSaved > goal) {
+                totalSaved = goal;
+            }
+
+            localStorage.setItem("travel_goal", goal);
+            localStorage.setItem("travel_saved", totalSaved);
+
+            updateUI(totalSaved, goal);
+
+            contributionInput.value = "";
+        });
+
+        if (resetBtn) {
+            resetBtn.addEventListener("click", () => {
+                localStorage.removeItem("travel_goal");
+                localStorage.removeItem("travel_saved");
+                location.reload();
+            });
+        }
+    }
+
 });
+
+
+/* ================= UPDATE UI FUNCTION ================= */
+
+function updateUI(saved, goal) {
+
+    const percent = (saved / goal) * 100;
+    const remaining = goal - saved;
+
+    const progressBar = document.getElementById("travelProgress");
+    const percentText = document.getElementById("travelPercent");
+    const savedText = document.getElementById("goalSaved");
+    const leftText = document.getElementById("goalLeft");
+    const remainingBarText = document.getElementById("goalRemainingText");
+    const summary = document.getElementById("goalSummary");
+    const celebrate = document.getElementById("goalCelebrate");
+
+    if (progressBar) progressBar.style.width = percent + "%";
+    if (percentText) percentText.textContent = percent.toFixed(1) + "%";
+    if (savedText) savedText.textContent = "$" + saved.toFixed(0);
+    if (leftText) leftText.textContent = "$" + remaining.toFixed(0);
+    if (remainingBarText) remainingBarText.textContent = "$" + remaining.toFixed(0) + " left";
+
+    if (summary) {
+        summary.textContent =
+            `Saved: $${saved.toFixed(2)} / $${goal.toFixed(2)} (${percent.toFixed(1)}%)`;
+    }
+
+    if (celebrate) {
+        if (percent >= 100) {
+            celebrate.textContent = "Congratulations! You've reached your travel goal!";
+            progressBar.style.background =
+                "linear-gradient(90deg, #2e7d32, #4caf50)";
+        }
+        else if (percent >= 75) {
+            celebrate.textContent = "Almost there!";
+        }
+        else if (percent >= 50) {
+            celebrate.textContent = "Halfway there!";
+        }
+        else if (percent >= 25) {
+            celebrate.textContent = "Great start!";
+        }
+        else {
+            celebrate.textContent = "";
+        }
+    }
+}
 

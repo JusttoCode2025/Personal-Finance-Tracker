@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
     <title>Budget Tracker</title>
     <style>
         * {
@@ -37,6 +39,14 @@
         }
 
         /* Bar Progress Tracker */
+        .goal-status-card {
+            background: #f5f1e8;
+            padding: 30px;
+            border-radius: 20px;
+            margin-top: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            margin-bottom: 40px;
+        }
         .budget-bar-container {
             margin-bottom: 50px;
             background: #F5F1E8;
@@ -165,38 +175,36 @@
             transform: translateY(-5px);
         }
 
+.summary-card.income {
+    background-image:
+        linear-gradient(rgba(93, 64, 55, 0.7), rgba(93, 64, 55, 0.7)),
+        url("{{ url_for('static', filename='images/income.jpg') }}");
+    background-size: cover;
+    background-position: center;
+}
 
-    .summary-card.income {
-        background-image:
-            linear-gradient(rgba(93, 64, 55, 0.7), rgba(93, 64, 55, 0.7)),
-            url("{{ url_for('static', filename='images/income.jpg') }}");
-        background-size: cover;
-        background-position: center;
-    }
-
-    .summary-card.expenses {
-        background-image:
-            linear-gradient(rgba(78, 52, 46, 0.7), rgba(78, 52, 46, 0.7)),
-            url("{{ url_for('static', filename='images/expense.jpg') }}");
-        background-size: cover;
-        background-position: center;
-    }
+.summary-card.expenses {
+    background-image:
+        linear-gradient(rgba(78, 52, 46, 0.7), rgba(78, 52, 46, 0.7)),
+        url("{{ url_for('static', filename='images/expense.jpg') }}");
+    background-size: cover;
+    background-position: center;
+}
 
     .summary-card.remaining {
-        background-image:
-            linear-gradient(rgba(62, 39, 35, 0.7), rgba(62, 39, 35, 0.7)),
-            url("{{ url_for('static', filename='images/remaining.jpg') }}");
-        background-size: cover;
-        background-position: center;
-    }
-</style>
+    background-image:
+        linear-gradient(rgba(62, 39, 35, 0.7), rgba(62, 39, 35, 0.7)),
+        url("{{ url_for('static', filename='images/remaining.jpg') }}");
+    background-size: cover;
+    background-position: center;
+}
 
-        .summary-card.travel {
-          background-image:
-            linear-gradient(rgba(78, 52, 46, 0.7), rgba(78, 52, 46, 0.7)),
-            url("{{ url_for('static', filename='images/expense.jpg') }}");
-        background-size: cover;
-        background-position: center;  
+    .summary-card.travel {
+        background-image:
+        linear-gradient(rgba(78, 52, 46, 0.7), rgba(78, 52, 46, 0.7)),
+        url("{{ url_for('static', filename='images/expense.jpg') }}");
+    background-size: cover;
+    background-position: center;
         }
 
         .summary-overlay {
@@ -246,6 +254,7 @@
                 font-size: 1em;
             }
         }
+    
     </style>
 </head>
 <body>
@@ -255,27 +264,30 @@
         </div>
 
         <!-- Bar Progress Tracker -->
-        <div class="budget-bar-container">
-            <div class="budget-bar-header">
-                <div class="budget-bar-title">BUDGET STATUS</div>
-                <div class="budget-bar-stats">
-                    <div class="budget-stat">
-                        <div class="budget-stat-label">Spent</div>
-                        <div class="budget-stat-value">$<span id="bar-spent">1020</span></div>
-                    </div>
-                    <div class="budget-stat">
-                        <div class="budget-stat-label">Remaining</div>
-                        <div class="budget-stat-value">$<span id="bar-remaining">780</span></div>
-                    </div>
-                </div>
+    <div class="section goal-status-card">
+    <div class="goal-header">
+        <h2>TRAVEL GOAL STATUS</h2>
+
+        <div class="goal-numbers">
+            <div>
+                <span>Saved</span>
+                <strong id="homeGoalSaved">$0</strong>
             </div>
-            <div class="progress-bar-wrapper">
-                <div class="progress-bar-fill" id="progress-bar-fill" style="width: 57%;">
-                    <span class="progress-bar-text"><span id="progress-percentage">57</span>% spent</span>
-                </div>
-                <span class="progress-bar-remaining" id="progress-remaining-display">$<span id="progress-remaining-amount">780</span> left</span>
+            <div>
+                <span>Left</span>
+                <strong id="homeGoalLeft">$0</strong>
             </div>
         </div>
+    </div>
+
+    <div class="goal-bar-wrapper">
+        <div class="goal-bar-fill" id="homeTravelProgress">
+            <span class="goal-percent" id="homeTravelPercent">0%</span>
+        </div>
+        <span class="goal-remaining-text" id="homeGoalRemainingText">$0 left</span>
+    </div>
+
+</div>
 
         <!-- Summary Cards (Clickable) -->
         <div class="summary">
@@ -315,7 +327,7 @@
         
         function goToIncome() {
             // Change this to your income page URL
-            window.location.href = 'income.html';
+            window.location.href = '/dashboard';
             // Or if all on one page: window.location.href = '#income-section';
         }
 
@@ -326,13 +338,15 @@
 
         function goToRemaining() {
             // Change this to your remaining/available funds page URL
-            window.location.href = 'remaining.html';
+            window.location.href = '/about';
         }
 
         function goToTravel() {
             // Change this to your travel fund page URL
-            window.location.href = 'travel.html';
+            window.location.href = '/travel-goal';
         }
+
+
     </script>
 </body>
 </html>
