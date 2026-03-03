@@ -47,28 +47,17 @@ def db_connection():
 @app.route("/")
 @app.route("/budget")
 def budget():
-    """
-    Main Budget Tracker page
-    """
     return render_template("budget.html")
 
 
 @app.route("/dashboard")
 def dashboard():
-    """
-    Placeholder for future dashboard page
-    """
     return render_template("dashboard.html")
 
 
 @app.route("/about")
 def about():
     return render_template("about.html")
-
-
-@app.route("/contact")
-def contact():
-    return render_template("contact.html")
 
 @app.route("/login")
 def login():
@@ -85,7 +74,7 @@ def home():
 @app.route("/travel-goal")
 def travel_goal():
     return render_template("travel_goal.html")
-# ================= API ROUTES =================
+# routes
 @app.route("/recent_purchases")
 def recent_purchases():
     conn = db_connection()
@@ -278,3 +267,4 @@ def dashboard_data():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
