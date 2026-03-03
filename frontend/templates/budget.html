@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
 
 <body>
@@ -113,128 +114,6 @@
     </section>
 
 </div>
-
-
-
-<!-- JAVASCRIPT  -->
-<script>
-/* Set Category Limit  */
-async function setCategoryLimit() {
-    const category = document.getElementById("limitCategory").value;
-    const limit = document.getElementById("categoryLimit").value;
-
-    if (!category || !limit) {
-        alert("Please select a category and enter a limit.");
-        return;
-    }
-
-    await fetch("/limit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            category: category,
-            limit_amount: limit
-        })
-    });
-
-    loadCategories();
-}
-
-/* Load Category Cards */
-async function loadCategories() {
-    const res = await fetch("/limits");
-    const data = await res.json();
-
-    const list = document.getElementById("categoryTable");
-    list.innerHTML = "";
-
-    data.forEach(c => {
-        const spent = c.limit_amount - c.remaining;
-
-        list.innerHTML += `
-            <li>
-                <span><strong>${c.category}</strong></span>
-                <span>Limit: $${c.limit_amount}</span>
-                <span>Spent: $${spent}</span>
-                <span>Remaining: $${c.remaining}</span>
-            </li>
-        `;
-    });
-}
-async function loadRecentPurchases() {
-
-    const res = await fetch("/recent_purchases");
-    const data = await res.json();
-
-    const list = document.getElementById("recentPurchases");
-    list.innerHTML = "";
-
-    if (data.length === 0) {
-        list.innerHTML = `
-            <li class="empty-state">No purchases yet.</li>
-        `;
-        return;
-    }
-
-    data.forEach(p => {
-        list.innerHTML += `
-            <li>
-                <span><strong>${p.category}</strong></span>
-                <span>$${p.amount}</span>
-                <span>${p.date}</span>
-            </li>
-        `;
-    });
-}
-
-/* Add Purchase  */
-async function addPurchase() {
-    const category = document.getElementById("purchaseCategory").value;
-    const amount = parseFloat(
-        document.getElementById("purchaseAmount").value
-    );
-
-    const msg = document.getElementById("purchaseMessage");
-
-    if (!category || !amount) {
-        msg.textContent = "Please select a category and enter an amount.";
-        msg.style.color = "red";
-        return;
-    }
-
-    const res = await fetch("/purchase", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            category: category,
-            amount: amount
-        })
-    });
-
-    const data = await res.json();
-
-    /* OVERSPEND WARNING */
-    if (data.warning) {
-        const confirmSpend = confirm(
-            data.warning + "\n\nAre you sure you want to continue?"
-        );
-
-        if (!confirmSpend) {
-            msg.textContent = "Purchase cancelled.";
-            msg.style.color = "orange";
-            return;
-        }
-    }
-
-    msg.textContent = data.message;
-    msg.style.color = "green";
-
-    loadRecentPurchases();
-    loadCategories();
-}
-    loadRecentPurchases();
-    loadCategories();
-</script>
-
 </body>
 </html>
+
