@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <title>Budget Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: #E8DCC4;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #3E2723;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 300;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        /* Bar Progress Tracker */
+        .goal-status-card {
+            background: #f5f1e8;
+            padding: 30px;
+            border-radius: 20px;
+            margin-top: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            margin-bottom: 40px;
+        }
+        .budget-bar-container {
+            margin-bottom: 50px;
+            background: #F5F1E8;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(62, 39, 35, 0.1);
+        }
+
+        .budget-bar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .budget-bar-title {
+            font-size: 1.2em;
+            color: #3E2723;
+            letter-spacing: 1px;
+            font-weight: 400;
+        }
+
+        .budget-bar-stats {
+            display: flex;
+            gap: 30px;
+            font-size: 0.95em;
+            color: #6D4C41;
+        }
+
+        .budget-stat {
+            text-align: right;
+        }
+
+        .budget-stat-label {
+            font-size: 0.85em;
+            opacity: 0.8;
+            margin-bottom: 3px;
+        }
+
+        .budget-stat-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #3E2723;
+        }
+
+        .progress-bar-wrapper {
+            position: relative;
+            height: 50px;
+            background: #D7CCC8;
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 5px rgba(62, 39, 35, 0.1);
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6D4C41 0%, #5D4037 50%, #4E342E 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 20px;
+            position: relative;
+        }
+
+        .progress-bar-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1) 50%, transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-bar-text {
+            color: white;
+            font-weight: bold;
+            font-size: 1.1em;
+            z-index: 1;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .progress-bar-remaining {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6D4C41;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        /* Summary Cards with Landscape Images */
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .summary-card {
+            height: 180px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(62, 39, 35, 0.2);
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(62, 39, 35, 0.3);
+        }
+
+        .summary-card:active {
+            transform: translateY(-5px);
+        }
+
+.summary-card.income {
+    background-image:
+        linear-gradient(rgba(93, 64, 55, 0.7), rgba(93, 64, 55, 0.7)),
+        url("{{ url_for('static', filename='images/income.jpg') }}");
+    background-size: cover;
+    background-position: center;
+}
+
+.summary-card.expenses {
+    background-image:
+        linear-gradient(rgba(78, 52, 46, 0.7), rgba(78, 52, 46, 0.7)),
+        url("{{ url_for('static', filename='images/expense.jpg') }}");
+    background-size: cover;
+    background-position: center;
+}
+
+    .summary-card.remaining {
+    background-image:
+        linear-gradient(rgba(62, 39, 35, 0.7), rgba(62, 39, 35, 0.7)),
+        url("{{ url_for('static', filename='images/remaining.jpg') }}");
+    background-size: cover;
+    background-position: center;
+}
+
+    .summary-card.travel {
+        background-image:
+        linear-gradient(rgba(78, 52, 46, 0.7), rgba(78, 52, 46, 0.7)),
+        url("{{ url_for('static', filename='images/expense.jpg') }}");
+    background-size: cover;
+    background-position: center;
+        }
+
+        .summary-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+            color: white;
+        }
+
+        .summary-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+
+        .summary-amount {
+            font-size: 2.2em;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        @media (max-width: 600px) {
+            .summary {
+                grid-template-columns: 1fr;
+            }
+
+            .budget-bar-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .budget-bar-stats {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .progress-bar-wrapper {
+                height: 40px;
+            }
+
+            .progress-bar-text {
+                font-size: 1em;
+            }
+        }
+    
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>BUDGET TRACKER</h1>
+        </div>
+
+        <!-- Bar Progress Tracker -->
+    <div class="section goal-status-card">
+    <div class="goal-header">
+        <h2>TRAVEL GOAL STATUS</h2>
+
+        <div class="goal-numbers">
+            <div>
+                <span>Saved</span>
+                <strong id="homeGoalSaved">$0</strong>
+            </div>
+            <div>
+                <span>Left</span>
+                <strong id="homeGoalLeft">$0</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="goal-bar-wrapper">
+        <div class="goal-bar-fill" id="homeTravelProgress">
+            <span class="goal-percent" id="homeTravelPercent">0%</span>
+        </div>
+        <span class="goal-remaining-text" id="homeGoalRemainingText">$0 left</span>
+    </div>
+
+</div>
+
+        <!-- Summary Cards (Clickable) -->
+        <div class="summary">
+            <div class="summary-card income" onclick="goToIncome()">
+                <div class="summary-overlay">
+                    <div class="summary-label">MONTHLY INCOME</div>
+                    <div class="summary-amount">$<span id="total-income">1800</span></div>
+                </div>
+            </div>
+            <div class="summary-card expenses" onclick="goToExpenses()">
+                <div class="summary-overlay">
+                    <div class="summary-label">TOTAL EXPENSES</div>
+                    <div class="summary-amount">$<span id="total-expenses">1020</span></div>
+                </div>
+            </div>
+            <div class="summary-card remaining" onclick="goToRemaining()">
+                <div class="summary-overlay">
+                    <div class="summary-label">AVAILABLE</div>
+                    <div class="summary-amount">$<span id="remaining">780</span></div>
+                </div>
+            </div>
+            <div class="summary-card travel" onclick="goToTravel()">
+                <div class="summary-overlay">
+                    <div class="summary-label">TRAVEL FUND</div>
+                    <div class="summary-amount">$<span id="travel-saved">300</span></div>
+                    <div style="font-size: 0.85em; margin-top: 5px; opacity: 0.9;">
+                        <span id="travel-percentage">25</span>% of $<span id="travel-goal-display">1200</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Functions for when cards are clicked
+        // Change these URLs to wherever you want each card to link to
+        
+        function goToIncome() {
+            // Change this to your income page URL
+            window.location.href = '/dashboard';
+            // Or if all on one page: window.location.href = '#income-section';
+        }
+
+        function goToExpenses() {
+            // Change this to your expenses page URL
+            window.location.href = '/budget';
+        }
+
+        function goToRemaining() {
+            // Change this to your remaining/available funds page URL
+            window.location.href = '/about';
+        }
+
+        function goToTravel() {
+            // Change this to your travel fund page URL
+            window.location.href = '/travel-goal';
+        }
+
+
+    </script>
+</body>
+</html>
