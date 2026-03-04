@@ -148,12 +148,12 @@ def set_limit():
 
 @app.route("/purchase", methods=["POST"])
 def add_purchase():
-    """
-    Add a purchase and deduct from category limit
-    """
+
     data = request.get_json()
+
     category = data.get("category", "").strip().lower()
     amount = float(data.get("amount", 0))
+    confirm = data.get("confirm", False)
 
     if amount <= 0:
         return jsonify({"error": "Purchase amount must be positive"}), 400
@@ -176,6 +176,13 @@ def add_purchase():
     remaining = row["remaining"]
     new_remaining = remaining - amount
 
+    # 🚨 If purchase exceeds limit and user has NOT confirmed yet
+    if new_remaining < 0 and not confirm:
+        conn.close()
+        return jsonify({
+            "warning": "This purchase exceeds the category limit. Continue anyway?"
+        }), 200
+        
     cursor.execute(
         "UPDATE spending_limits SET remaining=? WHERE category=?",
         (new_remaining, category)
@@ -189,16 +196,11 @@ def add_purchase():
     conn.commit()
     conn.close()
 
-    response = {
+    return jsonify({
         "message": f"Purchase of ${amount} recorded",
         "category": category,
         "remaining": new_remaining
-    }
-
-    if new_remaining < 0:
-        response["warning"] = "You have exceeded the category limit!"
-
-    return jsonify(response), 200
+    }), 200
 
 
 @app.route("/limits", methods=["GET"])
@@ -271,6 +273,7 @@ def dashboard_data():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
