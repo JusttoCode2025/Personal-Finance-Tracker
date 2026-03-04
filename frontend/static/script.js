@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    /* travel page  */
+    /* homepage  */
 
     const homeSaved = parseFloat(localStorage.getItem("travel_saved")) || 0;
     const homeGoal = parseFloat(localStorage.getItem("travel_goal")) || 0;
@@ -47,7 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    /* travel page */
 
     const goalInput = document.getElementById("goalAmount");
     const contributionInput = document.getElementById("contributionAmount");
@@ -74,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // 🚨 Large Goal Warning
+          
             if (goal > 10000) {
                 const confirmGoal = confirm(
                     "Your goal is over $10,000. Are you sure this is correct?"
@@ -87,13 +86,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // 🚫 Contribution > Goal
+          
             if (contribution > goal) {
                 alert("Contribution cannot be greater than the total goal amount.");
                 return;
             }
 
-            // 🚨 Large Contribution Warning
+            
             if (contribution > goal * 0.5) {
                 const confirmLarge = confirm(
                     "This contribution is more than 50% of your goal. Are you sure?"
@@ -148,7 +147,7 @@ async function setCategoryLimit() {
         return;
     }
 
-    // 🚨 High Limit Warning
+   
     if (limit > 10000) {
         const confirmLimit = confirm(
             "This limit is over $10,000. Are you sure you want to set this?"
@@ -236,33 +235,33 @@ async function addPurchase() {
     }
 
     const res = await fetch("/purchase", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+        category: category,
+        amount: amount
+    })
+});
+
+const data = await res.json();
+
+if (data.warning) {
+
+    const confirmSpend = confirm(data.warning);
+
+    if (!confirmSpend) {
+        return;
+    }
+
+    await fetch("/purchase", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ category, amount })
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            category: category,
+            amount: amount,
+            confirm: true
+        })
     });
-
-    const data = await res.json();
-
-    if (data.warning) {
-        const confirmSpend = confirm(
-            data.warning + "\n\nAre you sure you want to continue?"
-        );
-        if (!confirmSpend) {
-            if (msg) {
-                msg.textContent = "Purchase cancelled.";
-                msg.style.color = "orange";
-            }
-            return;
-        }
-    }
-
-    if (msg) {
-        msg.textContent = data.message;
-        msg.style.color = "green";
-    }
-
-    loadRecentPurchases();
-    loadCategories();
 }
 
 
@@ -303,4 +302,5 @@ function updateUI(saved, goal) {
         else celebrate.textContent = "";
     }
 }
+
 
