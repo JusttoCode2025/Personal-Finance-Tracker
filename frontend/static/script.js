@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    /* travel pg */
+    /* travel page */
 
     const goalInput = document.getElementById("goalAmount");
     const contributionInput = document.getElementById("contributionAmount");
@@ -190,7 +190,7 @@ async function loadCategories() {
 }
 
 
-/* =5 purchases */
+/* 5 purchases */
 
 async function loadRecentPurchases() {
 
@@ -220,7 +220,7 @@ async function loadRecentPurchases() {
 }
 
 
-/* purchase fucntion= */
+/* purchase fucntion */
 
 async function addPurchase() {
 
@@ -281,7 +281,7 @@ async function addPurchase() {
 }
 
 
-/* progress bar for travel pg */
+/* progress bar for travel pag */
 
 function updateUI(saved, goal) {
 
@@ -320,6 +320,7 @@ function updateUI(saved, goal) {
         else celebrate.textContent = "";
     }
 }
+
 
 
 
