@@ -229,7 +229,6 @@ async function addPurchase() {
     const msg = document.getElementById("purchaseMessage");
 
     if (!category || !amount) {
-
         msg.textContent = "Please select a category and enter an amount.";
         msg.style.color = "red";
         return;
@@ -246,12 +245,19 @@ async function addPurchase() {
 
     const data = await res.json();
 
+    /* ❌ Handle backend errors */
+    if (data.error) {
+        msg.textContent = data.error;
+        msg.style.color = "red";
+        return;
+    }
+
+    /* ⚠️ Handle overspending warning */
     if (data.warning) {
 
         const confirmSpend = confirm(data.warning + "\n\nContinue anyway?");
 
         if (!confirmSpend) {
-
             msg.textContent = "Purchase cancelled.";
             msg.style.color = "orange";
             return;
@@ -315,6 +321,7 @@ function updateUI(saved, goal) {
         else celebrate.textContent = "";
     }
 }
+
 
 
 
