@@ -242,6 +242,7 @@ async function addPurchase() {
         amount: amount
     })
 });
+}
 
 const data = await res.json();
 
@@ -302,5 +303,6 @@ function updateUI(saved, goal) {
         else celebrate.textContent = "";
     }
 }
+
 
 
