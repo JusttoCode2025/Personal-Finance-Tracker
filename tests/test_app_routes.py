@@ -1,4 +1,4 @@
-from backend.app import app
+from app.app import app
 import pytest
 
 @pytest.fixture
