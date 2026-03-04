@@ -245,14 +245,14 @@ async function addPurchase() {
 
     const data = await res.json();
 
-    /* ❌ Handle backend errors */
+    
     if (data.error) {
         msg.textContent = data.error;
         msg.style.color = "red";
         return;
     }
 
-    /* ⚠️ Handle overspending warning */
+   
     if (data.warning) {
 
         const confirmSpend = confirm(data.warning + "\n\nContinue anyway?");
@@ -321,6 +321,7 @@ function updateUI(saved, goal) {
         else celebrate.textContent = "";
     }
 }
+
 
 
 
