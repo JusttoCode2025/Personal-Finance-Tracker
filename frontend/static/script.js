@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    /* homepage  */
+    /* homepage travel pg */
 
     const homeSaved = parseFloat(localStorage.getItem("travel_saved")) || 0;
     const homeGoal = parseFloat(localStorage.getItem("travel_goal")) || 0;
@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+    /* travel pg */
 
     const goalInput = document.getElementById("goalAmount");
     const contributionInput = document.getElementById("contributionAmount");
@@ -73,7 +74,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-          
             if (goal > 10000) {
                 const confirmGoal = confirm(
                     "Your goal is over $10,000. Are you sure this is correct?"
@@ -86,25 +86,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-          
             if (contribution > goal) {
-                alert("Contribution cannot be greater than the total goal amount.");
+                alert("Contribution cannot be greater than the goal.");
                 return;
             }
 
-            
             if (contribution > goal * 0.5) {
                 const confirmLarge = confirm(
-                    "This contribution is more than 50% of your goal. Are you sure?"
+                    "This contribution is more than 50% of your goal. Continue?"
                 );
                 if (!confirmLarge) return;
             }
 
             totalSaved += contribution;
 
-            if (totalSaved > goal) {
-                totalSaved = goal;
-            }
+            if (totalSaved > goal) totalSaved = goal;
 
             localStorage.setItem("travel_goal", goal);
             localStorage.setItem("travel_saved", totalSaved);
@@ -116,14 +112,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (resetBtn) {
             resetBtn.addEventListener("click", () => {
+
                 localStorage.removeItem("travel_goal");
                 localStorage.removeItem("travel_saved");
+
                 location.reload();
             });
         }
     }
-
-
 
     const categoryTable = document.getElementById("categoryTable");
 
@@ -135,8 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-/*budget page */
-
 async function setCategoryLimit() {
 
     const category = document.getElementById("limitCategory")?.value;
@@ -147,17 +141,18 @@ async function setCategoryLimit() {
         return;
     }
 
-   
     if (limit > 10000) {
+
         const confirmLimit = confirm(
-            "This limit is over $10,000. Are you sure you want to set this?"
+            "This limit is over $10,000. Are you sure?"
         );
+
         if (!confirmLimit) return;
     }
 
     await fetch("/limit", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
             category: category,
             limit_amount: limit
@@ -166,6 +161,7 @@ async function setCategoryLimit() {
 
     loadCategories();
 }
+
 
 
 async function loadCategories() {
@@ -179,6 +175,7 @@ async function loadCategories() {
     list.innerHTML = "";
 
     data.forEach(c => {
+
         const spent = c.limit_amount - c.remaining;
 
         list.innerHTML += `
@@ -192,6 +189,8 @@ async function loadCategories() {
     });
 }
 
+
+/* =5 purchases */
 
 async function loadRecentPurchases() {
 
@@ -209,6 +208,7 @@ async function loadRecentPurchases() {
     }
 
     data.forEach(p => {
+
         list.innerHTML += `
             <li>
                 <span><strong>${p.category}</strong></span>
@@ -220,59 +220,63 @@ async function loadRecentPurchases() {
 }
 
 
+/* purchase fucntion= */
+
 async function addPurchase() {
 
-    const category = document.getElementById("purchaseCategory")?.value;
-    const amount = parseFloat(document.getElementById("purchaseAmount")?.value);
+    const category = document.getElementById("purchaseCategory").value;
+    const amount = parseFloat(document.getElementById("purchaseAmount").value);
     const msg = document.getElementById("purchaseMessage");
 
     if (!category || !amount) {
-        if (msg) {
-            msg.textContent = "Please select a category and enter an amount.";
-            msg.style.color = "red";
-        }
+
+        msg.textContent = "Please select a category and enter an amount.";
+        msg.style.color = "red";
         return;
     }
 
     const res = await fetch("/purchase", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
-        category: category,
-        amount: amount
-    })
-});
-}
-
-const data = await res.json();
-
-if (data.warning) {
-
-    const confirmSpend = confirm(data.warning);
-
-    if (!confirmSpend) {
-        return;
-    }
-
-    await fetch("/purchase", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
             category: category,
-            amount: amount,
-            confirm: true
+            amount: amount
         })
     });
+
+    const data = await res.json();
+
+    if (data.warning) {
+
+        const confirmSpend = confirm(data.warning + "\n\nContinue anyway?");
+
+        if (!confirmSpend) {
+
+            msg.textContent = "Purchase cancelled.";
+            msg.style.color = "orange";
+            return;
+        }
+
+        await fetch("/purchase", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                category: category,
+                amount: amount,
+                confirm: true
+            })
+        });
+    }
+
     msg.textContent = "Purchase added.";
     msg.style.color = "green";
 
     loadRecentPurchases();
     loadCategories();
 }
-}
 
 
-/* travel bar and inputs */
+/* progress bar for travel pg */
 
 function updateUI(saved, goal) {
 
@@ -299,11 +303,13 @@ function updateUI(saved, goal) {
     }
 
     if (celebrate) {
+
         if (percent >= 100) {
             celebrate.textContent = "Congratulations! You've reached your travel goal!";
             progressBar.style.background =
                 "linear-gradient(90deg, #2e7d32, #4caf50)";
-        } else if (percent >= 75) celebrate.textContent = "Almost there!";
+        }
+        else if (percent >= 75) celebrate.textContent = "Almost there!";
         else if (percent >= 50) celebrate.textContent = "Halfway there!";
         else if (percent >= 25) celebrate.textContent = "Great start!";
         else celebrate.textContent = "";
