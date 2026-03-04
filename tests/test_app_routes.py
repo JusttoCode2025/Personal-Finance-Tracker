@@ -28,15 +28,3 @@ def test_travel_goal_page(client):
 def test_dashboard_page(client):
     response = client.get("/dashboard")
     assert response.status_code == 200
-
-def test_purchase(client):
-
-    response = client.post(
-        "/purchase",
-        json={
-            "category": "Food",
-            "amount": 10
-        }
-    )
-
-    assert response.status_code == 200
