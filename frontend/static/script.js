@@ -263,6 +263,12 @@ if (data.warning) {
             confirm: true
         })
     });
+    msg.textContent = "Purchase added.";
+    msg.style.color = "green";
+
+    loadRecentPurchases();
+    loadCategories();
+}
 }
 
 
@@ -303,6 +309,7 @@ function updateUI(saved, goal) {
         else celebrate.textContent = "";
     }
 }
+
 
 
 
