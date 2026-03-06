@@ -176,7 +176,6 @@ def add_purchase():
     remaining = row["remaining"]
     new_remaining = remaining - amount
 
-    # 🚨 If purchase exceeds limit and user has NOT confirmed yet
     if new_remaining < 0 and not confirm:
         conn.close()
         return jsonify({
@@ -273,6 +272,7 @@ def dashboard_data():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
