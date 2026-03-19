@@ -1,5 +1,6 @@
-from flask import Flask, request, jsonify, render_template, redirect
-import sqlite3
+from flask import Flask, request, jsonify, render_template
+import psycopg2
+import os
 from datetime import datetime
 
 app = Flask(
@@ -7,18 +8,26 @@ app = Flask(
     template_folder="../frontend/templates",
     static_folder="../frontend/static"
 )
-DB_NAME = "finance_tracker1.db"
 
+#  Database connecting to render
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
-# database setup
+# Fix Render issue
+if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+def db_connection():
+    return psycopg2.connect(DATABASE_URL)
+
+#creation of db
 def init_db():
-    conn = sqlite3.connect(DB_NAME)
+    conn = db_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS spending_limits (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        category TEXT NOT NULL UNIQUE,
+        id SERIAL PRIMARY KEY,
+        category TEXT UNIQUE NOT NULL,
         limit_amount REAL NOT NULL,
         remaining REAL NOT NULL
     )
@@ -26,27 +35,21 @@ def init_db():
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS purchases (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         category TEXT NOT NULL,
         amount REAL NOT NULL,
-        date TEXT NOT NULL
+        date TIMESTAMP NOT NULL
     )
     """)
 
     conn.commit()
+    cursor.close()
     conn.close()
-
 
 init_db()
 
 
-def db_connection():
-    conn = sqlite3.connect(DB_NAME)
-    conn.row_factory = sqlite3.Row
-    return conn
-
-
-# routes
+#html routes
 
 @app.route("/")
 @app.route("/login")
@@ -57,11 +60,9 @@ def login():
 def budget():
     return render_template("budget.html")
 
-
 @app.route("/dashboard")
 def dashboard():
     return render_template("dashboard.html")
-
 
 @app.route("/about")
 def about():
@@ -78,7 +79,10 @@ def home():
 @app.route("/travel-goal")
 def travel_goal():
     return render_template("travel_goal.html")
-# routes
+
+
+
+
 @app.route("/recent_purchases")
 def recent_purchases():
     conn = db_connection()
@@ -92,25 +96,23 @@ def recent_purchases():
     """)
 
     rows = cursor.fetchall()
+    cursor.close()
     conn.close()
 
     purchases = [
         {
-            "category": r["category"],
-            "amount": r["amount"],
-            "date": r["date"]
+            "category": r[0],
+            "amount": float(r[1]),
+            "date": str(r[2])
         }
         for r in rows
     ]
 
     return jsonify(purchases)
 
-#api routes?
+
 @app.route("/limit", methods=["POST"])
 def set_limit():
-    """
-    Set or update a spending limit for a category
-    """
     data = request.get_json()
     category = data.get("category", "").strip().lower()
     limit_amount = float(data.get("limit_amount", 0))
@@ -122,23 +124,24 @@ def set_limit():
     cursor = conn.cursor()
 
     cursor.execute(
-        "SELECT id FROM spending_limits WHERE category=?",
+        "SELECT id FROM spending_limits WHERE category=%s",
         (category,)
     )
     row = cursor.fetchone()
 
     if row:
         cursor.execute(
-            "UPDATE spending_limits SET limit_amount=?, remaining=? WHERE id=?",
-            (limit_amount, limit_amount, row["id"])
+            "UPDATE spending_limits SET limit_amount=%s, remaining=%s WHERE id=%s",
+            (limit_amount, limit_amount, row[0])
         )
     else:
         cursor.execute(
-            "INSERT INTO spending_limits (category, limit_amount, remaining) VALUES (?, ?, ?)",
+            "INSERT INTO spending_limits (category, limit_amount, remaining) VALUES (%s, %s, %s)",
             (category, limit_amount, limit_amount)
         )
 
     conn.commit()
+    cursor.close()
     conn.close()
 
     return jsonify({
@@ -146,9 +149,9 @@ def set_limit():
         "limit_amount": limit_amount
     }), 200
 
+
 @app.route("/purchase", methods=["POST"])
 def add_purchase():
-
     data = request.get_json()
 
     category = data.get("category", "").strip().lower()
@@ -162,37 +165,40 @@ def add_purchase():
     cursor = conn.cursor()
 
     cursor.execute(
-        "SELECT remaining FROM spending_limits WHERE category=?",
+        "SELECT remaining FROM spending_limits WHERE category=%s",
         (category,)
     )
     row = cursor.fetchone()
 
     if not row:
+        cursor.close()
         conn.close()
         return jsonify({
             "error": f"No limit set for category '{category}'"
         }), 400
 
-    remaining = row["remaining"]
+    remaining = float(row[0])
     new_remaining = remaining - amount
 
     if new_remaining < 0 and not confirm:
+        cursor.close()
         conn.close()
         return jsonify({
             "warning": "This purchase exceeds the category limit. Continue anyway?"
         }), 200
         
     cursor.execute(
-        "UPDATE spending_limits SET remaining=? WHERE category=?",
+        "UPDATE spending_limits SET remaining=%s WHERE category=%s",
         (new_remaining, category)
     )
 
     cursor.execute(
-        "INSERT INTO purchases (category, amount, date) VALUES (?, ?, ?)",
-        (category, amount, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        "INSERT INTO purchases (category, amount, date) VALUES (%s, %s, %s)",
+        (category, amount, datetime.now())
     )
 
     conn.commit()
+    cursor.close()
     conn.close()
 
     return jsonify({
@@ -204,9 +210,6 @@ def add_purchase():
 
 @app.route("/limits", methods=["GET"])
 def view_limits():
-    """
-    View all category limits and remaining balances
-    """
     conn = db_connection()
     cursor = conn.cursor()
 
@@ -214,16 +217,19 @@ def view_limits():
         "SELECT category, limit_amount, remaining FROM spending_limits"
     )
     rows = cursor.fetchall()
+
+    cursor.close()
     conn.close()
 
     limits = [{
-        "category": r["category"],
-        "limit_amount": r["limit_amount"],
-        "remaining": r["remaining"],
-        "spent": r["limit_amount"] - r["remaining"]
+        "category": r[0],
+        "limit_amount": float(r[1]),
+        "remaining": float(r[2]),
+        "spent": float(r[1]) - float(r[2])
     } for r in rows]
 
     return jsonify(limits), 200
+
 
 @app.route("/dashboard_data")
 def dashboard_data():
@@ -231,25 +237,25 @@ def dashboard_data():
     cursor = conn.cursor()
 
     # Total spent
-    cursor.execute("SELECT SUM(amount) as total FROM purchases")
-    total_spent = cursor.fetchone()["total"] or 0
+    cursor.execute("SELECT COALESCE(SUM(amount), 0) FROM purchases")
+    total_spent = float(cursor.fetchone()[0])
 
-    # Spending by category
+    # Categories
     cursor.execute("""
-        SELECT category, SUM(amount) as total
+        SELECT category, SUM(amount)
         FROM purchases
         GROUP BY category
     """)
     category_rows = cursor.fetchall()
 
     categories = [
-        {"category": row["category"], "total": row["total"]}
-        for row in category_rows
+        {"category": r[0], "total": float(r[1])}
+        for r in category_rows
     ]
 
-    # Monthly totals
+    # Monthly (Postgres version)
     cursor.execute("""
-        SELECT strftime('%Y-%m', date) as month, SUM(amount) as total
+        SELECT TO_CHAR(date, 'YYYY-MM') as month, SUM(amount)
         FROM purchases
         GROUP BY month
         ORDER BY month DESC
@@ -258,10 +264,11 @@ def dashboard_data():
     monthly_rows = cursor.fetchall()
 
     monthly = [
-        {"month": row["month"], "total": row["total"]}
-        for row in monthly_rows
+        {"month": r[0], "total": float(r[1])}
+        for r in monthly_rows
     ]
 
+    cursor.close()
     conn.close()
 
     return jsonify({
@@ -269,6 +276,7 @@ def dashboard_data():
         "categories": categories,
         "monthly": monthly
     })
+
 
 if __name__ == "__main__":
     app.run(debug=True)
