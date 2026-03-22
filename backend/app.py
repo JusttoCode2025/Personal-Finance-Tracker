@@ -8,18 +8,19 @@ app = Flask(
     template_folder="../frontend/templates",
     static_folder="../frontend/static"
 )
+#database
 
-#  Database connecting to render
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
-# Fix Render issue
 if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 def db_connection():
     return psycopg2.connect(DATABASE_URL)
 
-#creation of db
+
+#database 
+
 def init_db():
     conn = db_connection()
     cursor = conn.cursor()
@@ -42,6 +43,14 @@ def init_db():
     )
     """)
 
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS travel_goal (
+        id SERIAL PRIMARY KEY,
+        goal_amount REAL NOT NULL,
+        saved_amount REAL DEFAULT 0
+    )
+    """)
+
     conn.commit()
     cursor.close()
     conn.close()
@@ -49,13 +58,13 @@ def init_db():
 init_db()
 
 
-#html routes
+#routes
 
 @app.route("/")
 @app.route("/login")
 def login():
     return render_template("login.html")
-    
+
 @app.route("/budget")
 def budget():
     return render_template("budget.html")
@@ -80,9 +89,7 @@ def home():
 def travel_goal():
     return render_template("travel_goal.html")
 
-
-
-
+# API ROUTES
 @app.route("/recent_purchases")
 def recent_purchases():
     conn = db_connection()
@@ -111,6 +118,7 @@ def recent_purchases():
     return jsonify(purchases)
 
 
+# Set budget limit
 @app.route("/limit", methods=["POST"])
 def set_limit():
     data = request.get_json()
@@ -118,7 +126,7 @@ def set_limit():
     limit_amount = float(data.get("limit_amount", 0))
 
     if limit_amount <= 0:
-        return jsonify({"error": "Limit amount must be positive"}), 400
+        return jsonify({"error": "Limit must be positive"}), 400
 
     conn = db_connection()
     cursor = conn.cursor()
@@ -144,12 +152,10 @@ def set_limit():
     cursor.close()
     conn.close()
 
-    return jsonify({
-        "message": f"Limit set for '{category}'",
-        "limit_amount": limit_amount
-    }), 200
+    return jsonify({"message": "Limit set"})
 
 
+# Add purchase
 @app.route("/purchase", methods=["POST"])
 def add_purchase():
     data = request.get_json()
@@ -159,7 +165,7 @@ def add_purchase():
     confirm = data.get("confirm", False)
 
     if amount <= 0:
-        return jsonify({"error": "Purchase amount must be positive"}), 400
+        return jsonify({"error": "Invalid amount"}), 400
 
     conn = db_connection()
     cursor = conn.cursor()
@@ -173,9 +179,7 @@ def add_purchase():
     if not row:
         cursor.close()
         conn.close()
-        return jsonify({
-            "error": f"No limit set for category '{category}'"
-        }), 400
+        return jsonify({"error": "No limit set"}), 400
 
     remaining = float(row[0])
     new_remaining = remaining - amount
@@ -183,10 +187,8 @@ def add_purchase():
     if new_remaining < 0 and not confirm:
         cursor.close()
         conn.close()
-        return jsonify({
-            "warning": "This purchase exceeds the category limit. Continue anyway?"
-        }), 200
-        
+        return jsonify({"warning": "Exceeds limit. Continue?"}), 200
+
     cursor.execute(
         "UPDATE spending_limits SET remaining=%s WHERE category=%s",
         (new_remaining, category)
@@ -201,71 +203,61 @@ def add_purchase():
     cursor.close()
     conn.close()
 
-    return jsonify({
-        "message": f"Purchase of ${amount} recorded",
-        "category": category,
-        "remaining": new_remaining
-    }), 200
+    return jsonify({"message": "Purchase added"})
 
 
-@app.route("/limits", methods=["GET"])
+#limtits 
+@app.route("/limits")
 def view_limits():
     conn = db_connection()
     cursor = conn.cursor()
 
-    cursor.execute(
-        "SELECT category, limit_amount, remaining FROM spending_limits"
-    )
+    cursor.execute("SELECT category, limit_amount, remaining FROM spending_limits")
     rows = cursor.fetchall()
 
     cursor.close()
     conn.close()
 
-    limits = [{
-        "category": r[0],
-        "limit_amount": float(r[1]),
-        "remaining": float(r[2]),
-        "spent": float(r[1]) - float(r[2])
-    } for r in rows]
+    return jsonify([
+        {
+            "category": r[0],
+            "limit_amount": float(r[1]),
+            "remaining": float(r[2]),
+            "spent": float(r[1]) - float(r[2])
+        }
+        for r in rows
+    ])
 
-    return jsonify(limits), 200
 
-
+# dashboard page 
 @app.route("/dashboard_data")
 def dashboard_data():
-    conn = db_connection()  
+    conn = db_connection()
     cursor = conn.cursor()
 
-    # Total spent
     cursor.execute("SELECT COALESCE(SUM(amount), 0) FROM purchases")
     total_spent = float(cursor.fetchone()[0])
 
-    # Categories
     cursor.execute("""
         SELECT category, SUM(amount)
         FROM purchases
         GROUP BY category
     """)
-    category_rows = cursor.fetchall()
-
     categories = [
         {"category": r[0], "total": float(r[1])}
-        for r in category_rows
+        for r in cursor.fetchall()
     ]
 
-    # Monthly (Postgres version)
     cursor.execute("""
-        SELECT TO_CHAR(date, 'YYYY-MM') as month, SUM(amount)
+        SELECT TO_CHAR(date, 'YYYY-MM'), SUM(amount)
         FROM purchases
-        GROUP BY month
-        ORDER BY month DESC
+        GROUP BY 1
+        ORDER BY 1 DESC
         LIMIT 12
     """)
-    monthly_rows = cursor.fetchall()
-
     monthly = [
         {"month": r[0], "total": float(r[1])}
-        for r in monthly_rows
+        for r in cursor.fetchall()
     ]
 
     cursor.close()
@@ -278,9 +270,97 @@ def dashboard_data():
     })
 
 
-if __name__ == "__main__":
-    app.run(debug=True)
+#travel goal 
 
+# 🔹 Set goal
+@app.route("/travel_goal/set", methods=["POST"])
+def set_goal():
+    data = request.get_json()
+    goal_amount = float(data.get("goal_amount", 0))
+
+    if goal_amount <= 0:
+        return jsonify({"error": "Invalid goal"}), 400
+
+    conn = db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM travel_goal")
+
+    cursor.execute("""
+        INSERT INTO travel_goal (goal_amount, saved_amount)
+        VALUES (%s, 0)
+    """, (goal_amount,))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return jsonify({"message": "Goal set"})
+
+
+# add contribution to goal
+@app.route("/travel_goal/add", methods=["POST"])
+def add_to_goal():
+    data = request.get_json()
+    amount = float(data.get("amount", 0))
+
+    if amount <= 0:
+        return jsonify({"error": "Invalid amount"}), 400
+
+    conn = db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE travel_goal
+        SET saved_amount = saved_amount + %s
+        RETURNING goal_amount, saved_amount
+    """, (amount,))
+
+    row = cursor.fetchone()
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    if not row:
+        return jsonify({"error": "No goal set"}), 400
+
+    goal, saved = row
+
+    return jsonify({
+        "goal_amount": float(goal),
+        "saved_amount": float(saved),
+        "remaining": float(goal) - float(saved),
+        "progress": float(saved) / float(goal)
+    })
+
+
+#  Get goal
+@app.route("/travel_goal", methods=["GET"])
+def get_goal():
+    conn = db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT goal_amount, saved_amount FROM travel_goal LIMIT 1")
+    row = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
+    if not row:
+        return jsonify({"message": "No goal set"})
+
+    goal, saved = row
+
+    return jsonify({
+        "goal_amount": float(goal),
+        "saved_amount": float(saved),
+        "remaining": float(goal) - float(saved),
+        "progress": float(saved) / float(goal)
+    })
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
 
 
 
