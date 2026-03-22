@@ -165,7 +165,7 @@ def add_purchase():
     confirm = data.get("confirm", False)
 
     if amount <= 0:
-        return jsonify({"error": "Invalid amount"}), 400
+        return jsonify({"error": "Purchases must be a positive number"}), 400
 
     conn = db_connection()
     cursor = conn.cursor()
@@ -279,7 +279,7 @@ def set_goal():
     goal_amount = float(data.get("goal_amount", 0))
 
     if goal_amount <= 0:
-        return jsonify({"error": "Invalid goal"}), 400
+        return jsonify({"error": "Goal must be a positive number"}), 400
 
     conn = db_connection()
     cursor = conn.cursor()
