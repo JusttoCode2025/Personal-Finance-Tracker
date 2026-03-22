@@ -24,102 +24,112 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     /* home travel bar */
+/* home travel bar (CONNECTED TO BACKEND) */
 
-    const homeSaved = parseFloat(localStorage.getItem("travel_saved")) || 0;
-    const homeGoal = parseFloat(localStorage.getItem("travel_goal")) || 0;
+async function loadHomeTravelBar() {
 
-    if (homeGoal > 0) {
+    const res = await fetch("/travel_goal");
+    const data = await res.json();
 
-        const percent = (homeSaved / homeGoal) * 100;
-        const remaining = homeGoal - homeSaved;
+    if (!data.goal_amount) return;
 
-        const homeBar = document.getElementById("homeTravelProgress");
-        const homePercent = document.getElementById("homeTravelPercent");
-        const homeSavedText = document.getElementById("homeGoalSaved");
-        const homeLeftText = document.getElementById("homeGoalLeft");
-        const homeRemainingText = document.getElementById("homeGoalRemainingText");
+    const saved = data.saved_amount;
+    const goal = data.goal_amount;
+    const percent = (saved / goal) * 100;
+    const remaining = goal - saved;
 
-        if (homeBar) homeBar.style.width = percent + "%";
-        if (homePercent) homePercent.textContent = percent.toFixed(1) + "%";
-        if (homeSavedText) homeSavedText.textContent = "$" + homeSaved.toFixed(0);
-        if (homeLeftText) homeLeftText.textContent = "$" + remaining.toFixed(0);
-        if (homeRemainingText) homeRemainingText.textContent = "$" + remaining.toFixed(0) + " left";
-    }
+    const homeBar = document.getElementById("homeTravelProgress");
+    const homePercent = document.getElementById("homeTravelPercent");
+    const homeSavedText = document.getElementById("homeGoalSaved");
+    const homeLeftText = document.getElementById("homeGoalLeft");
+    const homeRemainingText = document.getElementById("homeGoalRemainingText");
+
+    if (homeBar) homeBar.style.width = percent + "%";
+    if (homePercent) homePercent.textContent = percent.toFixed(1) + "%";
+    if (homeSavedText) homeSavedText.textContent = "$" + saved.toFixed(0);
+    if (homeLeftText) homeLeftText.textContent = "$" + remaining.toFixed(0);
+    if (homeRemainingText) homeRemainingText.textContent = "$" + remaining.toFixed(0) + " left";
+}
 
 
     /* travel pg */
 
-    const goalInput = document.getElementById("goalAmount");
-    const contributionInput = document.getElementById("contributionAmount");
-    const addBtn = document.getElementById("addBtn");
-    const resetBtn = document.getElementById("resetGoal");
+/* travel pg (CONNECTED TO BACKEND) */
 
-    if (goalInput && addBtn) {
+const goalInput = document.getElementById("goalAmount");
+const contributionInput = document.getElementById("contributionAmount");
+const addBtn = document.getElementById("addBtn");
+const resetBtn = document.getElementById("resetGoal");
 
-        let totalSaved = parseFloat(localStorage.getItem("travel_saved")) || 0;
-        let savedGoal = parseFloat(localStorage.getItem("travel_goal")) || 0;
+// Load goal from backend
+async function loadGoal() {
+    const res = await fetch("/travel_goal");
+    const data = await res.json();
 
-        if (savedGoal > 0) {
-            goalInput.value = savedGoal;
-            updateUI(totalSaved, savedGoal);
+    if (!data.goal_amount) return;
+
+    goalInput.value = data.goal_amount;
+    updateUI(data.saved_amount, data.goal_amount);
+}
+
+// Set goal
+async function setGoal(goal) {
+    await fetch("/travel_goal/set", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ goal_amount: goal })
+    });
+}
+
+if (goalInput && addBtn) {
+
+    // Load existing goal
+    loadGoal();
+
+    addBtn.addEventListener("click", async () => {
+
+        const goal = parseFloat(goalInput.value);
+        const contribution = parseFloat(contributionInput.value);
+
+        if (!goal || goal <= 0) {
+            alert("Please enter a valid goal amount.");
+            return;
         }
 
-        addBtn.addEventListener("click", () => {
+        if (!contribution || contribution <= 0) {
+            alert("Please enter a valid contribution.");
+            return;
+        }
 
-            const goal = parseFloat(goalInput.value);
-            const contribution = parseFloat(contributionInput.value);
+        // If goal doesn't exist yet → create it
+        await setGoal(goal);
 
-            if (!goal || goal <= 0) {
-                alert("Please enter a valid goal amount.");
-                return;
-            }
-
-            if (goal > 10000) {
-                const confirmGoal = confirm(
-                    "Your goal is over $10,000. Are you sure this is correct?"
-                );
-                if (!confirmGoal) return;
-            }
-
-            if (!contribution || contribution <= 0) {
-                alert("Please enter a valid contribution.");
-                return;
-            }
-
-            if (contribution > goal) {
-                alert("Contribution cannot be greater than the goal.");
-                return;
-            }
-
-            if (contribution > goal * 0.5) {
-                const confirmLarge = confirm(
-                    "This contribution is more than half of your goal. Continue?"
-                );
-                if (!confirmLarge) return;
-            }
-
-            totalSaved += contribution;
-
-            if (totalSaved > goal) totalSaved = goal;
-
-            localStorage.setItem("travel_goal", goal);
-            localStorage.setItem("travel_saved", totalSaved);
-
-            updateUI(totalSaved, goal);
-
-            contributionInput.value = "";
+        // Add contribution
+        const res = await fetch("/travel_goal/add", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ amount: contribution })
         });
 
-        if (resetBtn) {
-            resetBtn.addEventListener("click", () => {
+        const data = await res.json();
 
-                localStorage.removeItem("travel_goal");
-                localStorage.removeItem("travel_saved");
+        updateUI(data.saved_amount, data.goal_amount);
 
-                location.reload();
+        contributionInput.value = "";
+    });
+    if (resetBtn) {
+        resetBtn.addEventListener("click", async () => {
+
+            await fetch("/travel_goal/set", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ goal_amount: 0 })
             });
-        }
+
+            location.reload();
+        });
     }
+}
 
 
     const categoryTable = document.getElementById("categoryTable");
