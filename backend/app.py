@@ -8,7 +8,7 @@ app = Flask(
     template_folder="../frontend/templates",
     static_folder="../frontend/static"
 )
-#database
+#  Database connecting to render
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
@@ -19,7 +19,7 @@ def db_connection():
     return psycopg2.connect(DATABASE_URL)
 
 
-#database 
+#creation of db
 
 def init_db():
     conn = db_connection()
@@ -58,7 +58,7 @@ def init_db():
 init_db()
 
 
-#routes
+#html routes
 
 @app.route("/")
 @app.route("/login")
@@ -126,7 +126,7 @@ def set_limit():
     limit_amount = float(data.get("limit_amount", 0))
 
     if limit_amount <= 0:
-        return jsonify({"error": "Limit must be positive"}), 400
+        return jsonify({"error": "Limit amount must be positive"}), 400
 
     conn = db_connection()
     cursor = conn.cursor()
@@ -152,7 +152,10 @@ def set_limit():
     cursor.close()
     conn.close()
 
-    return jsonify({"message": "Limit set"})
+    return jsonify({
+        "message": f"Limit set for '{category}'",
+        "limit_amount": limit_amount
+    }), 200
 
 
 # Add purchase
@@ -165,8 +168,8 @@ def add_purchase():
     confirm = data.get("confirm", False)
 
     if amount <= 0:
-        return jsonify({"error": "Purchases must be a positive number"}), 400
-
+       return jsonify({"error": "Purchase amount must be positive"}), 400
+        
     conn = db_connection()
     cursor = conn.cursor()
 
@@ -179,7 +182,9 @@ def add_purchase():
     if not row:
         cursor.close()
         conn.close()
-        return jsonify({"error": "No limit set"}), 400
+        return jsonify({
+            "error": f"No limit set for category '{category}'"
+        }), 400
 
     remaining = float(row[0])
     new_remaining = remaining - amount
@@ -187,7 +192,9 @@ def add_purchase():
     if new_remaining < 0 and not confirm:
         cursor.close()
         conn.close()
-        return jsonify({"warning": "Exceeds limit. Continue?"}), 200
+        return jsonify({
+            "warning": "This purchase exceeds the category limit. Continue anyway?"
+        }), 200
 
     cursor.execute(
         "UPDATE spending_limits SET remaining=%s WHERE category=%s",
@@ -203,7 +210,11 @@ def add_purchase():
     cursor.close()
     conn.close()
 
-    return jsonify({"message": "Purchase added"})
+    return jsonify({
+        "message": f"Purchase of ${amount} recorded",
+        "category": category,
+        "remaining": new_remaining
+    }), 200
 
 
 #limtits 
@@ -358,7 +369,7 @@ def get_goal():
     })
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    app.run(debug=True)
 
 
 
