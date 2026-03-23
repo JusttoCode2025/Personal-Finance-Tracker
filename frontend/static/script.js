@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 goalInput.value = "";
                 contributionInput.value = "";
 
-                updateUI(0, 1);
+                updateUI(0, 0);
 
                 alert("Travel goal reset");
 
