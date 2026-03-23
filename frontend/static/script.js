@@ -166,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!confirmReset) return;
 
                 await fetch("/travel_goal/reset", {
-                    method: "DELETE"
+                    method: "POST"
                 });
 
                 currentGoalId = null;
