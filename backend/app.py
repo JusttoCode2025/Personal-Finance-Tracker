@@ -59,11 +59,11 @@ def init_db():
     conn.close()
 
 
-init_db()
+if DATABASE_URL:
+    init_db()
 
 
 #html routes
-
 @app.route("/")
 @app.route("/login")
 def login():
