@@ -91,7 +91,7 @@ def travel_goal():
 
 
 
-
+#recent purchases
 @app.route("/recent_purchases")
 def recent_purchases():
     conn = db_connection()
@@ -119,7 +119,7 @@ def recent_purchases():
 
     return jsonify(purchases)
 
-
+#set limit
 @app.route("/limit", methods=["POST"])
 def set_limit():
     data = request.get_json()
@@ -158,7 +158,7 @@ def set_limit():
         "limit_amount": limit_amount
     }), 200
 
-
+#set purchases
 @app.route("/purchase", methods=["POST"])
 def add_purchase():
     data = request.get_json()
@@ -216,7 +216,7 @@ def add_purchase():
         "remaining": new_remaining
     }), 200
 
-
+#shows limit
 @app.route("/limits", methods=["GET"])
 def view_limits():
     conn = db_connection()
@@ -308,23 +308,24 @@ def dashboard_data():
     conn.close()
 
     return jsonify({"message": "Travel goal added"}), 200
+   
     @app.route("/travel_goals", methods=["GET"])
-def get_travel_goals():
-    conn = db_connection()
-    cursor = conn.cursor()
+    def get_travel_goals():
+        conn = db_connection()
+        cursor = conn.cursor()
 
-    cursor.execute("""
-        SELECT id, destination, target_amount, saved_amount, created_at
-        FROM travel_goals
-        ORDER BY created_at DESC
-    """)
+        cursor.execute("""
+            SELECT id, destination, target_amount, saved_amount, created_at
+            FROM travel_goals
+            ORDER BY created_at DESC
+        """)
 
-    rows = cursor.fetchall()
+        rows = cursor.fetchall()
 
-    cursor.close()
-    conn.close()
+        cursor.close()
+        conn.close()
 
-    goals = [
+        goals = [
         {
             "id": r[0],
             "destination": r[1],
@@ -332,10 +333,11 @@ def get_travel_goals():
             "saved_amount": float(r[3]),
             "created_at": str(r[4])
         }
-        for r in rows
-    ]
+            for r in rows
+        ]
 
-    return jsonify(goals), 200
+        return jsonify(goals), 200
+        
     @app.route("/travel_goal/save", methods=["POST"])
     def update_savings():
         data = request.get_json()
