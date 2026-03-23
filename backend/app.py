@@ -366,6 +366,19 @@ def update_savings():
     conn.close()
 
     return jsonify({"message": "Savings updated"}), 200
+    
+@app.route("/travel_goal/reset", methods=["DELETE"])
+def reset_travel_goal():
+    conn = db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM travel_goals")
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return jsonify({"message": "Travel goal reset"}), 200    
 
 
 if __name__ == "__main__":
