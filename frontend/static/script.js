@@ -22,9 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /* =========================
-       HOME TRAVEL BAR (DB)
-    ========================= */
+    /*home page */
 
     async function loadHomeTravelBar() {
         const res = await fetch("/travel_goals");
@@ -55,9 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadHomeTravelBar();
 
-    /* =========================
-       TRAVEL PAGE (DB)
-    ========================= */
+    /*travel page bar */
 
     const goalInput = document.getElementById("goalAmount");
     const contributionInput = document.getElementById("contributionAmount");
@@ -118,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!confirmLarge) return;
             }
 
-            // CREATE GOAL IF NONE EXISTS
+            
             if (!currentGoalId) {
                 await fetch("/travel_goal", {
                     method: "POST",
@@ -132,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 await loadTravelGoal();
             }
 
-            // ADD SAVINGS
+        
             await fetch("/travel_goal/save", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
@@ -149,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             contributionInput.value = "";
 
-            // update home bar
+            
             loadHomeTravelBar();
         });
 
@@ -169,9 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
-/* =========================
-   LIMITS
-========================= */
+/*limit */
 
 async function setCategoryLimit() {
 
@@ -225,9 +219,7 @@ async function loadCategories() {
     });
 }
 
-/* =========================
-   PURCHASES
-========================= */
+/*purchases */
 
 async function loadRecentPurchases() {
 
@@ -247,12 +239,12 @@ async function loadRecentPurchases() {
     data.forEach(p => {
 
         list.innerHTML += `
-            <li>
+            <li style="display:flex; justify-content:space-between; align-items:center;">
                 <span><strong>${p.category}</strong></span>
                 <span>$${p.amount}</span>
-                <span>${p.date}</span>
+                <span>${new Date(p.date).toLocaleString()}</span>
             </li>
-        `;
+`;
     });
 }
 
@@ -313,9 +305,7 @@ async function addPurchase() {
     loadCategories();
 }
 
-/* =========================
-   TRAVEL UI
-========================= */
+/* travel bar */
 
 function updateUI(saved, goal) {
 
