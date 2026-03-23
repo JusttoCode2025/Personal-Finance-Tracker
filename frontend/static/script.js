@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /*home page */
+    /* home travelbar */
 
     async function loadHomeTravelBar() {
         const res = await fetch("/travel_goals");
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadHomeTravelBar();
 
-    /*travel page bar */
+    /* travel pg */
 
     const goalInput = document.getElementById("goalAmount");
     const contributionInput = document.getElementById("contributionAmount");
@@ -86,8 +86,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         addBtn.addEventListener("click", async () => {
 
-            const goal = parseFloat(goalInput.value);
+            let goal = parseFloat(goalInput.value);
             const contribution = parseFloat(contributionInput.value);
+
+            
+            if (currentGoalId) {
+                goal = savedGoal;
+            }
 
             if (!goal || goal <= 0) {
                 alert("Please enter a valid goal amount.");
@@ -95,7 +100,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (goal > 10000) {
-                const confirmGoal = confirm("Your goal is over $10,000. Are you sure?");
+                const confirmGoal = confirm(
+                    "Your goal is over $10,000. Are you sure this is correct?"
+                );
                 if (!confirmGoal) return;
             }
 
@@ -110,12 +117,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (contribution > goal * 0.5) {
-                const confirmLarge = confirm("This contribution is more than half of your goal. Continue?");
+                const confirmLarge = confirm(
+                    "This contribution is more than half of your goal. Continue?"
+                );
                 if (!confirmLarge) return;
             }
 
-            
+            // create goal
             if (!currentGoalId) {
+
                 await fetch("/travel_goal", {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
@@ -128,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 await loadTravelGoal();
             }
 
-        
+            // add contribution
             await fetch("/travel_goal/save", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
@@ -145,13 +155,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
             contributionInput.value = "";
 
-            
             loadHomeTravelBar();
         });
 
+        // RESET GOAL
         if (resetBtn) {
-            resetBtn.addEventListener("click", () => {
-                alert("Reset not connected to database yet");
+            resetBtn.addEventListener("click", async () => {
+
+                const confirmReset = confirm("Are you sure you want to reset your travel goal?");
+                if (!confirmReset) return;
+
+                await fetch("/travel_goal/reset", {
+                    method: "DELETE"
+                });
+
+                currentGoalId = null;
+                totalSaved = 0;
+                savedGoal = 0;
+
+                goalInput.value = "";
+                contributionInput.value = "";
+
+                updateUI(0, 1);
+
+                alert("Travel goal reset");
+
+                loadHomeTravelBar();
             });
         }
     }
@@ -165,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
-/*limit */
+/*limtis */
 
 async function setCategoryLimit() {
 
@@ -219,7 +248,7 @@ async function loadCategories() {
     });
 }
 
-/*purchases */
+/* purchases */
 
 async function loadRecentPurchases() {
 
@@ -239,12 +268,12 @@ async function loadRecentPurchases() {
     data.forEach(p => {
 
         list.innerHTML += `
-            <li style="display:flex; justify-content:space-between; align-items:center;">
+            <li>
                 <span><strong>${p.category}</strong></span>
                 <span>$${p.amount}</span>
                 <span>${new Date(p.date).toLocaleString()}</span>
             </li>
-`;
+        `;
     });
 }
 
@@ -305,7 +334,7 @@ async function addPurchase() {
     loadCategories();
 }
 
-/* travel bar */
+/* travel  */
 
 function updateUI(saved, goal) {
 
