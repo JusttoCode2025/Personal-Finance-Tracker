@@ -42,6 +42,16 @@ def init_db():
     )
     """)
 
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS travel_goals (
+        id SERIAL PRIMARY KEY,
+        destination TEXT NOT NULL,
+        target_amount REAL NOT NULL,
+        saved_amount REAL DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+
     conn.commit()
     cursor.close()
     conn.close()
@@ -253,7 +263,7 @@ def dashboard_data():
         for r in category_rows
     ]
 
-    # Monthly (Postgres version)
+    # Monthly 
     cursor.execute("""
         SELECT TO_CHAR(date, 'YYYY-MM') as month, SUM(amount)
         FROM purchases
@@ -276,7 +286,82 @@ def dashboard_data():
         "categories": categories,
         "monthly": monthly
     })
+    @app.route("/travel_goal", methods=["POST"])
+    def add_travel_goal():
+        data = request.get_json()
 
+        destination = data.get("destination", "").strip()
+        target_amount = float(data.get("target_amount", 0))
+
+        if not destination or target_amount <= 0:
+            return jsonify({"error": "Invalid input"}), 400
+
+        conn = db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "INSERT INTO travel_goals (destination, target_amount) VALUES (%s, %s)",
+            (destination, target_amount)
+        )
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return jsonify({"message": "Travel goal added"}), 200
+    @app.route("/travel_goals", methods=["GET"])
+def get_travel_goals():
+    conn = db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id, destination, target_amount, saved_amount, created_at
+        FROM travel_goals
+        ORDER BY created_at DESC
+    """)
+
+    rows = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    goals = [
+        {
+            "id": r[0],
+            "destination": r[1],
+            "target_amount": float(r[2]),
+            "saved_amount": float(r[3]),
+            "created_at": str(r[4])
+        }
+        for r in rows
+    ]
+
+    return jsonify(goals), 200
+    @app.route("/travel_goal/save", methods=["POST"])
+    def update_savings():
+        data = request.get_json()
+
+        goal_id = data.get("id")
+        amount = float(data.get("amount", 0))
+
+        if amount <= 0:
+            return jsonify({"error": "Invalid amount"}), 400
+
+        conn = db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            UPDATE travel_goals
+            SET saved_amount = saved_amount + %s
+            WHERE id = %s
+        """, (amount, goal_id))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return jsonify({"message": "Savings updated"}), 200
+    
 
 if __name__ == "__main__":
     app.run(debug=True)
