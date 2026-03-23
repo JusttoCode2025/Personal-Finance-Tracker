@@ -46,7 +46,8 @@ def init_db():
     cursor.close()
     conn.close()
 
-init_db()
+if DATABASE_URL:
+    init_db()
 
 
 #html routes
