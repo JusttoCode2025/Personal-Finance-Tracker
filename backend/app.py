@@ -9,10 +9,9 @@ app = Flask(
     static_folder="../frontend/static"
 )
 
-#  Database connecting to render
+# dbe connecting to render
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
-# Fix Render issue
 if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
