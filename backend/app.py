@@ -261,16 +261,31 @@ def dashboard_data():
         {"category": r[0], "total": float(r[1])}
         for r in category_rows
     ]
+    
+    cursor.execute("""
+        SELECT TO_CHAR(date, 'YYYY-MM') as month, SUM(amount)
+        FROM purchases
+        GROUP BY month
+        ORDER BY month DESC
+        LIMIT 12
+    """)
+    monthly_rows = cursor.fetchall()
+
+    monthly = [
+        {"month": r[0], "total": float(r[1])}
+        for r in monthly_rows
+    ]
 
     cursor.close()
     conn.close()
 
     return jsonify({
         "total_spent": total_spent,
-        "categories": categories
+        "categories": categories,
+        "monthly": monthly   
     })
 
-
+  
 # travel goals
 
 @app.route("/travel_goal", methods=["POST"])
