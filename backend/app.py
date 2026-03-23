@@ -9,13 +9,16 @@ app = Flask(
     static_folder="../frontend/static"
 )
 
-# dbe connecting to render
+#  Database connecting to render
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
+# Fix Render issue
 if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 def db_connection():
+    if not DATABASE_URL:
+        raise Exception("DATABASE_URL is not set")
     return psycopg2.connect(DATABASE_URL)
 
 #creation of db
@@ -55,7 +58,8 @@ def init_db():
     cursor.close()
     conn.close()
 
-init_db()
+if DATABASE_URL:
+    init_db()
 
 
 #html routes
@@ -90,8 +94,6 @@ def travel_goal():
     return render_template("travel_goal.html")
 
 
-
-#recent purchases
 @app.route("/recent_purchases")
 def recent_purchases():
     conn = db_connection()
@@ -119,7 +121,7 @@ def recent_purchases():
 
     return jsonify(purchases)
 
-#set limit
+
 @app.route("/limit", methods=["POST"])
 def set_limit():
     data = request.get_json()
@@ -158,7 +160,7 @@ def set_limit():
         "limit_amount": limit_amount
     }), 200
 
-#set purchases
+
 @app.route("/purchase", methods=["POST"])
 def add_purchase():
     data = request.get_json()
@@ -216,7 +218,7 @@ def add_purchase():
         "remaining": new_remaining
     }), 200
 
-#shows limit
+
 @app.route("/limits", methods=["GET"])
 def view_limits():
     conn = db_connection()
@@ -245,11 +247,9 @@ def dashboard_data():
     conn = db_connection()  
     cursor = conn.cursor()
 
-    # Total spent
     cursor.execute("SELECT COALESCE(SUM(amount), 0) FROM purchases")
     total_spent = float(cursor.fetchone()[0])
 
-    # Categories
     cursor.execute("""
         SELECT category, SUM(amount)
         FROM purchases
@@ -262,70 +262,58 @@ def dashboard_data():
         for r in category_rows
     ]
 
-    # Monthly 
-    cursor.execute("""
-        SELECT TO_CHAR(date, 'YYYY-MM') as month, SUM(amount)
-        FROM purchases
-        GROUP BY month
-        ORDER BY month DESC
-        LIMIT 12
-    """)
-    monthly_rows = cursor.fetchall()
-
-    monthly = [
-        {"month": r[0], "total": float(r[1])}
-        for r in monthly_rows
-    ]
-
     cursor.close()
     conn.close()
 
     return jsonify({
         "total_spent": total_spent,
-        "categories": categories,
-        "monthly": monthly
+        "categories": categories
     })
-    @app.route("/travel_goal", methods=["POST"])
-    def add_travel_goal():
-        data = request.get_json()
 
-        destination = data.get("destination", "").strip()
-        target_amount = float(data.get("target_amount", 0))
 
-        if not destination or target_amount <= 0:
-            return jsonify({"error": "Invalid input"}), 400
+# travel goals
 
-        conn = db_connection()
-        cursor = conn.cursor()
+@app.route("/travel_goal", methods=["POST"])
+def add_travel_goal():
+    data = request.get_json()
 
-        cursor.execute(
-            "INSERT INTO travel_goals (destination, target_amount) VALUES (%s, %s)",
-            (destination, target_amount)
-        )
+    destination = data.get("destination", "My Trip")
+    target_amount = float(data.get("target_amount", 0))
+
+    if target_amount <= 0:
+        return jsonify({"error": "Invalid goal"}), 400
+
+    conn = db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "INSERT INTO travel_goals (destination, target_amount) VALUES (%s, %s)",
+        (destination, target_amount)
+    )
 
     conn.commit()
     cursor.close()
     conn.close()
 
-    return jsonify({"message": "Travel goal added"}), 200
-   
-    @app.route("/travel_goals", methods=["GET"])
-    def get_travel_goals():
-        conn = db_connection()
-        cursor = conn.cursor()
+    return jsonify({"message": "Goal created"}), 200
 
-        cursor.execute("""
-            SELECT id, destination, target_amount, saved_amount, created_at
-            FROM travel_goals
-            ORDER BY created_at DESC
-        """)
 
-        rows = cursor.fetchall()
+@app.route("/travel_goals", methods=["GET"])
+def get_travel_goals():
+    conn = db_connection()
+    cursor = conn.cursor()
 
-        cursor.close()
-        conn.close()
+    cursor.execute("""
+        SELECT id, destination, target_amount, saved_amount, created_at
+        FROM travel_goals
+        ORDER BY created_at DESC
+    """)
 
-        goals = [
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    goals = [
         {
             "id": r[0],
             "destination": r[1],
@@ -333,40 +321,40 @@ def dashboard_data():
             "saved_amount": float(r[3]),
             "created_at": str(r[4])
         }
-            for r in rows
-        ]
+        for r in rows
+    ]
 
-        return jsonify(goals), 200
-        
-    @app.route("/travel_goal/save", methods=["POST"])
-    def update_savings():
-        data = request.get_json()
+    return jsonify(goals), 200
 
-        goal_id = data.get("id")
-        amount = float(data.get("amount", 0))
 
-        if amount <= 0:
-            return jsonify({"error": "Invalid amount"}), 400
+@app.route("/travel_goal/save", methods=["POST"])
+def update_savings():
+    data = request.get_json()
 
-        conn = db_connection()
-        cursor = conn.cursor()
+    goal_id = data.get("id")
+    amount = float(data.get("amount", 0))
 
-        cursor.execute("""
-            UPDATE travel_goals
-            SET saved_amount = saved_amount + %s
-            WHERE id = %s
-        """, (amount, goal_id))
+    if not goal_id or amount <= 0:
+        return jsonify({"error": "Invalid input"}), 400
+
+    conn = db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE travel_goals
+        SET saved_amount = saved_amount + %s
+        WHERE id = %s
+    """, (amount, goal_id))
 
     conn.commit()
     cursor.close()
     conn.close()
 
     return jsonify({"message": "Savings updated"}), 200
-    
+
 
 if __name__ == "__main__":
     app.run(debug=True)
-
 
 
 
