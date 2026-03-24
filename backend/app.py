@@ -1,3 +1,4 @@
+
 from flask import Flask, request, jsonify, render_template
 import psycopg2
 import os
@@ -19,7 +20,7 @@ if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
 def db_connection():
     return psycopg2.connect(DATABASE_URL)
 
-#creation of db
+#creation of dbs
 def init_db():
     conn = db_connection()
     cursor = conn.cursor()
@@ -42,15 +43,26 @@ def init_db():
     )
     """)
 
+  
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS travel_goals (
+        id SERIAL PRIMARY KEY,
+        destination TEXT NOT NULL,
+        target_amount REAL NOT NULL,
+        saved_amount REAL DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+
     conn.commit()
     cursor.close()
     conn.close()
+
 
 init_db()
 
 
 #html routes
-
 @app.route("/")
 @app.route("/login")
 def login():
@@ -79,8 +91,6 @@ def home():
 @app.route("/travel-goal")
 def travel_goal():
     return render_template("travel_goal.html")
-
-
 
 
 @app.route("/recent_purchases")
@@ -236,11 +246,9 @@ def dashboard_data():
     conn = db_connection()  
     cursor = conn.cursor()
 
-    # Total spent
     cursor.execute("SELECT COALESCE(SUM(amount), 0) FROM purchases")
     total_spent = float(cursor.fetchone()[0])
 
-    # Categories
     cursor.execute("""
         SELECT category, SUM(amount)
         FROM purchases
@@ -253,7 +261,6 @@ def dashboard_data():
         for r in category_rows
     ]
 
-    # Monthly (Postgres version)
     cursor.execute("""
         SELECT TO_CHAR(date, 'YYYY-MM') as month, SUM(amount)
         FROM purchases
@@ -278,11 +285,96 @@ def dashboard_data():
     })
 
 
+#travel goal
+
+@app.route("/travel_goal", methods=["POST"])
+def add_travel_goal():
+    data = request.get_json()
+
+    destination = data.get("destination", "My Trip")
+    target_amount = float(data.get("target_amount", 0))
+
+    conn = db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "INSERT INTO travel_goals (destination, target_amount) VALUES (%s, %s)",
+        (destination, target_amount)
+    )
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return jsonify({"message": "Goal created"}), 200
+
+
+@app.route("/travel_goals", methods=["GET"])
+def get_travel_goals():
+    conn = db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id, destination, target_amount, saved_amount, created_at
+        FROM travel_goals
+        ORDER BY created_at DESC
+    """)
+
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    return jsonify([
+        {
+            "id": r[0],
+            "destination": r[1],
+            "target_amount": float(r[2]),
+            "saved_amount": float(r[3]),
+            "created_at": str(r[4])
+        }
+        for r in rows
+    ])
+
+
+@app.route("/travel_goal/save", methods=["POST"])
+def update_savings():
+    data = request.get_json()
+
+    goal_id = data.get("id")
+    amount = float(data.get("amount", 0))
+
+    if not goal_id or amount <= 0:
+        return jsonify({"error": "Invalid input"}), 400
+
+    conn = db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE travel_goals
+        SET saved_amount = saved_amount + %s
+        WHERE id = %s
+    """, (amount, goal_id))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return jsonify({"message": "Savings updated"}), 200
+
+
+@app.route("/travel_goal/reset", methods=["POST"])
+def reset_travel_goal():
+    conn = db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("UPDATE travel_goals SET saved_amount = 0")
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return jsonify({"message": "Reset successful"}), 200
+
+
 if __name__ == "__main__":
     app.run(debug=True)
-
-
-
-
-
-
