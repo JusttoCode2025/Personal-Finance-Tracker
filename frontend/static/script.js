@@ -338,8 +338,8 @@ async function addPurchase() {
 
 function updateUI(saved, goal) {
 
-    const percent = (saved / goal) * 100;
-    const remaining = goal - saved;
+    const percent = goal > 0 ? (saved / goal) * 100 : 0;
+    const remaining = goal > 0 ? goal - saved : 0;
 
     const progressBar = document.getElementById("travelProgress");
     const percentText = document.getElementById("travelPercent");
