@@ -59,8 +59,7 @@ def init_db():
     conn.close()
 
 
-if DATABASE_URL:
-    init_db()
+init_db()
 
 
 #html routes
