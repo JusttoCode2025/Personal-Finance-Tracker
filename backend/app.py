@@ -367,7 +367,7 @@ def reset_travel_goal():
     conn = db_connection()
     cursor = conn.cursor()
 
-    cursor.execute("UPDATE travel_goals SET saved_amount = 0")
+    cursor.execute("DELETE FROM travel_goals")
 
     conn.commit()
     cursor.close()
