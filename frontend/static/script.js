@@ -29,7 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await res.json();
 
         if (data.length === 0) {
-            currentGoalId = null;
             updateUI(0, 0);
             return;
         }
@@ -65,6 +64,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const addBtn = document.getElementById("addBtn");
     const setBtn = document.getElementById("setGoalBtn");
     const resetBtn = document.getElementById("resetGoal");
+    const goalMsg = document.getElementById("goalMessage");
+    const contributionMsg = document.getElementById("contributionMessage");
 
     let currentGoalId = null;
     let savedGoal = 0;
@@ -100,9 +101,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const goal = parseFloat(goalInput.value);
 
             if (!goal || goal <= 0) {
-                alert("Enter a valid goal");
+                goalMsg.textContent = "Enter a valid goal.";
                 return;
             }
+
+            if (goal > 10000) {
+                goalMsg.textContent = "Goal cannot exceed $10,000.";
+                return;
+            }
+
+            goalMsg.textContent = "";
 
             await fetch("/travel_goal", {
                 method: "POST",
@@ -127,14 +135,30 @@ document.addEventListener('DOMContentLoaded', () => {
             const contribution = parseFloat(contributionInput.value);
 
             if (!contribution || contribution <= 0) {
-                alert("Please enter a valid contribution.");
+                contributionMsg.textContent = "Enter a valid contribution.";
+                contributionmsg.style.color = "red";
                 return;
             }
 
             if (!currentGoalId) {
-                alert("Please set a goal first.");
+                contributionMsg.textContent = "Please set a goal first.";
+                contributionmsg.style.color = "red";
                 return;
             }
+
+            if (contribution > savedGoal) {
+                contributionMsg.textContent = "Cannot exceed goal amount.";
+                contributionmsg.style.color = "red";
+                return;
+            }
+
+            if (contribution > savedGoal / 2) {
+                contributionMsg.textContent = "Cannot exceed 50% of goal.";
+                contributionmsg.style.color = "red";
+                return;
+            }
+
+            contributionMsg.textContent = "";
 
             await fetch("/travel_goal/save", {
                 method: "POST",
@@ -195,9 +219,17 @@ async function setCategoryLimit() {
 
     const category = document.getElementById("limitCategory")?.value;
     const limit = parseFloat(document.getElementById("categoryLimit")?.value);
+    const msg = document.getElementById("limitMessage");
 
     if (!category || !limit) {
-        alert("Please select a category and enter a limit.");
+        msg.textContent = "Please select a category and enter a limit.";
+        msg.style.color = "red";
+        return;
+    }
+
+    if (limit <= 0) {
+        msg.textContent = "Limit must be greater than 0.";
+        msg.style.color = "red";
         return;
     }
 
@@ -205,6 +237,8 @@ async function setCategoryLimit() {
         const confirmLimit = confirm("This limit is over $1,000. Are you sure?");
         if (!confirmLimit) return;
     }
+
+    msg.textContent = "";
 
     await fetch("/limit", {
         method: "POST",
@@ -283,6 +317,12 @@ async function addPurchase() {
 
     if (!category || !amount) {
         msg.textContent = "Please select a category and enter an amount.";
+        msg.style.color = "red";
+        return;
+    }
+
+    if (amount <= 0) {
+        msg.textContent = "Amount must be greater than 0.";
         msg.style.color = "red";
         return;
     }
