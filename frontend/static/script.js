@@ -25,15 +25,22 @@ document.addEventListener('DOMContentLoaded', () => {
     /* home travelbar */
 
     async function loadHomeTravelBar() {
-        const res = await fetch("/travel_goals");
+        const res = await fetch("/travel_goal");
         const data = await res.json();
 
-        if (data.length === 0) return;
+        if (!data.goal_amount) {
+            updateUI(0, 0);
+            return;
+            }
 
-        const goal = data[0];
+        totalSaved = data.saved_amount;
+        savedGoal = data.goal_amount;
+
+        goalInput.value = savedGoal;
+        updateUI(totalSaved, savedGoal);
 
         const homeSaved = goal.saved_amount;
-        const homeGoal = goal.target_amount;
+        const homeGoal = goal.goal_amount;
 
         const percent = (homeSaved / homeGoal) * 100;
         const remaining = homeGoal - homeSaved;
@@ -67,12 +74,19 @@ document.addEventListener('DOMContentLoaded', () => {
         let savedGoal = 0;
 
         async function loadTravelGoal() {
-            const res = await fetch("/travel_goals");
+            const res = await fetch("/travel_goal");
             const data = await res.json();
 
-            if (data.length === 0) return;
+            if (!data.goal_amount) {
+                updateUI(0, 0);
+                return;
+                }
 
-            const goal = data[0];
+            totalSaved = data.saved_amount;
+            savedGoal = data.goal_amount;
+
+            goalInput.value = savedGoal;
+            updateUI(totalSaved, savedGoal);
 
             currentGoalId = goal.id;
             totalSaved = goal.saved_amount;
