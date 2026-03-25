@@ -124,16 +124,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // make sure goal exists
-            await fetch("/travel_goal/set", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({
-                    goal_amount: goal
-                })
-            });
-
-            // add contribution
             const res = await fetch("/travel_goal/add", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
