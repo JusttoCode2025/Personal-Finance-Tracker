@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await res.json();
 
         if (data.length === 0) {
+            currentGoalId = null;
             updateUI(0, 0);
             return;
         }
@@ -73,6 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await res.json();
 
         if (data.length === 0) {
+            currentGoalId = null;
             updateUI(0, 0);
             return;
         }
