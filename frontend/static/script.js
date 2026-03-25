@@ -105,9 +105,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            if (goal > 10000) {
-                goalMsg.textContent = "Goal cannot exceed $10,000.";
-                return;
+           if (goal > 10000) {
+                const confirmGoal = confirm("This goal exceeds $10,000. Are you sure?");
+                if (!confirmGoal) return;
+               contributionMsg.textContent = "Contribution added.";
+               contributionMsg.style.color = "orange";
             }
 
             goalMsg.textContent = "";
@@ -136,26 +138,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!contribution || contribution <= 0) {
                 contributionMsg.textContent = "Enter a valid contribution.";
-                contributionmsg.style.color = "red";
+                contributionMsg.style.color = "red";
                 return;
             }
 
             if (!currentGoalId) {
                 contributionMsg.textContent = "Please set a goal first.";
-                contributionmsg.style.color = "red";
+                contributionMsg.style.color = "red";
                 return;
             }
 
             if (contribution > savedGoal) {
                 contributionMsg.textContent = "Cannot exceed goal amount.";
-                contributionmsg.style.color = "red";
+                contributionMsg.style.color = "red";
                 return;
             }
 
             if (contribution > savedGoal / 2) {
-                contributionMsg.textContent = "Cannot exceed 50% of goal.";
-                contributionmsg.style.color = "red";
-                return;
+                const confirmContribution = confirm("This contribution is more than 50% of your goal. Continue?");
+                if (!confirmContribution) return;
+                goalMsg.textContent = "Contribution added.";
+                goalMsg.style.color = "orange";
             }
 
             contributionMsg.textContent = "";
