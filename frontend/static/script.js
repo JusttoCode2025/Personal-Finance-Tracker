@@ -25,16 +25,18 @@ document.addEventListener('DOMContentLoaded', () => {
     /* home travel bar */
 
     async function loadHomeTravelBar() {
-        const res = await fetch("/travel_goal");
+        const res = await fetch("/travel_goals");
         const data = await res.json();
 
-        if (!data.goal_amount) {
+        if (data.length === 0) {
             updateUI(0, 0);
             return;
         }
 
-        const homeSaved = data.saved_amount;
-        const homeGoal = data.goal_amount;
+        const goal = data[0];
+
+        const homeSaved = goal.saved_amount;
+        const homeGoal = goal.target_amount;
 
         const percent = homeGoal > 0 ? (homeSaved / homeGoal) * 100 : 0;
         const remaining = homeGoal - homeSaved;
@@ -63,18 +65,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const setBtn = document.getElementById("setGoalBtn");
     const resetBtn = document.getElementById("resetGoal");
 
+    let currentGoalId = null;
+    let savedGoal = 0;
+
     async function loadTravelGoal() {
-        const res = await fetch("/travel_goal");
+        const res = await fetch("/travel_goals");
         const data = await res.json();
 
-        if (!data.goal_amount) {
+        if (data.length === 0) {
             updateUI(0, 0);
             return;
         }
 
-        if (goalInput) goalInput.value = data.goal_amount;
+        const goal = data[0];
 
-        updateUI(data.saved_amount, data.goal_amount);
+        currentGoalId = goal.id;
+        savedGoal = goal.target_amount;
+
+        if (goalInput) goalInput.value = savedGoal;
+
+        updateUI(goal.saved_amount, goal.target_amount);
     }
 
     if (goalInput) loadTravelGoal();
@@ -92,11 +102,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            await fetch("/travel_goal/set", {
+            await fetch("/travel_goal", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({
-                    goal_amount: goal
+                    destination: "My Trip",
+                    target_amount: goal
                 })
             });
 
@@ -111,30 +122,28 @@ document.addEventListener('DOMContentLoaded', () => {
     if (addBtn) {
         addBtn.addEventListener("click", async () => {
 
-            const goal = parseFloat(goalInput.value);
             const contribution = parseFloat(contributionInput.value);
-
-            if (!goal || goal <= 0) {
-                alert("Please enter a valid goal amount.");
-                return;
-            }
 
             if (!contribution || contribution <= 0) {
                 alert("Please enter a valid contribution.");
                 return;
             }
 
-            const res = await fetch("/travel_goal/add", {
+            if (!currentGoalId) {
+                alert("Please set a goal first.");
+                return;
+            }
+
+            await fetch("/travel_goal/save", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({
+                    id: currentGoalId,
                     amount: contribution
                 })
             });
 
-            const data = await res.json();
-
-            updateUI(data.saved_amount, data.goal_amount);
+            loadTravelGoal();
             loadHomeTravelBar();
 
             contributionInput.value = "";
@@ -154,10 +163,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: "POST"
             });
 
-            updateUI(0, 0);
+            loadTravelGoal();
             loadHomeTravelBar();
-
-            location.reload();
         });
     }
 
