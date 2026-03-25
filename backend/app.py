@@ -296,9 +296,11 @@ def add_travel_goal():
 
     conn = db_connection()
     cursor = conn.cursor()
-
+    
+    cursor.execute("DELETE FROM travel_goals")
+    
     cursor.execute(
-        "INSERT INTO travel_goals (destination, target_amount) VALUES (%s, %s)",
+        "INSERT INTO travel_goals (destination, target_amount, saved_amount) VALUES (%s, %s, 0)",
         (destination, target_amount)
     )
 
