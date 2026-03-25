@@ -191,6 +191,11 @@ document.addEventListener('DOMContentLoaded', () => {
         loadCategories();
         loadRecentPurchases();
     }
+    const recentList = document.getElementById("recentPurchases");
+
+    if (recentList) {
+        loadRecentPurchases();
+}
 
 });
 
