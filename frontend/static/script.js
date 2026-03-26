@@ -379,8 +379,6 @@ async function addPurchase() {
 async function transferToTravel() {
 
     const msg = document.getElementById("transferMessage");
-
-    // 🔥 get remaining amount from backend first
     const resCheck = await fetch("/limits");
     const limits = await resCheck.json();
 
@@ -418,6 +416,7 @@ async function transferToTravel() {
     msg.style.color = "green";
 
     loadTravelGoal();
+    loadCategories();
 }
 
 
