@@ -375,11 +375,31 @@ async function addPurchase() {
     loadCategories();
 }
 
+/* budget to travel transfer */
 async function transferToTravel() {
 
     const msg = document.getElementById("transferMessage");
 
-    const confirmTransfer = confirm("Transfer your remaining budget to your travel goal?");
+    // 🔥 get remaining amount from backend first
+    const resCheck = await fetch("/limits");
+    const limits = await resCheck.json();
+
+    let totalRemaining = 0;
+
+    limits.forEach(l => {
+        totalRemaining += l.remaining;
+    });
+
+    if (totalRemaining <= 0) {
+        msg.textContent = "No remaining budget to transfer.";
+        msg.style.color = "red";
+        return;
+    }
+
+    const confirmTransfer = confirm(
+        `You are about to transfer $${totalRemaining.toFixed(2)} to your travel goal. Continue?`
+    );
+
     if (!confirmTransfer) return;
 
     const res = await fetch("/transfer_to_travel", {
