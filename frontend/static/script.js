@@ -375,6 +375,31 @@ async function addPurchase() {
     loadCategories();
 }
 
+async function transferToTravel() {
+
+    const msg = document.getElementById("transferMessage");
+
+    const confirmTransfer = confirm("Transfer your remaining budget to your travel goal?");
+    if (!confirmTransfer) return;
+
+    const res = await fetch("/transfer_to_travel", {
+        method: "POST"
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+        msg.textContent = data.error;
+        msg.style.color = "red";
+        return;
+    }
+
+    msg.textContent = data.message;
+    msg.style.color = "green";
+
+    loadTravelGoal();
+}
+
 
 /* travel bar */
 
