@@ -376,13 +376,12 @@ def reset_travel_goal():
 
     return jsonify({"message": "Reset successful"}), 200
 
-# transfer remaining budgett
+# transfer remaining to budgett
 @app.route("/transfer_to_travel", methods=["POST"])
 def transfer_to_travel():
     conn = db_connection()
     cursor = conn.cursor()
 
-    
     cursor.execute("SELECT COALESCE(SUM(remaining), 0) FROM spending_limits")
     remaining = float(cursor.fetchone()[0])
 
@@ -391,7 +390,7 @@ def transfer_to_travel():
         conn.close()
         return jsonify({"error": "No remaining budget to transfer"}), 400
 
-    
+
     cursor.execute("SELECT id FROM travel_goals LIMIT 1")
     goal = cursor.fetchone()
 
@@ -400,17 +399,24 @@ def transfer_to_travel():
         conn.close()
         return jsonify({"error": "Please set a travel goal first"}), 400
 
+    # add remaining to travel goal
     cursor.execute("""
         UPDATE travel_goals
         SET saved_amount = saved_amount + %s
         WHERE id = %s
     """, (remaining, goal[0]))
 
+   
+    cursor.execute("""
+        UPDATE spending_limits
+        SET remaining = 0
+    """)
+
     conn.commit()
     cursor.close()
     conn.close()
 
-    return jsonify({"message": f"${remaining:.2f} transferred to travel goal"}), 200
+    return jsonify({"message": f"${remaining:.2f} transferred and budget reset"}), 200
 
 
 if __name__ == '__main__':
