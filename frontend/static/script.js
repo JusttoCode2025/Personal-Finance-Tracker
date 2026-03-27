@@ -102,6 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!goal || goal <= 0) {
                 goalMsg.textContent = "Enter a valid goal.";
+                goalMsg.style.color = "red";
                 return;
             }
 
