@@ -381,17 +381,15 @@ def reset_travel_goal():
 def transfer_to_travel():
     conn = db_connection()
     cursor = conn.cursor()
-
+    
     cursor.execute("SELECT id, remaining FROM spending_limits")
     categories = cursor.fetchall()
-
     total_remaining = sum([float(c[1]) for c in categories])
-
+    
     if total_remaining <= 0:
         cursor.close()
         conn.close()
         return jsonify({"error": "No remaining budget to transfer"}), 400
-
 
     cursor.execute("SELECT id, target_amount, saved_amount FROM travel_goals LIMIT 1")
     goal = cursor.fetchone()
@@ -410,52 +408,48 @@ def transfer_to_travel():
         conn.close()
         return jsonify({"error": "Goal already reached"}), 400
 
-
     transfer_amount = min(total_remaining, needed)
-
-
+   
     cursor.execute("""
         UPDATE travel_goals
         SET saved_amount = saved_amount + %s
         WHERE id = %s
-        """, (transfer_amount, goal_id))
-
+    """, (transfer_amount, goal_id))
 
     remaining_to_deduct = transfer_amount
-
+    
     for cat_id, remaining in categories:
         remaining = float(remaining)
+        
+        if remaining_to_deduct <= 0:
+            break
+            
+        if remaining >= remaining_to_deduct:
+            new_remaining = remaining - remaining_to_deduct
+            
+            cursor.execute("""
+                UPDATE spending_limits
+                SET remaining = %s
+                WHERE id = %s
+            """, (new_remaining, cat_id))
+            remaining_to_deduct = 0
 
-    if remaining_to_deduct <= 0:
-    break
-
-    if remaining >= remaining_to_deduct:
-    new_remaining = remaining - remaining_to_deduct
-
-    cursor.execute("""
-        UPDATE spending_limits
-        SET remaining = %s
-        WHERE id = %s
-        """, (new_remaining, cat_id))
-
-    remaining_to_deduct = 0
-
-    else:
-        cursor.execute("""
-            UPDATE spending_limits
-            SET remaining = 0
-            WHERE id = %s
+        else:
+           cursor.execute(""" 
+               UPDATE spending_limits
+               SET remaining = 0
+               WHERE id = %s
             """, (cat_id,))
 
-    remaining_to_deduct -= remaining
-
+            remaining_to_deduct -= remaining
+            
     conn.commit()
     cursor.close()
     conn.close()
 
     return jsonify({
         "message": f"${transfer_amount:.2f} transferred to travel goal"
-        }), 200
+    }), 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
