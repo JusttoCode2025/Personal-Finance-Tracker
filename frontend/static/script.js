@@ -255,7 +255,7 @@ async function setCategoryLimit() {
     loadCategories();
 }
 
-
+/* load category cards*/
 async function loadCategories() {
 
     const res = await fetch("/limits");
@@ -311,7 +311,7 @@ async function loadRecentPurchases() {
     });
 }
 
-
+/* add purchases*/
 async function addPurchase() {
 
     const category = document.getElementById("purchaseCategory").value.toLowerCase();
@@ -393,13 +393,31 @@ async function transferToTravel() {
         msg.style.color = "red";
         return;
     }
+    const resGoal = await fetch("/travel_goals");
+    const goals = await resGoal.json();
 
-    const confirmTransfer = confirm(
-        `You are about to transfer $${totalRemaining.toFixed(2)} to your travel goal. Continue?`
-    );
+    if (goals.length === 0) {
+        msg.textContent = "Please set a travel goal first.";
+        msg.style.color = "red";
+        return;
+    }
 
-    if (!confirmTransfer) return;
+    const goal = goals[0];
+    const target = goal.target_amount;
+    const saved = goal.saved_amount;
 
+    if (saved + totalRemaining > target) {
+        const confirmOver = confirm(
+            `This will exceed your goal.\n\nGoal: $${target}\nAfter transfer: $${(saved + totalRemaining).toFixed(2)}\n\nContinue?`
+        );
+        if (!confirmOver) return;
+    } 
+    else {  
+        const confirmTransfer = confirm(
+            `Transfer $${totalRemaining.toFixed(2)} to your travel goal?`
+        );
+        if (!confirmTransfer) return;
+    }
     const res = await fetch("/transfer_to_travel", {
         method: "POST"
     });
