@@ -37,8 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const homeSaved = goal.saved_amount;
         const homeGoal = goal.target_amount;
-
-        const percent = homeGoal > 0 ? (homeSaved / homeGoal) * 100 : 0;
+        
+        const percent = homeGoal > 0 ? Math.min((homeSaved / homeGoal) * 100, 100) : 0;
         const remaining = homeGoal - homeSaved;
 
         const homeBar = document.getElementById("homeTravelProgress");
@@ -442,7 +442,7 @@ async function transferToTravel() {
 
 function updateUI(saved, goal) {
 
-    const percent = goal > 0 ? (saved / goal) * 100 : 0;
+    const percent = goal > 0 ? Math.min((saved / goal) * 100, 100) : 0;
     const remaining = goal > 0 ? goal - saved : 0;
 
     const progressBar = document.getElementById("travelProgress");
