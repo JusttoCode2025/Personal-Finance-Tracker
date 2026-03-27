@@ -377,79 +377,48 @@ def reset_travel_goal():
     return jsonify({"message": "Reset successful"}), 200
 
 # budget to travel
-@app.route("/transfer_to_travel", methods=["POST"])
-def transfer_to_travel():
-    conn = db_connection()
-    cursor = conn.cursor()
-    
-    cursor.execute("SELECT id, remaining FROM spending_limits")
-    categories = cursor.fetchall()
-    total_remaining = sum([float(c[1]) for c in categories])
-    
-    if total_remaining <= 0:
-        cursor.close()
-        conn.close()
-        return jsonify({"error": "No remaining budget to transfer"}), 400
+async function transferToTravel() {
 
-    cursor.execute("SELECT id, target_amount, saved_amount FROM travel_goals LIMIT 1")
-    goal = cursor.fetchone()
+    const msg = document.getElementById("transferMessage");
+    const resCheck = await fetch("/limits");
+    const limits = await resCheck.json();
 
-    if not goal:
-        cursor.close()
-        conn.close()
-        return jsonify({"error": "Please set a travel goal first"}), 400
+    let totalRemaining = 0;
 
-    goal_id, target, saved = goal
+    limits.forEach(l => {
+        totalRemaining += l.remaining;
+    });
 
-    needed = target - saved
+    if (totalRemaining <= 0) {
+        msg.textContent = "No remaining budget to transfer.";
+        msg.style.color = "red";
+        return;
+    }
 
-    if needed <= 0:
-        cursor.close()
-        conn.close()
-        return jsonify({"error": "Goal already reached"}), 400
+    const confirmTransfer = confirm(
+        `You are about to transfer $${totalRemaining.toFixed(2)} to your travel goal. Continue?`
+    );
 
-    transfer_amount = min(total_remaining, needed)
-   
-    cursor.execute("""
-        UPDATE travel_goals
-        SET saved_amount = saved_amount + %s
-        WHERE id = %s
-    """, (transfer_amount, goal_id))
+    if (!confirmTransfer) return;
 
-    remaining_to_deduct = transfer_amount
-    
-    for cat_id, remaining in categories:
-        remaining = float(remaining)
-        
-        if remaining_to_deduct <= 0:
-            break
-            
-        if remaining >= remaining_to_deduct:
-            new_remaining = remaining - remaining_to_deduct
-            
-            cursor.execute("""
-                UPDATE spending_limits
-                SET remaining = %s
-                WHERE id = %s
-            """, (new_remaining, cat_id))
-            remaining_to_deduct = 0
+    const res = await fetch("/transfer_to_travel", {
+        method: "POST"
+    });
 
-        else:
-           cursor.execute(""" 
-               UPDATE spending_limits
-               SET remaining = 0
-               WHERE id = %s
-            """, (cat_id,))
+    const data = await res.json();
 
-            remaining_to_deduct -= remaining
-            
-    conn.commit()
-    cursor.close()
-    conn.close()
+    if (data.error) {
+        msg.textContent = data.error;
+        msg.style.color = "red";
+        return;
+    }
 
-    return jsonify({
-        "message": f"${transfer_amount:.2f} transferred to travel goal"
-    }), 200
+    msg.textContent = data.message;
+    msg.style.color = "green";
+
+    loadTravelGoal();
+    loadCategories();
+}
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
