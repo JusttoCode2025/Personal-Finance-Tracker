@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
            if (goal > 10000) {
                 const confirmGoal = confirm("This goal exceeds $10,000. Are you sure?");
                 if (!confirmGoal) return;
-               goalMsg.textContent = "Goal set..";
+               goalMsg.textContent = "Goal set.";
                goalMsg.style.color = "orange";
             }
 
@@ -455,7 +455,7 @@ async function transferToTravel() {
 function updateUI(saved, goal) {
 
     const percent = goal > 0 ? Math.min((saved / goal) * 100, 100) : 0;
-    const remaining = goal > 0 ? goal - saved : 0;
+    const remaining = goal > 0 ? Math.max(goal - saved, 0) : 0;
 
     const progressBar = document.getElementById("travelProgress");
     const percentText = document.getElementById("travelPercent");
@@ -478,14 +478,15 @@ function updateUI(saved, goal) {
 
     if (celebrate) {
 
-        if (percent >= 100) {
+        if (saved > goal) {
+            celebrate.textContent = "Goal exceeded!";
+    }
+        else if (percent >= 100) {
             celebrate.textContent = "Congratulations! You've reached your travel goal!";
-            progressBar.style.background =
-                "linear-gradient(90deg, #2e7d32, #4caf50)";
-        }
+    }
         else if (percent >= 75) celebrate.textContent = "Almost there!";
         else if (percent >= 50) celebrate.textContent = "Halfway there!";
         else if (percent >= 25) celebrate.textContent = "Great start!";
         else celebrate.textContent = "";
-    }
+}
 }
