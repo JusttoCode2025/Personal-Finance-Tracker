@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const homeGoal = goal.target_amount;
         
         const percent = homeGoal > 0 ? Math.min((homeSaved / homeGoal) * 100, 100) : 0;
-        const remaining = homeGoal - homeSaved;
+        const remaining = Math.max(homeGoal - homeSaved, 0);
 
         const homeBar = document.getElementById("homeTravelProgress");
         const homePercent = document.getElementById("homeTravelPercent");
@@ -441,7 +441,7 @@ async function transferToTravel() {
         const goalAfter = goalsAfter[0];
 
         if (goalAfter.saved_amount > goalAfter.target_amount) {
-            msg.textContent += " 🎉 Goal exceeded!";
+            msg.textContent += " Goal exceeded!";
     }
 }
 
