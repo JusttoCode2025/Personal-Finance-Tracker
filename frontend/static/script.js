@@ -434,6 +434,17 @@ async function transferToTravel() {
     msg.textContent = data.message;
     msg.style.color = "green";
 
+    const resGoalAfter = await fetch("/travel_goals");
+    const goalsAfter = await resGoalAfter.json();
+
+    if (goalsAfter.length > 0) {
+        const goalAfter = goalsAfter[0];
+
+        if (goalAfter.saved_amount > goalAfter.target_amount) {
+            msg.textContent += " 🎉 Goal exceeded!";
+    }
+}
+
     loadTravelGoal();
     loadCategories();
 }
