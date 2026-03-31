@@ -28,7 +28,7 @@
     </div>
 </nav>
 
-<!-- start of page-->
+<!-- Page header-->
  <div class="section">
         <h1>Budget </h1>
         <p style="color:#555; margin-top:8px;">
@@ -61,6 +61,13 @@
             <button onclick="setCategoryLimit()">Set Limit</button>
              <p id="limitMessage"></p>
         </div>
+            <!-- transfer remaining budget to travel page -->
+        <div style="margin-top: 10px;">
+            <button class="transfer-btn" onclick="transferToTravel()">
+                Transfer Remaining Budget
+            </button>
+            <p id="transferMessage"></p>
+    </div>
     </section>
 
     <!-- add purchases -->

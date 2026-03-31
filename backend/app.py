@@ -10,10 +10,9 @@ app = Flask(
     static_folder="../frontend/static"
 )
 
-#  Database connecting to render
+#  dbs connect to render 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
-# Fix Render issue
 if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
@@ -377,6 +376,43 @@ def reset_travel_goal():
 
     return jsonify({"message": "Reset successful"}), 200
 
+@app.route("/transfer_to_travel", methods=["POST"])
+def transfer_to_travel():
+    conn = db_connection()
+    cursor = conn.cursor()
+
+    # get total remaining
+    cursor.execute("SELECT COALESCE(SUM(remaining), 0) FROM spending_limits")
+    total_remaining = float(cursor.fetchone()[0])
+
+    if total_remaining <= 0:
+        cursor.close()
+        conn.close()
+        return jsonify({"error": "No remaining budget to transfer"}), 400
+
+    # get travel goal
+    cursor.execute("SELECT id FROM travel_goals LIMIT 1")
+    goal = cursor.fetchone()
+
+    if not goal:
+        cursor.close()
+        conn.close()
+        return jsonify({"error": "Please set a travel goal first"}), 400
+
+  
+    cursor.execute("""
+        UPDATE travel_goals
+        SET saved_amount = saved_amount + %s
+        WHERE id = %s
+    """, (total_remaining, goal[0]))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return jsonify({
+        "message": f"${total_remaining:.2f} transferred to travel goal"
+    }), 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
