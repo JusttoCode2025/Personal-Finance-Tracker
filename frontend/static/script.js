@@ -109,8 +109,8 @@ document.addEventListener('DOMContentLoaded', () => {
            if (goal > 10000) {
                 const confirmGoal = confirm("This goal exceeds $10,000. Are you sure?");
                 if (!confirmGoal) return;
-               contributionMsg.textContent = "Contribution added.";
-               contributionMsg.style.color = "orange";
+               goalMsg.textContent = "Goal set..";
+               goalMsg.style.color = "orange";
             }
 
             goalMsg.textContent = "";
@@ -158,8 +158,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (contribution > savedGoal / 2) {
                 const confirmContribution = confirm("This contribution is more than 50% of your goal. Continue?");
                 if (!confirmContribution) return;
-                goalMsg.textContent = "Contribution added.";
-                goalMsg.style.color = "orange";
+                contributionMsg.textContent = "Contribution added.";
+                contributionMsg.style.color = "orange";
             }
 
             contributionMsg.textContent = "";
