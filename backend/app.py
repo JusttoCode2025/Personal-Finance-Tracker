@@ -376,49 +376,43 @@ def reset_travel_goal():
 
     return jsonify({"message": "Reset successful"}), 200
 
-# budget to travel
-async function transferToTravel() {
+@app.route("/transfer_to_travel", methods=["POST"])
+def transfer_to_travel():
+    conn = db_connection()
+    cursor = conn.cursor()
 
-    const msg = document.getElementById("transferMessage");
-    const resCheck = await fetch("/limits");
-    const limits = await resCheck.json();
+    # get total remaining
+    cursor.execute("SELECT COALESCE(SUM(remaining), 0) FROM spending_limits")
+    total_remaining = float(cursor.fetchone()[0])
 
-    let totalRemaining = 0;
+    if total_remaining <= 0:
+        cursor.close()
+        conn.close()
+        return jsonify({"error": "No remaining budget to transfer"}), 400
 
-    limits.forEach(l => {
-        totalRemaining += l.remaining;
-    });
+    # get travel goal
+    cursor.execute("SELECT id FROM travel_goals LIMIT 1")
+    goal = cursor.fetchone()
 
-    if (totalRemaining <= 0) {
-        msg.textContent = "No remaining budget to transfer.";
-        msg.style.color = "red";
-        return;
-    }
+    if not goal:
+        cursor.close()
+        conn.close()
+        return jsonify({"error": "Please set a travel goal first"}), 400
 
-    const confirmTransfer = confirm(
-        `You are about to transfer $${totalRemaining.toFixed(2)} to your travel goal. Continue?`
-    );
+  
+    cursor.execute("""
+        UPDATE travel_goals
+        SET saved_amount = saved_amount + %s
+        WHERE id = %s
+    """, (total_remaining, goal[0]))
 
-    if (!confirmTransfer) return;
+    conn.commit()
+    cursor.close()
+    conn.close()
 
-    const res = await fetch("/transfer_to_travel", {
-        method: "POST"
-    });
-
-    const data = await res.json();
-
-    if (data.error) {
-        msg.textContent = data.error;
-        msg.style.color = "red";
-        return;
-    }
-
-    msg.textContent = data.message;
-    msg.style.color = "green";
-
-    loadTravelGoal();
-    loadCategories();
-}
+    return jsonify({
+        "message": f"${total_remaining:.2f} transferred to travel goal"
+    }), 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
