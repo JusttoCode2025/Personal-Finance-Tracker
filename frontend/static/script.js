@@ -1,3 +1,52 @@
+// ============================================
+// POPUP / NOTIFICATION SYSTEM (added feature)
+// ============================================
+
+function showNotification(message, type = 'info', callback = null) {
+    const existing = document.getElementById('app-notification');
+    if (existing) existing.remove();
+
+    const notification = document.createElement('div');
+    notification.id = 'app-notification';
+    notification.className = `notification notification-${type}`;
+    
+    notification.innerHTML = `
+        <span>${message}</span>
+        <button onclick="this.parentElement.remove()">×</button>
+    `;
+    
+    document.body.appendChild(notification);
+
+    setTimeout(() => notification.remove(), 4000);
+
+    if (callback) callback();
+}
+
+function showConfirm(message, onConfirm) {
+    const confirmBox = document.createElement('div');
+    confirmBox.innerHTML = `
+        <div style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center;">
+            <div style="background:white; padding:20px; border-radius:10px; text-align:center;">
+                <p>${message}</p>
+                <button id="yesBtn">Yes</button>
+                <button id="noBtn">Cancel</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(confirmBox);
+
+    confirmBox.querySelector("#yesBtn").onclick = () => {
+        confirmBox.remove();
+        onConfirm();
+    };
+
+    confirmBox.querySelector("#noBtn").onclick = () => {
+        confirmBox.remove();
+    };
+}
+
+
 document.addEventListener('DOMContentLoaded', () => {
 
     /* login */
@@ -14,10 +63,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const validPassword = "group1";
 
             if (emailInput.value === validEmail && passwordInput.value === validPassword) {
-                alert("Success! You are now logged in.");
+                showNotification("Success! You are now logged in.", "success");
                 window.location.href = "/home";
             } else {
-                alert("Error: Invalid email or password.");
+                showNotification("Invalid email or password.", "error");
             }
         });
     }
@@ -106,10 +155,23 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
            if (goal > 10000) {
-                const confirmGoal = confirm("This goal exceeds $10,000. Are you sure?");
-                if (!confirmGoal) return;
-               contributionMsg.textContent = "Contribution added.";
-               contributionMsg.style.color = "orange";
+                showConfirm("This goal exceeds $10,000. Are you sure?", async () => {
+    goalMsg.textContent = "";
+
+    await fetch("/travel_goal", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            destination: "My Trip",
+            target_amount: goal
+        })
+    });
+
+    loadTravelGoal();
+    loadHomeTravelBar();
+});
+return;
+              
             }
 
             goalMsg.textContent = "";
@@ -185,15 +247,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (resetBtn) {
         resetBtn.addEventListener("click", async () => {
 
-            const confirmReset = confirm("Are you sure you want to reset your travel goal?");
-            if (!confirmReset) return;
+           showConfirm("Are you sure you want to reset your travel goal?", async () => {
+    await fetch("/travel_goal/reset", {
+        method: "POST"
+    });
 
-            await fetch("/travel_goal/reset", {
-                method: "POST"
-            });
-
-            loadTravelGoal();
-            loadHomeTravelBar();
+    loadTravelGoal();
+    loadHomeTravelBar();
+    });
+    return;
         });
     }
 
