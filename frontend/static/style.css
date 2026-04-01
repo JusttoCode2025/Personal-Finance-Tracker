@@ -42,7 +42,6 @@ body {
     position: relative;
 }
 
-/* Hover underline animation */
 .navbar a::after {
     content: "";
     position: absolute;
@@ -66,7 +65,7 @@ body {
     width: 100%;
 }
 
-/* Nav center summary */
+
 .nav-center {
     display: flex;
     gap: 20px;
@@ -81,7 +80,7 @@ body {
     animation: fadeIn 0.6s ease-in-out;
 }
 
-/* Page fade-in */
+
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -172,6 +171,25 @@ button:active {
 #remaining {
     margin-top: 14px;
     font-weight: 600;
+}
+.transfer-btn {
+    background: linear-gradient(135deg, #6D4C41, #8D6E63);
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.transfer-btn:hover {
+    background: linear-gradient(135deg, #5D4037, #6D4C41);
+    transform: translateY(-1px);
+}
+
+.transfer-btn:active {
+    transform: scale(0.97);
 }
 
 /* EXPENSE LIST  */
@@ -290,7 +308,7 @@ button:active {
     font-weight: 600;
     color: white;
 }
-/*Travel Goal */
+/*travel goal */
 
 .goal-status-card {
     background: white;
@@ -329,7 +347,7 @@ button:active {
     font-size: 1.5rem;
 }
 
-/* Bar */
+/* progress bar for home and travel */
 
 .goal-bar-wrapper {
     position: relative;
