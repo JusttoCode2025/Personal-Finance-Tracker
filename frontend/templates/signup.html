@@ -212,6 +212,23 @@
             display: block;
             animation: slideDown 0.5s;
         }
+        
+        .error-message {
+            background: #FFEBEE;
+            border: 2px solid #F44336;
+            color: #C62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+            display: none;
+            text-align: center;
+        }
+        
+        .error-message.show {
+            display: block;
+            animation: slideDown 0.5s;
+        }
 
         @keyframes slideDown {
             from {
@@ -249,6 +266,9 @@
         <div class="signup-form">
             <div class="success-message" id="success-message">
                 ✓ Account created successfully! Redirecting to login...
+            </div>
+            <div class="error-message" id="error-message">
+                ✗ Error creating account. Please try again.
             </div>
 
             <form id="signup-form" onsubmit="handleSignup(event)">
@@ -296,37 +316,94 @@
             </div>
 
             <div class="login-link">
-                Already have an account? <a href= /login >Sign in</a>
+                Already have an account? <a href="/login">Sign in</a>
             </div>
         </div>
     </div>
 
     <script>
-        function handleSignup(event) {
+        async function handleSignup(event) {
             event.preventDefault();
             
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirm-password').value;
+            
+            // Hide any existing messages
+            document.getElementById('success-message').classList.remove('show');
+            document.getElementById('error-message').classList.remove('show');
 
             // Check if passwords match
             if (password !== confirmPassword) {
-                alert('Passwords do not match!');
+                const errorMsg = document.getElementById('error-message');
+                errorMsg.textContent = '✗ Passwords do not match!';
+                errorMsg.classList.add('show');
                 return;
             }
-
-            // Show success message
-            const successMessage = document.getElementById('success-message');
-            successMessage.classList.add('show');
-
+            
+            // Get form data
+            const formData = {
+                firstname: document.getElementById('firstname').value,
+                lastname: document.getElementById('lastname').value,
+                email: document.getElementById('email').value,
+                username: document.getElementById('username').value,
+                password: password
+            };
+            
+            // Validate email format
+            const emailRegex = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
+            if (!emailRegex.test(formData.email)) {
+                const errorMsg = document.getElementById('error-message');
+                errorMsg.textContent = '✗ Please enter a valid email address!';
+                errorMsg.classList.add('show');
+                return;
+            }
+            
             // Disable submit button
             const submitBtn = document.getElementById('signup-btn');
             submitBtn.disabled = true;
-            submitBtn.textContent = 'REDIRECTING...';
-
-            // Redirect to login page after 2 seconds
-            setTimeout(() => {
-                window.location.href = '/login';
-            }, 2000);
+            submitBtn.textContent = 'CREATING ACCOUNT...';
+            
+            try {
+                // Send data to backend
+                const response = await fetch('/signup_submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Show success message
+                    const successMessage = document.getElementById('success-message');
+                    successMessage.classList.add('show');
+                    
+                    // Redirect to login page after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 2000);
+                } else {
+                    // Show error message
+                    const errorMsg = document.getElementById('error-message');
+                    if (result.errors && result.errors.length > 0) {
+                        errorMsg.textContent = '✗ ' + result.errors.join(', ');
+                    } else {
+                        errorMsg.textContent = '✗ ' + (result.message || 'Error creating account. Please try again.');
+                    }
+                    errorMsg.classList.add('show');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'CREATE ACCOUNT';
+                }
+            } catch (error) {
+                console.error('Signup error:', error);
+                const errorMsg = document.getElementById('error-message');
+                errorMsg.textContent = '✗ Network error. Please check your connection and try again.';
+                errorMsg.classList.add('show');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'CREATE ACCOUNT';
+            }
         }
 
         // Real-time password matching validation
@@ -340,7 +417,17 @@
                 this.style.borderColor = '#D7CCC8';
             }
         });
+        
+        // Real-time email validation
+        document.getElementById('email').addEventListener('input', function() {
+            const email = this.value;
+            const emailRegex = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
+            if (email && !emailRegex.test(email)) {
+                this.style.borderColor = '#FF5722';
+            } else {
+                this.style.borderColor = '#D7CCC8';
+            }
+        });
     </script>
 </body>
 </html>
-
