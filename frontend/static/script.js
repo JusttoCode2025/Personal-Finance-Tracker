@@ -1,6 +1,6 @@
 // ============================================
 // POPUP / NOTIFICATION SYSTEM (added feature)
-// ============================================
+
 
 function showNotification(message, type = 'info', callback = null) {
     const existing = document.getElementById('app-notification');
