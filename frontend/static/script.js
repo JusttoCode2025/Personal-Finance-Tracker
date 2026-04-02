@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const validEmail = "group1@gmail.com";
             const validPassword = "group1";
 
+            /* Need popups*/
             if (emailInput.value === validEmail && passwordInput.value === validPassword) {
                 alert("Success! You are now logged in.");
                 window.location.href = "/home";
@@ -105,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 goalMsg.style.color = "red";
                 return;
             }
-
+/* popup */
            if (goal > 10000) {
                 const confirmGoal = confirm("This goal exceeds $10,000. Are you sure?");
                 if (!confirmGoal) return;
@@ -154,9 +155,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 contributionMsg.style.color = "red";
                 return;
             }
-
+/* Needs popup*/
             if (contribution > savedGoal / 2) {
                 const confirmContribution = confirm("This contribution is more than 50% of your goal. Continue?");
+                
                 if (!confirmContribution) return;
                 contributionMsg.textContent = "Contribution added.";
                 contributionMsg.style.color = "orange";
@@ -185,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (resetBtn) {
         resetBtn.addEventListener("click", async () => {
-
+/* needs popup*/
             const confirmReset = confirm("Are you sure you want to reset your travel goal?");
             if (!confirmReset) return;
 
@@ -236,7 +238,7 @@ async function setCategoryLimit() {
         msg.style.color = "red";
         return;
     }
-
+/* popups*/
     if (limit > 1000) {
         const confirmLimit = confirm("This limit is over $1,000. Are you sure?");
         if (!confirmLimit) return;
@@ -349,7 +351,7 @@ async function addPurchase() {
     }
 
     if (data.warning) {
-
+/* popup*/
         const confirmSpend = confirm(data.warning + "\n\nContinue anyway?");
 
         if (!confirmSpend) {
@@ -406,7 +408,7 @@ async function transferToTravel() {
     const goal = goals[0];
     const target = goal.target_amount;
     const saved = goal.saved_amount;
-
+/*pop up*/
     if (saved + totalRemaining > target) {
         const confirmOver = confirm(
             `This will exceed your goal.\n\nGoal: $${target}\nAfter transfer: $${(saved + totalRemaining).toFixed(2)}\n\nContinue?`
@@ -414,6 +416,7 @@ async function transferToTravel() {
         if (!confirmOver) return;
     } 
     else {  
+        /* popups*/
         const confirmTransfer = confirm(
             `Transfer $${totalRemaining.toFixed(2)} to your travel goal?`
         );
