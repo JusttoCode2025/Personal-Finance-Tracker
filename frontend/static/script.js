@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const validEmail = "group1@gmail.com";
             const validPassword = "group1";
 
+            /* Need popups*/
             if (emailInput.value === validEmail && passwordInput.value === validPassword) {
                 alert("Success! You are now logged in.");
                 window.location.href = "/home";
@@ -22,28 +23,24 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /* home travelbar */
+    /* home travel bar */
 
     async function loadHomeTravelBar() {
-        const res = await fetch("/travel_goal");
+        const res = await fetch("/travel_goals");
         const data = await res.json();
 
-        if (!data.goal_amount) {
+        if (data.length === 0) {
             updateUI(0, 0);
             return;
-            }
+        }
 
-        totalSaved = data.saved_amount;
-        savedGoal = data.goal_amount;
-
-        goalInput.value = savedGoal;
-        updateUI(totalSaved, savedGoal);
+        const goal = data[0];
 
         const homeSaved = goal.saved_amount;
-        const homeGoal = goal.goal_amount;
-
-        const percent = (homeSaved / homeGoal) * 100;
-        const remaining = homeGoal - homeSaved;
+        const homeGoal = goal.target_amount;
+        
+        const percent = homeGoal > 0 ? Math.min((homeSaved / homeGoal) * 100, 100) : 0;
+        const remaining = Math.max(homeGoal - homeSaved, 0);
 
         const homeBar = document.getElementById("homeTravelProgress");
         const homePercent = document.getElementById("homeTravelPercent");
@@ -60,99 +57,115 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadHomeTravelBar();
 
+
     /* travel pg */
 
     const goalInput = document.getElementById("goalAmount");
     const contributionInput = document.getElementById("contributionAmount");
     const addBtn = document.getElementById("addBtn");
+    const setBtn = document.getElementById("setGoalBtn");
     const resetBtn = document.getElementById("resetGoal");
+    const goalMsg = document.getElementById("goalMessage");
+    const contributionMsg = document.getElementById("contributionMessage");
 
-    if (goalInput && addBtn) {
+    let currentGoalId = null;
+    let savedGoal = 0;
 
-        let currentGoalId = null;
-        let totalSaved = 0;
-        let savedGoal = 0;
+    async function loadTravelGoal() {
+        const res = await fetch("/travel_goals");
+        const data = await res.json();
 
-        async function loadTravelGoal() {
-            const res = await fetch("/travel_goal");
-            const data = await res.json();
-
-            if (!data.goal_amount) {
-                updateUI(0, 0);
-                return;
-                }
-
-            totalSaved = data.saved_amount;
-            savedGoal = data.goal_amount;
-
-            goalInput.value = savedGoal;
-            updateUI(totalSaved, savedGoal);
-
-            currentGoalId = goal.id;
-            totalSaved = goal.saved_amount;
-            savedGoal = goal.target_amount;
-
-            goalInput.value = savedGoal;
-            updateUI(totalSaved, savedGoal);
+        if (data.length === 0) {
+            currentGoalId = null;
+            updateUI(0, 0);
+            return;
         }
 
-        loadTravelGoal();
+        const goal = data[0];
 
-        addBtn.addEventListener("click", async () => {
+        currentGoalId = goal.id;
+        savedGoal = goal.target_amount;
 
-            let goal = parseFloat(goalInput.value);
-            const contribution = parseFloat(contributionInput.value);
+        if (goalInput) goalInput.value = savedGoal;
 
-            
-            if (currentGoalId) {
-                goal = savedGoal;
-            }
+        updateUI(goal.saved_amount, goal.target_amount);
+    }
+
+    if (goalInput) loadTravelGoal();
+
+
+    /* set goal */
+
+    if (setBtn) {
+        setBtn.addEventListener("click", async () => {
+
+            const goal = parseFloat(goalInput.value);
 
             if (!goal || goal <= 0) {
-                alert("Please enter a valid goal amount.");
+                goalMsg.textContent = "Enter a valid goal.";
+                goalMsg.style.color = "red";
                 return;
             }
-
-            if (goal > 10000) {
-                const confirmGoal = confirm(
-                    "Your goal is over $10,000. Are you sure this is correct?"
-                );
+/* popup */
+           if (goal > 10000) {
+                const confirmGoal = confirm("This goal exceeds $10,000. Are you sure?");
                 if (!confirmGoal) return;
+               goalMsg.textContent = "Goal set.";
+               goalMsg.style.color = "orange";
             }
+
+            goalMsg.textContent = "";
+
+            await fetch("/travel_goal", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    destination: "My Trip",
+                    target_amount: goal
+                })
+            });
+
+            loadTravelGoal();
+            loadHomeTravelBar();
+        });
+    }
+
+
+    /* add contribution */
+
+    if (addBtn) {
+        addBtn.addEventListener("click", async () => {
+
+            const contribution = parseFloat(contributionInput.value);
 
             if (!contribution || contribution <= 0) {
-                alert("Please enter a valid contribution.");
+                contributionMsg.textContent = "Enter a valid contribution.";
+                contributionMsg.style.color = "red";
                 return;
             }
 
-            if (contribution > goal) {
-                alert("Contribution cannot be greater than the goal.");
-                return;
-            }
-
-            if (contribution > goal * 0.5) {
-                const confirmLarge = confirm(
-                    "This contribution is more than half of your goal. Continue?"
-                );
-                if (!confirmLarge) return;
-            }
-
-            // create goal
             if (!currentGoalId) {
-
-                await fetch("/travel_goal", {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({
-                        destination: "My Trip",
-                        target_amount: goal
-                    })
-                });
-
-                await loadTravelGoal();
+                contributionMsg.textContent = "Please set a goal first.";
+                contributionMsg.style.color = "red";
+                return;
             }
 
-            // add contribution
+            if (contribution > savedGoal) {
+                contributionMsg.textContent = "Cannot exceed goal amount.";
+                contributionMsg.style.color = "red";
+                return;
+            }
+/* Needs popup*/
+            if (contribution > savedGoal / 2) {
+                const confirmContribution = confirm("This contribution is more than 50% of your goal. Continue?");
+                
+                if (!confirmContribution) return;
+                contributionMsg.textContent = "Contribution added.";
+                contributionMsg.style.color = "orange";
+            }
+
+            contributionMsg.textContent = "";
+
             await fetch("/travel_goal/save", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
@@ -162,42 +175,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
             });
 
-            totalSaved += contribution;
-            if (totalSaved > savedGoal) totalSaved = savedGoal;
-
-            updateUI(totalSaved, savedGoal);
+            loadTravelGoal();
+            loadHomeTravelBar();
 
             contributionInput.value = "";
+        });
+    }
 
+
+    /* reset goal */
+
+    if (resetBtn) {
+        resetBtn.addEventListener("click", async () => {
+/* needs popup*/
+            const confirmReset = confirm("Are you sure you want to reset your travel goal?");
+            if (!confirmReset) return;
+
+            await fetch("/travel_goal/reset", {
+                method: "POST"
+            });
+
+            loadTravelGoal();
             loadHomeTravelBar();
         });
-
-        // RESET GOAL
-        if (resetBtn) {
-            resetBtn.addEventListener("click", async () => {
-
-                const confirmReset = confirm("Are you sure you want to reset your travel goal?");
-                if (!confirmReset) return;
-
-                await fetch("/travel_goal/reset", {
-                    method: "POST"
-                });
-
-                currentGoalId = null;
-                totalSaved = 0;
-                savedGoal = 0;
-
-                goalInput.value = "";
-                contributionInput.value = "";
-
-                updateUI(0, 0);
-
-                alert("Travel goal reset");
-
-                loadHomeTravelBar();
-            });
-        }
     }
+
+
+    /* budget page */
 
     const categoryTable = document.getElementById("categoryTable");
 
@@ -205,30 +209,42 @@ document.addEventListener('DOMContentLoaded', () => {
         loadCategories();
         loadRecentPurchases();
     }
+
     const recentList = document.getElementById("recentPurchases");
 
     if (recentList) {
         loadRecentPurchases();
-}
+    }
 
 });
 
-/*limtis */
+
+/* limit */
 
 async function setCategoryLimit() {
 
     const category = document.getElementById("limitCategory")?.value;
     const limit = parseFloat(document.getElementById("categoryLimit")?.value);
+    const msg = document.getElementById("limitMessage");
 
     if (!category || !limit) {
-        alert("Please select a category and enter a limit.");
+        msg.textContent = "Please select a category and enter a limit.";
+        msg.style.color = "red";
         return;
     }
 
+    if (limit <= 0) {
+        msg.textContent = "Limit must be greater than 0.";
+        msg.style.color = "red";
+        return;
+    }
+/* popups*/
     if (limit > 1000) {
         const confirmLimit = confirm("This limit is over $1,000. Are you sure?");
         if (!confirmLimit) return;
     }
+
+    msg.textContent = "";
 
     await fetch("/limit", {
         method: "POST",
@@ -242,6 +258,7 @@ async function setCategoryLimit() {
     loadCategories();
 }
 
+/* load category cards*/
 async function loadCategories() {
 
     const res = await fetch("/limits");
@@ -266,6 +283,7 @@ async function loadCategories() {
         `;
     });
 }
+
 
 /* purchases */
 
@@ -296,14 +314,21 @@ async function loadRecentPurchases() {
     });
 }
 
+/* add purchases*/
 async function addPurchase() {
 
-    const category = document.getElementById("purchaseCategory").value;
+    const category = document.getElementById("purchaseCategory").value.toLowerCase();
     const amount = parseFloat(document.getElementById("purchaseAmount").value);
     const msg = document.getElementById("purchaseMessage");
 
     if (!category || !amount) {
         msg.textContent = "Please select a category and enter an amount.";
+        msg.style.color = "red";
+        return;
+    }
+
+    if (amount <= 0) {
+        msg.textContent = "Amount must be greater than 0.";
         msg.style.color = "red";
         return;
     }
@@ -326,7 +351,7 @@ async function addPurchase() {
     }
 
     if (data.warning) {
-
+/* popup*/
         const confirmSpend = confirm(data.warning + "\n\nContinue anyway?");
 
         if (!confirmSpend) {
@@ -353,12 +378,87 @@ async function addPurchase() {
     loadCategories();
 }
 
-/* travel  */
+/* budget to travel transfer */
+async function transferToTravel() {
+
+    const msg = document.getElementById("transferMessage");
+    const resCheck = await fetch("/limits");
+    const limits = await resCheck.json();
+
+    let totalRemaining = 0;
+
+    limits.forEach(l => {
+        totalRemaining += l.remaining;
+    });
+
+    if (totalRemaining <= 0) {
+        msg.textContent = "No remaining budget to transfer.";
+        msg.style.color = "red";
+        return;
+    }
+    const resGoal = await fetch("/travel_goals");
+    const goals = await resGoal.json();
+
+    if (goals.length === 0) {
+        msg.textContent = "Please set a travel goal first.";
+        msg.style.color = "red";
+        return;
+    }
+
+    const goal = goals[0];
+    const target = goal.target_amount;
+    const saved = goal.saved_amount;
+/*pop up*/
+    if (saved + totalRemaining > target) {
+        const confirmOver = confirm(
+            `This will exceed your goal.\n\nGoal: $${target}\nAfter transfer: $${(saved + totalRemaining).toFixed(2)}\n\nContinue?`
+        );
+        if (!confirmOver) return;
+    } 
+    else {  
+        /* popups*/
+        const confirmTransfer = confirm(
+            `Transfer $${totalRemaining.toFixed(2)} to your travel goal?`
+        );
+        if (!confirmTransfer) return;
+    }
+    const res = await fetch("/transfer_to_travel", {
+        method: "POST"
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+        msg.textContent = data.error;
+        msg.style.color = "red";
+        return;
+    }
+
+    msg.textContent = data.message;
+    msg.style.color = "green";
+
+    const resGoalAfter = await fetch("/travel_goals");
+    const goalsAfter = await resGoalAfter.json();
+
+    if (goalsAfter.length > 0) {
+        const goalAfter = goalsAfter[0];
+
+        if (goalAfter.saved_amount > goalAfter.target_amount) {
+            msg.textContent += " Goal exceeded!";
+    }
+}
+
+    loadTravelGoal();
+    loadCategories();
+}
+
+
+/* travel bar */
 
 function updateUI(saved, goal) {
 
-    const percent = goal > 0 ? (saved / goal) * 100 : 0;
-    const remaining = goal > 0 ? goal - saved : 0;
+    const percent = goal > 0 ? Math.min((saved / goal) * 100, 100) : 0;
+    const remaining = goal > 0 ? Math.max(goal - saved, 0) : 0;
 
     const progressBar = document.getElementById("travelProgress");
     const percentText = document.getElementById("travelPercent");
@@ -381,14 +481,15 @@ function updateUI(saved, goal) {
 
     if (celebrate) {
 
-        if (percent >= 100) {
+        if (saved > goal) {
+            celebrate.textContent = "Goal exceeded!";
+    }
+        else if (percent >= 100) {
             celebrate.textContent = "Congratulations! You've reached your travel goal!";
-            progressBar.style.background =
-                "linear-gradient(90deg, #2e7d32, #4caf50)";
-        }
+    }
         else if (percent >= 75) celebrate.textContent = "Almost there!";
         else if (percent >= 50) celebrate.textContent = "Halfway there!";
         else if (percent >= 25) celebrate.textContent = "Great start!";
         else celebrate.textContent = "";
-    }
+}
 }
