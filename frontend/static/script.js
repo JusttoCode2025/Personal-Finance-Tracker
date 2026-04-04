@@ -1,4 +1,3 @@
-
 // ============================================
 // NOTIFICATION SYSTEM (replaces alert/confirm)
 // ============================================
@@ -216,6 +215,7 @@ notificationStyles.textContent = `
         color: #333;
         margin-bottom: 25px;
         line-height: 1.5;
+        white-space: pre-line;
     }
     
     .confirm-buttons {
@@ -309,9 +309,9 @@ document.addEventListener('DOMContentLoaded', () => {
  
         const homeSaved = goal.saved_amount;
         const homeGoal = goal.target_amount;
- 
-        const percent = homeGoal > 0 ? (homeSaved / homeGoal) * 100 : 0;
-        const remaining = homeGoal - homeSaved;
+        
+        const percent = homeGoal > 0 ? Math.min((homeSaved / homeGoal) * 100, 100) : 0;
+        const remaining = Math.max(homeGoal - homeSaved, 0);
  
         const homeBar = document.getElementById("homeTravelProgress");
         const homePercent = document.getElementById("homeTravelPercent");
@@ -383,7 +383,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     "This goal exceeds $10,000. Are you sure you want to continue?",
                     async () => {
                         await saveGoal(goal);
-                        showNotification("Goal set successfully!", "warning");
+                        goalMsg.textContent = "Goal set.";
+                        goalMsg.style.color = "orange";
                     }
                 );
                 return;
@@ -440,7 +441,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     "This contribution is more than 50% of your goal. Continue?",
                     async () => {
                         await saveContribution(contribution);
-                        showNotification("Contribution added successfully!", "warning");
+                        contributionMsg.textContent = "Contribution added.";
+                        contributionMsg.style.color = "orange";
                     }
                 );
                 return;
@@ -533,7 +535,6 @@ async function setCategoryLimit() {
             "This limit is over $1,000. Are you sure you want to set this limit?",
             async () => {
                 await saveCategoryLimit(category, limit);
-                showNotification("Category limit set successfully!", "warning");
             }
         );
         return;
@@ -559,7 +560,7 @@ async function saveCategoryLimit(category, limit) {
     showNotification("Category limit set successfully!", "success");
 }
  
- 
+/* load category cards*/
 async function loadCategories() {
  
     const res = await fetch("/limits");
@@ -620,7 +621,7 @@ async function loadRecentPurchases() {
     });
 }
  
- 
+/* add purchases*/
 async function addPurchase() {
  
     const category = document.getElementById("purchaseCategory").value.toLowerCase();
@@ -659,7 +660,7 @@ async function addPurchase() {
     if (data.warning) {
  
         showConfirm(
-            data.warning + " Continue anyway?",
+            data.warning + "\n\nContinue anyway?",
             async () => {
                 await fetch("/purchase", {
                     method: "POST",
@@ -694,13 +695,98 @@ async function addPurchase() {
     showNotification("Purchase added successfully!", "success");
 }
  
+/* budget to travel transfer */
+async function transferToTravel() {
+ 
+    const msg = document.getElementById("transferMessage");
+    const resCheck = await fetch("/limits");
+    const limits = await resCheck.json();
+ 
+    let totalRemaining = 0;
+ 
+    limits.forEach(l => {
+        totalRemaining += l.remaining;
+    });
+ 
+    if (totalRemaining <= 0) {
+        msg.textContent = "No remaining budget to transfer.";
+        msg.style.color = "red";
+        return;
+    }
+    
+    const resGoal = await fetch("/travel_goals");
+    const goals = await resGoal.json();
+ 
+    if (goals.length === 0) {
+        msg.textContent = "Please set a travel goal first.";
+        msg.style.color = "red";
+        return;
+    }
+ 
+    const goal = goals[0];
+    const target = goal.target_amount;
+    const saved = goal.saved_amount;
+ 
+    if (saved + totalRemaining > target) {
+        showConfirm(
+            `This will exceed your goal.\n\nGoal: $${target}\nAfter transfer: $${(saved + totalRemaining).toFixed(2)}\n\nContinue?`,
+            async () => {
+                await executeTransfer(msg);
+            }
+        );
+    } 
+    else {  
+        showConfirm(
+            `Transfer $${totalRemaining.toFixed(2)} to your travel goal?`,
+            async () => {
+                await executeTransfer(msg);
+            }
+        );
+    }
+}
+ 
+async function executeTransfer(msg) {
+    const res = await fetch("/transfer_to_travel", {
+        method: "POST"
+    });
+ 
+    const data = await res.json();
+ 
+    if (data.error) {
+        msg.textContent = data.error;
+        msg.style.color = "red";
+        showNotification(data.error, "error");
+        return;
+    }
+ 
+    msg.textContent = data.message;
+    msg.style.color = "green";
+ 
+    const resGoalAfter = await fetch("/travel_goals");
+    const goalsAfter = await resGoalAfter.json();
+ 
+    if (goalsAfter.length > 0) {
+        const goalAfter = goalsAfter[0];
+ 
+        if (goalAfter.saved_amount > goalAfter.target_amount) {
+            msg.textContent += " Goal exceeded!";
+            showNotification("Transfer successful! Goal exceeded!", "success");
+        } else {
+            showNotification("Transfer successful!", "success");
+        }
+    }
+ 
+    loadTravelGoal();
+    loadCategories();
+}
+ 
  
 /* travel bar */
  
 function updateUI(saved, goal) {
  
-    const percent = goal > 0 ? (saved / goal) * 100 : 0;
-    const remaining = goal > 0 ? goal - saved : 0;
+    const percent = goal > 0 ? Math.min((saved / goal) * 100, 100) : 0;
+    const remaining = goal > 0 ? Math.max(goal - saved, 0) : 0;
  
     const progressBar = document.getElementById("travelProgress");
     const percentText = document.getElementById("travelPercent");
@@ -723,10 +809,11 @@ function updateUI(saved, goal) {
  
     if (celebrate) {
  
-        if (percent >= 100) {
+        if (saved > goal) {
+            celebrate.textContent = "Goal exceeded!";
+        }
+        else if (percent >= 100) {
             celebrate.textContent = "Congratulations! You've reached your travel goal!";
-            progressBar.style.background =
-                "linear-gradient(90deg, #2e7d32, #4caf50)";
         }
         else if (percent >= 75) celebrate.textContent = "Almost there!";
         else if (percent >= 50) celebrate.textContent = "Halfway there!";
