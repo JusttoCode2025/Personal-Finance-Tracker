@@ -74,17 +74,17 @@ button:hover { background:hsl(0,0%,0%); transform:scale(1.03); }
 
 <header class="navbar">
   <div class="nav-left">
-    <a href="homepage.html" class="nav-logo">Haven</a>
-    <a href="homepage.html" class="active">Home</a>
-    <a href="budget.html">Budget</a>
-    <a href="dashboard.html">Dashboard</a>
-    <a href="travelgoal.html">Travel Goal</a>
-    <a href="about.html">About</a>
+    <a href="/home" class="nav-logo">Haven</a>
+    <a href="/home" class="active">Home</a>
+    <a href="/budget">Budget</a>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/travel-goal">Travel Goal</a>
+    <a href="/about">About</a>
   </div>
   <div class="nav-right">
     <i class="fas fa-user-alt" id="profileIcon"></i>
     <span id="profileName"></span>
-    <a href="login.html" id="signOut">Sign Out</a>
+    <a href="/login" id="signOut">Sign Out</a>
   </div>
 </header>
 
@@ -98,9 +98,9 @@ button:hover { background:hsl(0,0%,0%); transform:scale(1.03); }
     <div class="section flex-item">
       <h2>Quick Links</h2>
       <p>Access your favorite sections quickly:</p>
-      <button onclick="location.href='budget.html'">Budget Tracker</button>
-      <button onclick="location.href='dashboard.html'">Dashboard</button>
-      <button onclick="location.href='travelgoal.html'">Travel Goals</button>
+      <button onclick="location.href='/budget'">Budget Tracker</button>
+      <button onclick="location.href='/dashboard'">Dashboard</button>
+      <button onclick="location.href='/travel-goal'">Travel Goals</button>
     </div>
 
     <div class="section flex-item">
@@ -118,13 +118,12 @@ button:hover { background:hsl(0,0%,0%); transform:scale(1.03); }
 <script>
 const storedUser = JSON.parse(localStorage.getItem('loggedInUser')) || JSON.parse(sessionStorage.getItem('loggedInUser'));
 if(!storedUser){ 
-  window.location.href='login.html'; 
+  window.location.href='/login'; 
 } else { 
   const name = storedUser.name || "User";
   document.getElementById('profileName').textContent = name;
 
   const userSpan = document.getElementById('userName');
-  // Include comma with name in one span for smooth animation
   userSpan.textContent = ` ${name}`;
   setTimeout(() => { userSpan.classList.add('show'); }, 100);
 }
@@ -132,7 +131,7 @@ if(!storedUser){
 document.getElementById('signOut').addEventListener('click', ()=> {
   localStorage.removeItem('loggedInUser');
   sessionStorage.removeItem('loggedInUser');
-  window.location.href='login.html';
+  window.location.href='/login';
 });
 
 function updateActivity() {
