@@ -158,7 +158,7 @@ body {
   <button type="button" class="submit-btn" id="loginBtn">Sign In</button>
 
   <div class="sign-up-link">
-    Don’t have an account? <a href="signup.html">Sign Up</a>
+    Don’t have an account? <a href="/signup">Sign Up</a>
   </div>
 </div>
 
@@ -190,7 +190,7 @@ loginBtn.addEventListener('click', ()=> {
       sessionStorage.setItem('loggedInUser', JSON.stringify(user));
     }
 
-    setTimeout(()=> window.location.href = 'homepage.html', 1400);
+    setTimeout(()=> window.location.href = '/home', 1400);
   } else {
     successMessage.style.display = 'none';
     errorMessage.style.display = 'block';
