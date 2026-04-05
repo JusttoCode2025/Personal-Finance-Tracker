@@ -144,7 +144,7 @@ body {
   </form>
 
   <div class="login-link">
-    Already have an account? <a href="login.html">Sign In</a>
+    Already have an account? <a href="/login">Sign In</a>
   </div>
 </div>
 
@@ -196,7 +196,7 @@ form.addEventListener('submit', async function(e){
     form.reset();
     const ruleDivs = document.querySelectorAll('.rule');
     ruleDivs.forEach(r => r.classList.remove('valid'));
-    setTimeout(()=> window.location.href='login.html', 1000);
+    setTimeout(()=> window.location.href='/login', 1000);
   } else {
     alert('Something went wrong, try again.');
   }
