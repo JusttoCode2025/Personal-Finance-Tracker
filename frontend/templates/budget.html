@@ -222,7 +222,7 @@ button:hover { transform:scale(1.05); }
 let pendingPurchase=null;
 
 const storedUser = JSON.parse(localStorage.getItem('loggedInUser')) || JSON.parse(sessionStorage.getItem('loggedInUser'));
-if(!storedUser) window.location.href='login.html';
+if(!storedUser) window.location.href='/login';
 else document.getElementById('profileName').textContent = storedUser.name;
 
 document.getElementById('signOut').onclick=()=>{
