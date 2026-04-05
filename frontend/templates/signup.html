@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign Up - Haven</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Geist:wght@500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --font-sans: 'Inter', sans-serif;
+  --font-heading: 'Geist', sans-serif;
+  --radius: 30px;
+  --shadow-sm: 0px 10px 25px rgba(0,0,0,0.12);
+  --background: hsl(20, 31%, 52%);
+  --card: hsl(0, 0%, 100%);
+  --primary: hsl(0, 0%, 13%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --muted: hsl(0, 0%, 95%);
+  --border: hsl(0, 0%, 90%);
+  --success: #4CAF50;
+  --gray: #888;
+}
+
+* { box-sizing:border-box; margin:0; padding:0; font-family:var(--font-sans); }
+
+body {
+  background: var(--background);
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+}
+
+.signup-box {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  width:100%;
+  max-width:420px;
+  padding:35px 30px;
+  text-align:center;
+  animation: fadeInUp 0.6s ease;
+}
+
+.logo {
+  font-family: var(--font-heading);
+  font-size:2.2em;
+  font-weight:600;
+  margin-bottom:5px;
+}
+
+.subtitle { font-size:0.95em; color:#555; margin-bottom:25px; }
+
+.input-field {
+  width:100%;
+  padding:14px;
+  border-radius: var(--radius);
+  border:1px solid var(--border);
+  font-size:1em;
+  margin-bottom:10px;
+  transition: all 0.25s ease;
+}
+
+.input-field:focus {
+  outline:none;
+  border-color:black;
+  background:var(--muted);
+  transform: scale(1.01);
+}
+
+.submit-btn {
+  width:100%;
+  padding:14px;
+  border-radius:var(--radius);
+  border:none;
+  background:var(--primary);
+  color:var(--primary-foreground);
+  font-size:1.05em;
+  font-weight:600;
+  cursor:pointer;
+  transition: all 0.25s ease;
+  margin-top:10px;
+}
+
+.submit-btn:hover { transform: translateY(-2px) scale(1.02); }
+.submit-btn:active { transform: scale(0.98); }
+
+.password-rules {
+  text-align:left;
+  font-size:0.8em;
+  margin-bottom:15px;
+  padding-left:20px;
+}
+
+.rule {
+  list-style: disc;
+  color: var(--gray);
+  font-style: italic;
+  margin-bottom:4px;
+  opacity:0.6;
+  transform: translateX(-10px);
+  transition: all 0.3s ease;
+}
+
+.rule.valid {
+  color: var(--success);
+  font-style: normal;
+  opacity:1;
+  transform: translateX(0);
+}
+
+.login-link { margin-top:18px; font-size:0.9em; }
+.login-link a { text-decoration:none; font-weight:500; }
+.login-link a:hover { text-decoration:underline; }
+
+@keyframes fadeInUp { from { opacity:0; transform:translateY(20px);} to{opacity:1; transform:translateY(0);} }
+
+</style>
+</head>
+
+<body>
+
+<div class="signup-box">
+  <div class="logo">Haven</div>
+  <div class="subtitle">Create your account</div>
+
+  <form id="signupForm" action="https://formspree.io/f/mqeglrwg" method="POST">
+    <input type="text" name="name" class="input-field" placeholder="Full Name" required>
+    <input type="email" name="email" class="input-field" placeholder="Email" required>
+    <input type="password" name="password" class="input-field" placeholder="Password" required>
+
+    <ul class="password-rules">
+      <li class="rule" id="ruleLength">At least 8 characters</li>
+      <li class="rule" id="ruleUpper">At least 1 uppercase letter</li>
+      <li class="rule" id="ruleLower">At least 1 lowercase letter</li>
+      <li class="rule" id="ruleNumber">At least 1 number</li>
+      <li class="rule" id="ruleSpecial">At least 1 special character</li>
+    </ul>
+
+    <button type="submit" class="submit-btn">Create Account</button>
+  </form>
+
+  <div class="login-link">
+    Already have an account? <a href="login.html">Sign In</a>
+  </div>
+</div>
+
+<script>
+const form = document.getElementById('signupForm');
+const passwordField = form.password;
+
+const rules = {
+  ruleLength: /.{8,}/,
+  ruleUpper: /[A-Z]/,
+  ruleLower: /[a-z]/,
+  ruleNumber: /\d/,
+  ruleSpecial: /[\W_]/
+};
+
+passwordField.addEventListener('input', ()=> {
+  const pass = passwordField.value;
+  for(let id in rules){
+    const el = document.getElementById(id);
+    if(rules[id].test(pass)){
+      el.classList.add('valid');
+    } else {
+      el.classList.remove('valid');
+    }
+  }
+});
+
+form.addEventListener('submit', async function(e){
+  e.preventDefault();
+
+  const pass = passwordField.value;
+  for(let id in rules){
+    if(!rules[id].test(pass)){
+      document.getElementById(id).scrollIntoView({behavior:'smooth'});
+      return;
+    }
+  }
+
+  const data = new FormData(form);
+
+  const res = await fetch(form.action, {
+    method: 'POST',
+    body: data,
+    headers: { 'Accept': 'application/json' }
+  });
+
+  if(res.ok){
+    alert('Account created! Redirecting to login...');
+    form.reset();
+    const ruleDivs = document.querySelectorAll('.rule');
+    ruleDivs.forEach(r => r.classList.remove('valid'));
+    setTimeout(()=> window.location.href='login.html', 1000);
+  } else {
+    alert('Something went wrong, try again.');
+  }
+});
+</script>
+
+</body>
+</html>
+

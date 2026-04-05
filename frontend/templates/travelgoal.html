@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Haven - Travel Goal</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Geist&display=swap" rel="stylesheet">
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<style>
+:root {
+  --font-sans:'Inter',sans-serif;
+  --font-heading:'Geist',sans-serif;
+  --radius:30px;
+  --shadow-sm:0px 4px 6px rgba(0,0,0,0.08);
+  --background:hsl(20,31%,52%);
+  --foreground:hsl(0,0%,10%);
+  --card:hsl(0,0%,100%);
+  --primary:hsl(0,0%,13%);
+  --primary-foreground:hsl(0,0%,100%);
+  --border:hsl(0,0%,90%);
+  --muted:hsl(0,0%,95%);
+  --muted-foreground:hsl(0,0%,40%);
+  --link-color:hsl(0,0%,13%);
+  --link-hover:hsl(0,0%,0%);
+  --alert-success:hsl(120,50%,40%);
+  --alert-error:hsl(0,70%,50%);
+}
+
+* { box-sizing:border-box; margin:0; padding:0; font-family:var(--font-sans); }
+body { background:var(--background); color:var(--foreground); min-height:100vh; }
+a { text-decoration:none; color:inherit; }
+button { cursor:pointer; }
+
+.navbar {
+  display:flex; justify-content:space-between; align-items:center;
+  background:var(--card); padding:15px 30px; border-radius:var(--radius); box-shadow:var(--shadow-sm); margin-bottom:20px;
+}
+.nav-left { display:flex; align-items:center; gap:20px; font-weight:600; }
+.nav-left .logo { font-family:var(--font-heading); font-size:1.4em; transition:transform 0.3s; }
+.nav-left .logo:hover { transform:scale(1.1); }
+.nav-left a.active, .nav-left a:hover { color:var(--link-color); transform:scale(1.05); }
+.nav-right { display:flex; align-items:center; gap:15px; }
+.nav-right #profileIcon, .nav-right #signOut { transition:transform 0.3s; }
+.nav-right #profileIcon:hover, .nav-right #signOut:hover { transform:scale(1.05); }
+
+.container { max-width:1000px; margin:0 auto; padding:0 15px; }
+.section { background:var(--card); padding:25px; border-radius:var(--radius); box-shadow: var(--shadow-sm); margin-bottom:20px; transition:transform 0.3s; }
+.section:hover { transform:translateY(-3px); }
+
+h1,h2 { font-family:var(--font-heading); color:var(--foreground); }
+h1 { font-size:2em; margin-bottom:10px; }
+h2 { font-size:1.2em; margin-bottom:10px; }
+
+p { margin-bottom:12px; line-height:1.6; }
+input, button { width:100%; padding:12px 15px; border-radius:var(--radius); border:1px solid var(--border); margin-bottom:10px; font-size:15px; }
+input:focus { outline:none; border-color:var(--link-color); background:var(--muted); }
+button { background:var(--primary); color:var(--primary-foreground); font-weight:600; cursor:pointer; border:none; transition:0.3s; }
+button:hover { background:var(--link-hover); transform:scale(1.03); }
+
+.history-item { border:1px solid var(--border); padding:10px 15px; border-radius:var(--radius); margin-bottom:10px; background:var(--muted); }
+
+.alert { position:fixed; top:20px; right:20px; padding:12px 20px; border-radius:var(--radius); font-weight:600; color:white; opacity:0; transform:translateY(-20px); transition:0.4s; z-index:1000; }
+.alert.show { opacity:1; transform:translateY(0); }
+
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-left">
+    <span class="logo">Haven</span>
+    <a href="homepage.html">Home</a>
+    <a href="budget.html">Budget</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="travelgoal.html" class="active">Travel Goal</a>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <i class="fas fa-user-alt" id="profileIcon"></i>
+    <span id="profileName"></span>
+    <a href="login.html" id="signOut">Sign Out</a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="section">
+    <h1>Travel Goal</h1>
+    <p>Track your travel savings and reach your dream destination faster.</p>
+  </div>
+
+  <div class="section">
+    <h2>Set Your Travel Goal</h2>
+    <input type="number" id="travelTarget" placeholder="Enter your travel goal amount">
+    <button onclick="setTravelGoal()">Set Goal</button>
+  </div>
+
+  <div class="section">
+    <h2>Travel Savings</h2>
+    <p>Current Savings: $<span id="currentSavings">0</span></p>
+    <button onclick="useRemainingBudget()">Use Remaining Budget for Travel Goal</button>
+    <input type="number" id="addAmount" placeholder="Enter amount to add">
+    <button onclick="addToSavings()">Add Custom Amount</button>
+    <button onclick="resetTravelGoal()" style="background:#e74c3c;">Reset Goal</button>
+  </div>
+
+  <div class="section">
+    <h2>Progress</h2>
+    <p>Goal: $<span id="travelGoalDisplay">0</span></p>
+    <p>Progress: <span id="progressPercent">0</span>%</p>
+  </div>
+
+  <div class="section">
+    <h2>History & Notes</h2>
+    <input type="text" id="noteInput" placeholder="Add a note about this submission">
+    <button onclick="addNote()">Submit Note</button>
+    <div id="historyContainer"></div>
+  </div>
+</div>
+
+<div id="alert" class="alert"></div>
+
+<script>
+const storedUser = JSON.parse(localStorage.getItem('loggedInUser')) || JSON.parse(sessionStorage.getItem('loggedInUser'));
+if(!storedUser) window.location.href='login.html';
+else document.getElementById('profileName').textContent = storedUser.name;
+
+document.getElementById('signOut').addEventListener('click', ()=> {
+  localStorage.removeItem('loggedInUser');
+  sessionStorage.removeItem('loggedInUser');
+  window.location.href='login.html';
+});
+
+function showAlert(message,type='success'){
+  const alertEl=document.getElementById('alert');
+  alertEl.textContent=message;
+  alertEl.style.background=type==='success'? 'var(--alert-success)':'var(--alert-error)';
+  alertEl.classList.add('show');
+  setTimeout(()=>{alertEl.classList.remove('show');},3000);
+}
+
+function getCurrentSavings(){ return parseFloat(localStorage.getItem('travelSavings'))||0; }
+function getTravelGoal(){ return parseFloat(localStorage.getItem('travelGoal'))||0; }
+function getHistory(){ return JSON.parse(localStorage.getItem('travelHistory'))||[]; }
+
+function updateDisplay(){
+  const savings=getCurrentSavings();
+  const goal=getTravelGoal();
+  document.getElementById('currentSavings').textContent=savings.toFixed(2);
+  document.getElementById('travelGoalDisplay').textContent=goal.toFixed(2);
+  document.getElementById('progressPercent').textContent=goal>0? Math.min((savings/goal)*100,100).toFixed(1):0;
+
+  const history=getHistory();
+  const container=document.getElementById('historyContainer');
+  container.innerHTML='';
+  history.forEach(item=>{
+    const div=document.createElement('div');
+    div.classList.add('history-item');
+    div.textContent=`$${item.amount.toFixed(2)} - ${item.note || 'No note'}`;
+    container.appendChild(div);
+  });
+}
+
+function setTravelGoal(){
+  const target=parseFloat(document.getElementById('travelTarget').value);
+  if(!target || target<=0){ showAlert('Enter a valid travel goal','error'); return; }
+  localStorage.setItem('travelGoal',target);
+  updateDisplay();
+  showAlert('Travel goal set!');
+}
+
+function addToSavings(){
+  const amount=parseFloat(document.getElementById('addAmount').value);
+  if(!amount || amount<=0){ showAlert('Enter a valid amount','error'); return; }
+  const newSavings=getCurrentSavings()+amount;
+  localStorage.setItem('travelSavings',newSavings);
+
+  const history=getHistory();
+  history.push({amount, note:document.getElementById('noteInput').value});
+  localStorage.setItem('travelHistory',JSON.stringify(history));
+  document.getElementById('noteInput').value='';
+
+  updateDisplay();
+  showAlert('Added to savings!');
+}
+
+function useRemainingBudget(){
+  const limits=JSON.parse(localStorage.getItem('categoryLimits'))||{};
+  const purchases=JSON.parse(localStorage.getItem('purchases'))||[];
+  let remaining=0;
+  for(const cat in limits){
+    const spent=purchases.filter(p=>p.category===cat).reduce((sum,p)=>sum+p.amount,0);
+    remaining+=Math.max(limits[cat]-spent,0);
+  }
+  if(remaining<=0){ showAlert('No remaining budget available','error'); return; }
+  const newSavings=getCurrentSavings()+remaining;
+  localStorage.setItem('travelSavings',newSavings);
+
+  const history=getHistory();
+  history.push({amount:remaining,note:'Transferred remaining budget'});
+  localStorage.setItem('travelHistory',JSON.stringify(history));
+
+  updateDisplay();
+  showAlert(`$${remaining.toFixed(2)} added to travel savings!`);
+}
+
+function resetTravelGoal(){
+  localStorage.removeItem('travelSavings');
+  localStorage.removeItem('travelGoal');
+  localStorage.removeItem('travelHistory');
+  updateDisplay();
+  showAlert('Travel goal has been reset');
+}
+
+updateDisplay();
+</script>
+
+</body>
+</html>
+

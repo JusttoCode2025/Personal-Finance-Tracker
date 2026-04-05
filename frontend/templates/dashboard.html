@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Haven - Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Geist&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<style>
+:root {
+  --font-sans:'Inter',sans-serif;
+  --font-heading:'Geist',sans-serif;
+  --radius:30px;
+  --shadow-sm:0px 4px 6px rgba(0,0,0,0.08);
+  --background:hsl(20,31%,52%);
+  --foreground:hsl(0,0%,10%);
+  --card:hsl(0,0%,100%);
+  --primary:hsl(0,0%,13%);
+  --primary-foreground:hsl(0,0%,100%);
+  --border:hsl(0,0%,90%);
+  --muted:hsl(0,0%,95%);
+  --muted-foreground:hsl(0,0%,40%);
+  --link-color:hsl(0,0%,13%);
+  --link-hover:hsl(0,0%,0%);
+  --alert-success:hsl(120, 50%, 40%);
+  --alert-error:hsl(0, 70%, 50%);
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:var(--font-sans);}
+body{background:var(--background);color:var(--foreground);min-height:100vh;transition:background 0.3s;}
+a{text-decoration:none;color:inherit;}
+button{cursor:pointer;}
+.navbar{display:flex;justify-content:space-between;align-items:center;background:var(--card);padding:15px 30px;border-radius:var(--radius);box-shadow:var(--shadow-sm);margin-bottom:20px;}
+.nav-left{display:flex;align-items:center;gap:20px;font-weight:600;}
+.nav-left .logo{font-family:var(--font-heading);font-size:1.4em;transition:transform 0.3s;}
+.nav-left .logo:hover{transform:scale(1.1);}
+.nav-left a.active,.nav-left a:hover{color:var(--link-color);transform:scale(1.05);}
+.nav-right{display:flex;align-items:center;gap:15px;}
+.nav-right #profileIcon,.nav-right #signOut{transition:transform 0.3s;}
+.nav-right #profileIcon:hover,.nav-right #signOut:hover{transform:scale(1.05);}
+.container{max-width:1000px;margin:0 auto;padding:0 15px;}
+.section{background:var(--card);padding:25px;border-radius:var(--radius);box-shadow: var(--shadow-sm);margin-bottom:20px;transition:transform 0.3s;}
+.section:hover{transform:translateY(-3px);}
+h1,h2{font-family:var(--font-heading);color:var(--foreground);}
+h1{font-size:2em;margin-bottom:5px;}
+h2{font-size:1.2em;margin-bottom:10px;}
+.description{font-size:1em;color:var(--muted-foreground);margin-bottom:15px;}
+.flex-row{display:flex;gap:20px;flex-wrap:wrap;}
+.flex-item{flex:1;min-width:280px;}
+canvas{max-width:100%;border-radius:var(--radius);background:var(--muted);padding:15px;}
+.alert{position:fixed;top:20px;right:20px;padding:12px 20px;border-radius:var(--radius);font-weight:600;color:white;opacity:0;transform:translateY(-20px);transition:0.4s;z-index:1000;}
+.alert.show{opacity:1;transform:translateY(0);}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-left">
+    <span class="logo">Haven</span>
+    <a href="homepage.html">Home</a>
+    <a href="budget.html">Budget</a>
+    <a href="dashboard.html" class="active">Dashboard</a>
+    <a href="travelgoal.html">Travel Goal</a>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <i class="fas fa-user-alt" id="profileIcon"></i>
+    <span id="profileName"></span>
+    <a href="login.html" id="signOut">Sign Out</a>
+  </div>
+</nav>
+<div class="container">
+  <div class="section">
+    <h1>Dashboard</h1>
+    <p class="description">Visual analysis of your spending habits. Track budgets, spending per category, and monthly trends.</p>
+  </div>
+  <div class="flex-row">
+    <section class="section flex-item">
+      <h2>Budget Spent per Category</h2>
+      <canvas id="pieChart"></canvas>
+    </section>
+    <section class="section flex-item">
+      <h2>Budgeted vs Spent</h2>
+      <canvas id="barChart"></canvas>
+    </section>
+  </div>
+  <div class="flex-row">
+    <section class="section flex-item">
+      <h2>Monthly Spending Trends</h2>
+      <canvas id="monthlyTrendChart"></canvas>
+    </section>
+    <section class="section flex-item">
+      <h2>Category Comparison</h2>
+      <canvas id="categoryComparisonChart"></canvas>
+    </section>
+  </div>
+</div>
+<div id="alert" class="alert"></div>
+<script>
+const storedUser=JSON.parse(localStorage.getItem('loggedInUser'))||JSON.parse(sessionStorage.getItem('loggedInUser'));
+if(!storedUser)window.location.href='login.html';
+else document.getElementById('profileName').textContent=storedUser.name;
+document.getElementById('signOut').addEventListener('click',()=>{
+localStorage.removeItem('loggedInUser');
+sessionStorage.removeItem('loggedInUser');
+window.location.href='login.html';
+});
+function showAlert(msg,type='success'){
+const alertEl=document.getElementById('alert');
+alertEl.textContent=msg;
+alertEl.style.background=type==='success'?'var(--alert-success)':'var(--alert-error)';
+alertEl.classList.add('show');
+setTimeout(()=>alertEl.classList.remove('show'),3000);
+}
+const purchases=JSON.parse(localStorage.getItem('purchases'))||[];
+const categories=JSON.parse(localStorage.getItem('categoryLimits'))||{};
+const categoryLabels=Object.keys(categories);
+const categorySpent=categoryLabels.map(cat=>purchases.filter(p=>p.category===cat).reduce((s,p)=>s+p.amount,0));
+new Chart(document.getElementById('pieChart').getContext('2d'),{type:'pie',data:{labels:categoryLabels,datasets:[{data:categorySpent,backgroundColor:categoryLabels.map(()=>`hsl(${Math.random()*360},70%,50%)`)}]},options:{plugins:{legend:{display:false}}}});
+new Chart(document.getElementById('barChart').getContext('2d'),{type:'bar',data:{labels:categoryLabels,datasets:[{data:categoryLabels.map(cat=>categories[cat]),backgroundColor:'var(--link-color)'},{data:categorySpent,backgroundColor:'var(--primary)'}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+const monthTotals={};
+purchases.forEach(p=>{
+const d=new Date(p.date);
+const key=`${d.getFullYear()}-${('0'+(d.getMonth()+1)).slice(-2)}`;
+monthTotals[key]=(monthTotals[key]||0)+p.amount;
+});
+const sortedMonths=Object.keys(monthTotals).sort();
+const monthData=sortedMonths.map(m=>monthTotals[m]);
+new Chart(document.getElementById('monthlyTrendChart').getContext('2d'),{type:'line',data:{labels:sortedMonths,datasets:[{data:monthData,borderColor:'var(--primary)',backgroundColor:'rgba(0,0,0,0)'}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+new Chart(document.getElementById('categoryComparisonChart').getContext('2d'),{type:'bar',data:{labels:categoryLabels,datasets:[{data:categorySpent,backgroundColor:'var(--primary)'}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+</script>
+</body>
+</html>
+
+
