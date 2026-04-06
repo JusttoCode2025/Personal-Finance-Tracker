@@ -263,32 +263,6 @@ document.head.appendChild(notificationStyles);
 // ============================================
  
 document.addEventListener('DOMContentLoaded', () => {
- 
-    /* login */
- 
-    const submitBtn = document.getElementById('submit-btn');
- 
-    if (submitBtn) {
-        submitBtn.addEventListener('click', () => {
- 
-            const emailInput = document.querySelector('#email');
-            const passwordInput = document.querySelector('#password');
- 
-            const validEmail = "group1@gmail.com";
-            const validPassword = "group1";
- 
-            if (emailInput.value === validEmail && passwordInput.value === validPassword) {
-                showNotification("Success! You are now logged in.", "success", () => {
-                    setTimeout(() => {
-                        window.location.href = "/home";
-                    }, 1000);
-                });
-            } else {
-                showNotification("Invalid email or password. Please try again.", "error");
-            }
-        });
-    }
- 
     /* home travel bar */
  
     async function loadHomeTravelBar() {
