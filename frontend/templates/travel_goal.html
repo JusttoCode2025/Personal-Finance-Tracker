@@ -149,12 +149,12 @@ const storedUser = JSON.parse(localStorage.getItem('loggedInUser')) || JSON.pars
 if(!storedUser) window.location.href='/login';
 else document.getElementById('profileName').textContent = storedUser.name;
 
-document.getElementById('signOut').addEventListener('click', ()=> {
+document.getElementById('signOut').onclick=()=>{
   localStorage.removeItem('loggedInUser');
   sessionStorage.removeItem('loggedInUser');
   window.location.href='/login';
-});
-}
+};
+
 </script>
 
 </body>
