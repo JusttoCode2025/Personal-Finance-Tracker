@@ -238,12 +238,67 @@ function showMessage(id,msg,type){
   el.style.display="block";
   setTimeout(()=>el.style.display="none",3000);
 }
+async function addPurchase(){
 
-function confirmAdd(){
-  if(pendingPurchase){
-    savePurchase(pendingPurchase.cat,pendingPurchase.amt);
-    pendingPurchase=null;
+  const cat = document.getElementById('purchaseCategory').value;
+  const amt = parseFloat(document.getElementById('purchaseAmount').value);
+
+  if(!cat || !amt){
+    showMessage('purchaseMessage','Invalid input','error');
+    return;
   }
+
+  const res = await fetch("/purchase", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      category: cat.toLowerCase(),
+      amount: amt
+    })
+  });
+
+  const data = await res.json();
+  if(data.warning){
+    pendingPurchase = {cat, amt};
+
+    document.getElementById('confirmText').textContent = data.warning;
+    document.getElementById('confirmBox').style.display="block";
+    return;
+  }
+
+
+  if(data.error){
+    showMessage('purchaseMessage', data.error, 'error');
+    return;
+  }
+
+  showMessage('purchaseMessage','Purchase added');
+
+  loadRecentPurchases();
+  loadCategories();
+}
+async function confirmAdd(){
+
+  if(pendingPurchase){
+
+    await fetch("/purchase", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        category: pendingPurchase.cat.toLowerCase(),
+        amount: pendingPurchase.amt,
+        confirm: true
+      })
+    });
+
+    showMessage('purchaseMessage','Purchase added');
+
+    pendingPurchase = null;
+
+    loadRecentPurchases();
+    loadCategories();
+  }
+
   document.getElementById('confirmBox').style.display="none";
 }
 
@@ -252,12 +307,6 @@ function cancelAdd(){
   document.getElementById('confirmBox').style.display="none";
 }
 
-function savePurchase(cat,amt){
-  let purchases=JSON.parse(localStorage.getItem('purchases'))||[];
-  purchases.unshift({category:cat,amount:amt,date:new Date()});
-  localStorage.setItem('purchases',JSON.stringify(purchases));
-  showMessage('purchaseMessage','Purchase added');
-}
 </script>
 
 </body>
