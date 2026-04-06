@@ -88,26 +88,38 @@ button:hover { background:var(--link-hover); transform:scale(1.03); }
     <h1>Travel Goal</h1>
     <p>Track your travel savings and reach your dream destination faster.</p>
   </div>
-
   <div class="section">
-    <h2>Set Your Travel Goal</h2>
-    <input type="number" id="travelTarget" placeholder="Enter your travel goal amount">
-    <button onclick="setTravelGoal()">Set Goal</button>
+    <h2>Status</h2>
+
+    <p>Saved: $<span id="goalSaved">0</span></p>
+    <p>Left: $<span id="goalLeft">0</span></p>
+
+    <div class="goal-bar-wrapper">
+      <div id="travelProgress" class="goal-bar-fill">
+        <span id="travelPercent">0%</span>
+      </div>
+    </div>
+
+    <p id="goalRemainingText">$0 left</p>
+    <div id="goalCelebrate"></div>
   </div>
 
+  
   <div class="section">
-    <h2>Travel Savings</h2>
-    <p>Current Savings: $<span id="currentSavings">0</span></p>
-    <button onclick="useRemainingBudget()">Use Remaining Budget for Travel Goal</button>
-    <input type="number" id="addAmount" placeholder="Enter amount to add">
-    <button onclick="addToSavings()">Add Custom Amount</button>
-    <button onclick="resetTravelGoal()" style="background:#e74c3c;">Reset Goal</button>
+    <h2>Set Goal</h2>
+    <input type="number" id="goalAmount" placeholder="Enter goal">
+    <button id="setGoalBtn">Set Goal</button>
+    <div id="goalMessage"></div>
   </div>
 
+ 
   <div class="section">
-    <h2>Progress</h2>
-    <p>Goal: $<span id="travelGoalDisplay">0</span></p>
-    <p>Progress: <span id="progressPercent">0</span>%</p>
+    <h2>Add Contribution</h2>
+    <input type="number" id="contributionAmount" placeholder="Enter amount">
+    <button id="addBtn">Add</button>
+    <div id="contributionMessage"></div>
+
+    <button id="resetGoal">Reset Goal</button>
   </div>
 
   <div class="section">
@@ -131,71 +143,6 @@ document.getElementById('signOut').addEventListener('click', ()=> {
   window.location.href='/login';
 });
 
-function showAlert(message,type='success'){
-  const alertEl=document.getElementById('alert');
-  alertEl.textContent=message;
-  alertEl.style.background=type==='success'? 'var(--alert-success)':'var(--alert-error)';
-  alertEl.classList.add('show');
-  setTimeout(()=>{alertEl.classList.remove('show');},3000);
-}
-
-function getCurrentSavings(){ return parseFloat(localStorage.getItem('travelSavings'))||0; }
-function getTravelGoal(){ return parseFloat(localStorage.getItem('travelGoal'))||0; }
-function getHistory(){ return JSON.parse(localStorage.getItem('travelHistory'))||[]; }
-
-function updateDisplay(){
-  const savings=getCurrentSavings();
-  const goal=getTravelGoal();
-  document.getElementById('currentSavings').textContent=savings.toFixed(2);
-  document.getElementById('travelGoalDisplay').textContent=goal.toFixed(2);
-  document.getElementById('progressPercent').textContent=goal>0? Math.min((savings/goal)*100,100).toFixed(1):0;
-
-  const history=getHistory();
-  const container=document.getElementById('historyContainer');
-  container.innerHTML='';
-  history.forEach(item=>{
-    const div=document.createElement('div');
-    div.classList.add('history-item');
-    div.textContent=`$${item.amount.toFixed(2)} - ${item.note || 'No note'}`;
-    container.appendChild(div);
-  });
-}
-
-function setTravelGoal(){
-  const target=parseFloat(document.getElementById('travelTarget').value);
-  if(!target || target<=0){ showAlert('Enter a valid travel goal','error'); return; }
-  localStorage.setItem('travelGoal',target);
-  updateDisplay();
-  showAlert('Travel goal set!');
-}
-
-function addToSavings(){
-  const amount=parseFloat(document.getElementById('addAmount').value);
-  if(!amount || amount<=0){ showAlert('Enter a valid amount','error'); return; }
-  const newSavings=getCurrentSavings()+amount;
-  localStorage.setItem('travelSavings',newSavings);
-
-  const history=getHistory();
-  history.push({amount, note:document.getElementById('noteInput').value});
-  localStorage.setItem('travelHistory',JSON.stringify(history));
-  document.getElementById('noteInput').value='';
-
-  updateDisplay();
-  showAlert('Added to savings!');
-}
-
-function useRemainingBudget(){
-  const limits=JSON.parse(localStorage.getItem('categoryLimits'))||{};
-  const purchases=JSON.parse(localStorage.getItem('purchases'))||[];
-  let remaining=0;
-  for(const cat in limits){
-    const spent=purchases.filter(p=>p.category===cat).reduce((sum,p)=>sum+p.amount,0);
-    remaining+=Math.max(limits[cat]-spent,0);
-  }
-  if(remaining<=0){ showAlert('No remaining budget available','error'); return; }
-  const newSavings=getCurrentSavings()+remaining;
-  localStorage.setItem('travelSavings',newSavings);
-
   const history=getHistory();
   history.push({amount:remaining,note:'Transferred remaining budget'});
   localStorage.setItem('travelHistory',JSON.stringify(history));
@@ -203,16 +150,6 @@ function useRemainingBudget(){
   updateDisplay();
   showAlert(`$${remaining.toFixed(2)} added to travel savings!`);
 }
-
-function resetTravelGoal(){
-  localStorage.removeItem('travelSavings');
-  localStorage.removeItem('travelGoal');
-  localStorage.removeItem('travelHistory');
-  updateDisplay();
-  showAlert('Travel goal has been reset');
-}
-
-updateDisplay();
 </script>
 
 </body>
