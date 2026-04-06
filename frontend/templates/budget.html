@@ -239,40 +239,6 @@ function showMessage(id,msg,type){
   setTimeout(()=>el.style.display="none",3000);
 }
 
-function setCategoryLimit(){
-  const cat=document.getElementById('limitCategory').value;
-  const val=parseFloat(document.getElementById('categoryLimit').value);
-
-  if(!cat || !val){ showMessage('limitMessage','Invalid input','error'); return; }
-
-  let limits=JSON.parse(localStorage.getItem('categoryLimits'))||{};
-  limits[cat]=val;
-  localStorage.setItem('categoryLimits',JSON.stringify(limits));
-
-  showMessage('limitMessage','Limit saved');
-}
-
-function addPurchase(){
-  const cat=document.getElementById('purchaseCategory').value;
-  const amt=parseFloat(document.getElementById('purchaseAmount').value);
-
-  if(!cat || !amt){ showMessage('purchaseMessage','Invalid input','error'); return; }
-
-  let limits=JSON.parse(localStorage.getItem('categoryLimits'))||{};
-  let purchases=JSON.parse(localStorage.getItem('purchases'))||[];
-
-  let spent=purchases.filter(p=>p.category===cat).reduce((s,p)=>s+p.amount,0);
-
-  if(limits[cat] && spent+amt>limits[cat]){
-    pendingPurchase={cat,amt};
-    document.getElementById('confirmText').textContent=`Exceeds limit of $${limits[cat]}. Proceed?`;
-    document.getElementById('confirmBox').style.display="block";
-    return;
-  }
-
-  savePurchase(cat,amt);
-}
-
 function confirmAdd(){
   if(pendingPurchase){
     savePurchase(pendingPurchase.cat,pendingPurchase.amt);
