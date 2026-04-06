@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Haven - Dashboard</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Geist&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
@@ -30,29 +31,46 @@
 body{background:var(--background);color:var(--foreground);min-height:100vh;transition:background 0.3s;}
 a{text-decoration:none;color:inherit;}
 button{cursor:pointer;}
+
 .navbar{display:flex;justify-content:space-between;align-items:center;background:var(--card);padding:15px 30px;border-radius:var(--radius);box-shadow:var(--shadow-sm);margin-bottom:20px;}
 .nav-left{display:flex;align-items:center;gap:20px;font-weight:600;}
 .nav-left .logo{font-family:var(--font-heading);font-size:1.4em;transition:transform 0.3s;}
 .nav-left .logo:hover{transform:scale(1.1);}
 .nav-left a.active,.nav-left a:hover{color:var(--link-color);transform:scale(1.05);}
 .nav-right{display:flex;align-items:center;gap:15px;}
-.nav-right #profileIcon,.nav-right #signOut{transition:transform 0.3s;}
-.nav-right #profileIcon:hover,.nav-right #signOut:hover{transform:scale(1.05);}
+
 .container{max-width:1000px;margin:0 auto;padding:0 15px;}
 .section{background:var(--card);padding:25px;border-radius:var(--radius);box-shadow: var(--shadow-sm);margin-bottom:20px;transition:transform 0.3s;}
 .section:hover{transform:translateY(-3px);}
-h1,h2{font-family:var(--font-heading);color:var(--foreground);}
-h1{font-size:2em;margin-bottom:5px;}
+
+h1,h2{font-family:var(--font-heading);}
+h1{font-size:2em;margin-bottom:10px;text-align:center;}
 h2{font-size:1.2em;margin-bottom:10px;}
-.description{font-size:1em;color:var(--muted-foreground);margin-bottom:15px;}
+
 .flex-row{display:flex;gap:20px;flex-wrap:wrap;}
 .flex-item{flex:1;min-width:280px;}
-canvas{max-width:100%;border-radius:var(--radius);background:var(--muted);padding:15px;}
-.alert{position:fixed;top:20px;right:20px;padding:12px 20px;border-radius:var(--radius);font-weight:600;color:white;opacity:0;transform:translateY(-20px);transition:0.4s;z-index:1000;}
-.alert.show{opacity:1;transform:translateY(0);}
+
+/* progress bar */
+.progress-bar-wrapper{
+  width:100%;
+  height:22px;
+  background:var(--muted);
+  border-radius:999px;
+  overflow:hidden;
+}
+
+.progress-bar-fill{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,#1f1f1f,#3a3a3a);
+  border-radius:999px;
+  transition:width 0.5s ease;
+}
 </style>
 </head>
+
 <body>
+
 <nav class="navbar">
   <div class="nav-left">
     <span class="logo">Haven</span>
@@ -63,167 +81,114 @@ canvas{max-width:100%;border-radius:var(--radius);background:var(--muted);paddin
     <a href="/about">About</a>
   </div>
   <div class="nav-right">
-    <i class="fas fa-user-alt" id="profileIcon"></i>
-    <span id="profileName"></span>
-    <a href="/login" id="signOut">Sign Out</a>
+    <a href="/login">Sign Out</a>
   </div>
 </nav>
+
 <div class="container">
+
+  <h1>DASHBOARD</h1>
+
+  <!-- Budget Usage -->
   <div class="section">
-    <h1>Dashboard</h1>
-    <p class="description">Visual analysis of your spending habits. Track budgets, spending per category, and monthly trends.</p>
+    <h2>Budget Usage</h2>
+    <div class="progress-bar-wrapper">
+      <div class="progress-bar-fill" id="dashboard-progress"></div>
+    </div>
+    <p id="dashboard-summary"></p>
   </div>
+
+  <!-- Charts -->
   <div class="flex-row">
-    <section class="section flex-item">
-      <h2>Budget Spent per Category</h2>
+
+    <div class="section flex-item">
+      <h2>Spending by Category</h2>
       <canvas id="pieChart"></canvas>
-    </section>
-    <section class="section flex-item">
-      <h2>Budgeted vs Spent</h2>
+    </div>
+
+    <div class="section flex-item">
+      <h2>Actual Spending</h2>
       <canvas id="barChart"></canvas>
-    </section>
+    </div>
+
   </div>
-  <div class="flex-row">
-    <section class="section flex-item">
-      <h2>Monthly Spending Trends</h2>
-      <canvas id="monthlyTrendChart"></canvas>
-    </section>
-    <section class="section flex-item">
-      <h2>Category Comparison</h2>
-      <canvas id="categoryComparisonChart"></canvas>
-    </section>
+
+  <div class="section">
+    <h2>Spending Over Time</h2>
+    <canvas id="lineChart"></canvas>
   </div>
+
 </div>
-<div id="alert" class="alert"></div>
+
 <script>
-const storedUser=JSON.parse(localStorage.getItem('loggedInUser'))||JSON.parse(sessionStorage.getItem('loggedInUser'));
-if(!storedUser)window.location.href='login.html';
-else document.getElementById('profileName').textContent=storedUser.name;
-document.getElementById('signOut').addEventListener('click',()=>{
-localStorage.removeItem('loggedInUser');
-sessionStorage.removeItem('loggedInUser');
-window.location.href='/login';
-});
 async function loadDashboard() {
-    const response = await fetch("/dashboard_data");
-    const data = await response.json();
 
-    const totalSpent = data.total_spent;
+  const dashRes = await fetch("/dashboard_data");
+  const dashData = await dashRes.json();
 
-   // monthly income
-let income = parseFloat(localStorage.getItem("monthly_income")) || 0;
+  const limitsRes = await fetch("/limits");
+  const limits = await limitsRes.json();
 
-const incomeInput = document.getElementById("monthlyIncomeInput");
-const saveIncomeBtn = document.getElementById("saveIncomeBtn");
-const progressBar = document.getElementById("dashboard-progress");
-const summaryText = document.getElementById("dashboard-summary");
+  const totalSpent = dashData.total_spent;
 
-// Pre-fill input if stored
-if (income > 0 && incomeInput) {
-    incomeInput.value = income;
-}
+  let totalBudget = 0;
+  limits.forEach(l => totalBudget += l.limit_amount);
 
-// Save income button
-if (saveIncomeBtn) {
-    saveIncomeBtn.addEventListener("click", () => {
+  const percent = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
+  const remaining = totalBudget - totalSpent;
 
-        const value = parseFloat(incomeInput.value);
+  const bar = document.getElementById("dashboard-progress");
+  const summary = document.getElementById("dashboard-summary");
 
-        if (!value || value <= 0) {
-            alert("Enter a valid income amount.");
-            return;
-        }
+  if (bar) bar.style.width = Math.min(percent,100) + "%";
 
-        localStorage.setItem("monthly_income", value);
-        updateIncomeBar(value);
-    });
-}
+  if (summary){
+    summary.textContent =
+      `$${totalSpent.toFixed(2)} spent of $${totalBudget.toFixed(2)} | $${remaining.toFixed(2)} remaining (${percent.toFixed(1)}%)`;
+  }
 
-// Function to update bar
-function updateIncomeBar(currentIncome) {
+  // charts
+  const labels = dashData.categories.map(c=>c.category);
+  const values = dashData.categories.map(c=>c.total);
 
-    const remaining = currentIncome - totalSpent;
-    const percentUsed = (totalSpent / currentIncome) * 100;
-
-    progressBar.style.width = Math.min(percentUsed, 100) + "%";
-
-    summaryText.textContent =
-        `Income: $${currentIncome.toFixed(2)} | Spent: $${totalSpent.toFixed(2)} | Remaining: $${remaining.toFixed(2)} (${percentUsed.toFixed(1)}% used)`;
-}
-
-
-if (income > 0) {
-    updateIncomeBar(income);
-}
-
-    // Category Chart
-    const categoryLabels = data.categories.map(c => c.category);
-    const categoryValues = data.categories.map(c => c.total);
-
-    // Pie Chart 
-    new Chart(document.getElementById("pieChart"), {
-        type: 'pie',
-        data: {
-            labels: categoryLabels,
-            datasets: [{
-             data: categoryValues,
-             backgroundColor: [
-                '#6D4C41',
-                '#8D6E63',
-                '#A1887F',
-                '#D7CCC8',
-                '#5D4037',
-                '#4E342E'
-            ],
-             borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-            }
-        }
+  new Chart(document.getElementById("pieChart"), {
+    type:'pie',
+    data:{
+      labels:labels,
+      datasets:[{
+        data:values,
+        backgroundColor:['#1f1f1f','#3a3a3a','#5c5c5c','#8c8c8c','#bdbdbd']
+      }]
     }
-});
-// bar chart
-    new Chart(document.getElementById("barChart"), {
-        type: 'bar',
-        data: {
-            labels: categoryLabels,
-            datasets: [{
-                label: 'Actual Spending',
-                data: categoryValues,
-                backgroundColor: '#6D4C41'
-            }]
-        },
-        options: {
-            scales: { y: { beginAtZero: true } }
-        }
-    });
+  });
 
-    //Line Chart 
-    const monthlyLabels = data.monthly.map(m => m.month);
-    const monthlyValues = data.monthly.map(m => m.total);
+  new Chart(document.getElementById("barChart"), {
+    type:'bar',
+    data:{
+      labels:labels,
+      datasets:[{
+        data:values,
+        backgroundColor:'#2c2c2c'
+      }]
+    }
+  });
 
-    new Chart(document.getElementById("lineChart"), {
-        type: 'line',
-        data: {
-            labels: monthlyLabels,
-            datasets: [{
-                label: 'Total Spent',
-                data: monthlyValues,
-                borderColor: '#6D4C41',
-                fill: false
-            }]
-        }
-    });
+  new Chart(document.getElementById("lineChart"), {
+    type:'line',
+    data:{
+      labels:dashData.monthly.map(m=>m.month),
+      datasets:[{
+        data:dashData.monthly.map(m=>m.total),
+        borderColor:'#1f1f1f',
+        fill:false
+      }]
+    }
+  });
+
 }
 
 loadDashboard();
 </script>
+
 </body>
 </html>
-
-
