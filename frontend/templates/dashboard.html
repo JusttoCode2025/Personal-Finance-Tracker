@@ -140,7 +140,7 @@ async function loadDashboard() {
   const limits = await limitsRes.json();
 
   const totalSpent = dashData.total_spent;
-
+// budget bar 
   let totalBudget = 0;
   limits.forEach(l => totalBudget += l.limit_amount);
 
@@ -177,6 +177,7 @@ async function loadDashboard() {
     data:{
       labels:labels,
       datasets:[{
+        label: 'Actual Spending',
         data:values,
         backgroundColor:'#2c2c2c'
       }]
@@ -188,6 +189,7 @@ async function loadDashboard() {
     data:{
       labels:dashData.monthly.map(m=>m.month),
       datasets:[{
+        label: 'Monthly Spending',
         data:dashData.monthly.map(m=>m.total),
         borderColor:'#1f1f1f',
         fill:false
