@@ -121,6 +121,16 @@ h2{font-size:1.2em;margin-bottom:10px;}
 </div>
 
 <script>
+
+const storedUser = JSON.parse(localStorage.getItem('loggedInUser')) || JSON.parse(sessionStorage.getItem('loggedInUser'));
+if(!storedUser) window.location.href='/login';
+else document.getElementById('profileName').textContent = storedUser.name;
+
+document.getElementById('signOut').onclick=()=>{
+  localStorage.removeItem('loggedInUser');
+  sessionStorage.removeItem('loggedInUser');
+  window.location.href='/login';
+};
 async function loadDashboard() {
 
   const dashRes = await fetch("/dashboard_data");
