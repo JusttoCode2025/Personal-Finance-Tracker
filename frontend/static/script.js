@@ -1,13 +1,8 @@
-// ============================================
-// NOTIFICATION SYSTEM (replaces alert/confirm)
-// ============================================
  
 function showNotification(message, type = 'info', callback = null) {
-    // Remove existing notification if any
+    
     const existing = document.getElementById('app-notification');
     if (existing) existing.remove();
- 
-    // Create notification element
     const notification = document.createElement('div');
     notification.id = 'app-notification';
     notification.className = `notification notification-${type}`;
