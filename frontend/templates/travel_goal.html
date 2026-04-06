@@ -128,7 +128,7 @@ else document.getElementById('profileName').textContent = storedUser.name;
 document.getElementById('signOut').addEventListener('click', ()=> {
   localStorage.removeItem('loggedInUser');
   sessionStorage.removeItem('loggedInUser');
-  window.location.href='login.html';
+  window.location.href='/login';
 });
 
 function showAlert(message,type='success'){
