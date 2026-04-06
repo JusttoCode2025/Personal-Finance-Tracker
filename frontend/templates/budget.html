@@ -92,28 +92,6 @@ button:hover { transform:scale(1.05); }
   background:var(--muted);
   margin-bottom:5px;
 }
-
-.alert-box {
-  display:none;
-  padding:10px;
-  border-radius:var(--radius);
-  margin-top:10px;
-  font-weight:500;
-}
-.success { background:var(--alert-success); color:white; }
-.error { background:var(--alert-error); color:white; }
-
-.confirm-box {
-  display:none;
-  padding:15px;
-  border-radius:var(--radius);
-  background:var(--muted);
-  margin-top:10px;
-}
-.confirm-buttons {
-  display:flex;
-  gap:10px;
-}
 </style>
 </head>
 
@@ -162,10 +140,10 @@ button:hover { transform:scale(1.05); }
 
   <button onclick="setCategoryLimit()">Set Limit</button>
 
-  <div id="limitMessage" class="alert-box"></div>
+   <p id="limitMessage"></p>
 
   <button onclick="transferToTravel()">Transfer Remaining Budget</button>
-  <div id="transferMessage" class="alert-box"></div>
+  <p id="transferMessage"></p>
 </section>
 
 <section class="section flex-item">
@@ -184,16 +162,8 @@ button:hover { transform:scale(1.05); }
   <input id="purchaseAmount" type="number" placeholder="Amount">
 
   <button onclick="addPurchase()">Add Purchase</button>
+  <p id="purchaseMessage"></p>
 
-  <div id="purchaseMessage" class="alert-box"></div>
-
-  <div id="confirmBox" class="confirm-box">
-    <p id="confirmText"></p>
-    <div class="confirm-buttons">
-      <button onclick="confirmAdd()">Yes</button>
-      <button onclick="cancelAdd()">Cancel</button>
-    </div>
-  </div>
 </section>
 
 </div>
@@ -219,8 +189,6 @@ button:hover { transform:scale(1.05); }
 </div>
 
 <script>
-let pendingPurchase=null;
-
 const storedUser = JSON.parse(localStorage.getItem('loggedInUser')) || JSON.parse(sessionStorage.getItem('loggedInUser'));
 if(!storedUser) window.location.href='/login';
 else document.getElementById('profileName').textContent = storedUser.name;
@@ -228,84 +196,8 @@ else document.getElementById('profileName').textContent = storedUser.name;
 document.getElementById('signOut').onclick=()=>{
   localStorage.removeItem('loggedInUser');
   sessionStorage.removeItem('loggedInUser');
-  window.location.href='login.html';
+  window.location.href='/login';
 };
-
-function showMessage(id,msg,type){
-  const el=document.getElementById(id);
-  el.textContent=msg;
-  el.className="alert-box "+(type==="error"?"error":"success");
-  el.style.display="block";
-  setTimeout(()=>el.style.display="none",3000);
-}
-async function addPurchase(){
-
-  const cat = document.getElementById('purchaseCategory').value;
-  const amt = parseFloat(document.getElementById('purchaseAmount').value);
-
-  if(!cat || !amt){
-    showMessage('purchaseMessage','Invalid input','error');
-    return;
-  }
-
-  const res = await fetch("/purchase", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
-      category: cat.toLowerCase(),
-      amount: amt
-    })
-  });
-
-  const data = await res.json();
-  if(data.warning){
-    pendingPurchase = {cat, amt};
-
-    document.getElementById('confirmText').textContent = data.warning;
-    document.getElementById('confirmBox').style.display="block";
-    return;
-  }
-
-
-  if(data.error){
-    showMessage('purchaseMessage', data.error, 'error');
-    return;
-  }
-
-  showMessage('purchaseMessage','Purchase added');
-
-  loadRecentPurchases();
-  loadCategories();
-}
-async function confirmAdd(){
-
-  if(pendingPurchase){
-
-    await fetch("/purchase", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({
-        category: pendingPurchase.cat.toLowerCase(),
-        amount: pendingPurchase.amt,
-        confirm: true
-      })
-    });
-
-    showMessage('purchaseMessage','Purchase added');
-
-    pendingPurchase = null;
-
-    loadRecentPurchases();
-    loadCategories();
-  }
-
-  document.getElementById('confirmBox').style.display="none";
-}
-
-function cancelAdd(){
-  pendingPurchase=null;
-  document.getElementById('confirmBox').style.display="none";
-}
 
 </script>
 
