@@ -6,6 +6,7 @@
 <title>Haven - Home</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Geist&display=swap" rel="stylesheet">
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
 <style>
 :root {
   --font-sans: 'Inter', sans-serif;
@@ -48,6 +49,42 @@ p { margin-bottom:12px; line-height:1.6; color:#555; }
 
 .flex-row { display:flex; gap:20px; flex-wrap:wrap; }
 .flex-item { flex:1; min-width:300px; }
+  #recentPurchases {
+  list-style: none;
+  padding: 0;
+  margin-top: 10px;
+}
+
+#recentPurchases li {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+}
+
+#recentPurchases li:last-child {
+  border-bottom: none;
+}
+.goal-bar-wrapper {
+  background: #eee;
+  border-radius: 20px;
+  overflow: hidden;
+  height: 25px;
+  margin-top: 10px;
+}
+
+.goal-bar-fill {
+  background: linear-gradient(90deg, #333, #000);
+  height: 100%;
+  width: 0%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 12px;
+  transition: width 0.4s ease;
+}
 
 button {
   width:100%;
@@ -105,13 +142,23 @@ button:hover { background:hsl(0,0%,0%); transform:scale(1.03); }
 
     <div class="section flex-item">
       <h2>Recent Activity</h2>
-      <p id="recentActivity">No activity yet.</p>
+      <ul id="recentPurchases"></ul>
     </div>
   </div>
 
   <div class="section">
     <h2>Get Started</h2>
     <p>Set up your categories, track your expenses, and watch your progress as you get closer to your goals.</p>
+    
+    <div class="goal-bar-wrapper">
+      <div class="goal-bar-fill" id="homeTravelProgress">
+      <span id="homeTravelPercent">0%</span>
+      </div>
+    </div>
+  <p>
+    Saved: <span id="homeGoalSaved">$0</span> |
+    Remaining: <span id="homeGoalLeft">$0</span>
+  </p>
   </div>
 </div>
 
@@ -133,13 +180,6 @@ document.getElementById('signOut').addEventListener('click', ()=> {
   sessionStorage.removeItem('loggedInUser');
   window.location.href='/login';
 });
-
-function updateActivity() {
-  const purchases = JSON.parse(localStorage.getItem('purchases')) || [];
-  const activity = document.getElementById('recentActivity');
-  activity.textContent = purchases.length ? purchases.slice(0,5).map(p=>`${p.category}: $${p.amount}`).join(', ') : "No activity yet.";
-}
-updateActivity();
 </script>
 
 </body>
