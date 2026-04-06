@@ -239,7 +239,7 @@ notificationStyles.textContent = `
     }
     
     .confirm-yes {
-        background: #6D4C41;
+        background: #000000;
         color: white;
     }
     
@@ -629,7 +629,7 @@ async function addPurchase() {
     if (data.warning) {
  
         showConfirm(
-            data.warning + "\n\nContinue anyway?",
+            data.warning,
             async () => {
                 await fetch("/purchase", {
                     method: "POST",
