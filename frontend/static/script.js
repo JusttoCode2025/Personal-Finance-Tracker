@@ -712,6 +712,8 @@ async function transferToTravel() {
             }
         );
     }
+   loadTravelGoal();
+   loadCategories();
 }
  
 async function executeTransfer(msg) {
