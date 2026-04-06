@@ -122,19 +122,9 @@ button:hover { background:var(--link-hover); transform:scale(1.03); }
     <button id="resetGoal">Reset Goal</button>
   </div>
 
-  <div class="section">
-    <h2>History & Notes</h2>
-    <input type="text" id="noteInput" placeholder="Add a note about this submission">
-    <button onclick="addNote()">Submit Note</button>
-    <div id="historyContainer"></div>
-  </div>
-</div>
-
-<div id="alert" class="alert"></div>
-
 <script>
 const storedUser = JSON.parse(localStorage.getItem('loggedInUser')) || JSON.parse(sessionStorage.getItem('loggedInUser'));
-if(!storedUser) window.location.href='login.html';
+if(!storedUser) window.location.href='/login';
 else document.getElementById('profileName').textContent = storedUser.name;
 
 document.getElementById('signOut').addEventListener('click', ()=> {
@@ -142,13 +132,6 @@ document.getElementById('signOut').addEventListener('click', ()=> {
   sessionStorage.removeItem('loggedInUser');
   window.location.href='/login';
 });
-
-  const history=getHistory();
-  history.push({amount:remaining,note:'Transferred remaining budget'});
-  localStorage.setItem('travelHistory',JSON.stringify(history));
-
-  updateDisplay();
-  showAlert(`$${remaining.toFixed(2)} added to travel savings!`);
 }
 </script>
 
