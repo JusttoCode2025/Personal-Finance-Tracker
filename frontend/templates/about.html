@@ -56,12 +56,42 @@ p { margin-bottom:15px; }
 .flex-row { display:flex; gap:20px; flex-wrap:wrap; }
 .flex-item { flex:1; min-width:280px; }
 
-.input-field { width:100%; padding:10px; margin-bottom:10px; border:1px solid var(--border); border-radius:var(--radius); }
+.input-field { width:100%; padding:10px; margin-bottom:10px; border:1px solid var(--border); border-radius:var(--radius); font-size:0.95em; }
+.input-field:focus { outline:none; border-color:var(--primary); }
+textarea.input-field { min-height:120px; resize:vertical; }
+
 .submit-btn { padding:10px 20px; background:var(--primary); color:var(--primary-foreground); border:none; border-radius:var(--radius); font-weight:600; transition:0.3s; }
 .submit-btn:hover { background:var(--link-hover); }
+.submit-btn:disabled { opacity:0.6; cursor:not-allowed; }
 
-.alert { position:fixed; top:20px; right:20px; padding:12px 20px; border-radius:var(--radius); font-weight:600; color:white; opacity:0; transform:translateY(-20px); transition:0.4s; z-index:1000; }
-.alert.show { opacity:1; transform:translateY(0); }
+.fs-success-msg {
+  display:none;
+  color:var(--alert-success);
+  font-weight:600;
+  margin-bottom:15px;
+  padding:12px 16px;
+  background:hsl(120, 50%, 95%);
+  border-radius:12px;
+  border:1px solid hsl(120, 50%, 80%);
+}
+.fs-error-msg {
+  display:none;
+  color:var(--alert-error);
+  font-weight:600;
+  margin-bottom:15px;
+  padding:12px 16px;
+  background:hsl(0, 70%, 97%);
+  border-radius:12px;
+  border:1px solid hsl(0, 70%, 85%);
+}
+[data-fs-error] {
+  display:block;
+  color:var(--alert-error);
+  font-size:0.82em;
+  margin-top:-8px;
+  margin-bottom:8px;
+  min-height:1em;
+}
 </style>
 </head>
 <body>
@@ -84,6 +114,8 @@ p { margin-bottom:15px; }
 
 <div class="container">
   <div class="flex-row">
+
+    <!-- About Section -->
     <section class="section flex-item">
       <h1>About Haven</h1>
       <p class="highlight">Budget Better.</p>
@@ -100,60 +132,61 @@ p { margin-bottom:15px; }
 
       <p class="highlight">Connect with us:</p>
       <p>
-        <a href="https://github.com/JusttoCode2025/Personal-Finance-Tracker" target="_blank">GitHub</a> | 
+        <a href="https://github.com/JusttoCode2025/Personal-Finance-Tracker" target="_blank">GitHub</a> |
         <a href="#" target="_blank">Twitter</a>
       </p>
     </section>
 
+    <!-- Contact Section -->
     <section class="section flex-item">
       <h2>Contact Us</h2>
-      <form id="contactForm" action="https://formspree.io/f/mgopzqyw" method="POST">
-        <input class="input-field" type="text" name="name" placeholder="Name" required>
-        <input class="input-field" type="email" name="email" placeholder="Email" required>
-        <input class="input-field" type="text" name="subject" placeholder="Subject" required>
-        <textarea class="input-field" name="message" placeholder="Message" required></textarea>
-        <button class="submit-btn" type="submit">Send Message</button>
+
+      <div class="fs-success-msg" data-fs-success>
+        ✅ Message sent! We'll get back to you soon.
+      </div>
+      <div class="fs-error-msg" data-fs-error>
+        ⚠️ Something went wrong. Please try again.
+      </div>
+
+      <form id="contactForm">
+        <input class="input-field" type="text" name="name" placeholder="Name" required data-fs-field>
+        <span data-fs-error="name"></span>
+
+        <input class="input-field" type="email" name="email" placeholder="Email" required data-fs-field>
+        <span data-fs-error="email"></span>
+
+        <input class="input-field" type="text" name="subject" placeholder="Subject" required data-fs-field>
+        <span data-fs-error="subject"></span>
+
+        <textarea class="input-field" name="message" placeholder="Message" required data-fs-field></textarea>
+        <span data-fs-error="message"></span>
+
+        <button class="submit-btn" type="submit" data-fs-submit-btn>Send Message</button>
       </form>
     </section>
+
   </div>
 </div>
 
-<div id="alert" class="alert"></div>
-
 <script>
-const storedUser = JSON.parse(localStorage.getItem('loggedInUser')) || JSON.parse(sessionStorage.getItem('loggedInUser'));
-if(!storedUser) window.location.href='login.html';
-else document.getElementById('profileName').textContent = storedUser.name;
+ 
+  const storedUser = JSON.parse(localStorage.getItem('loggedInUser')) || JSON.parse(sessionStorage.getItem('loggedInUser'));
+  if (!storedUser) window.location.href = '/login';
+  else document.getElementById('profileName').textContent = storedUser.name;
 
-document.getElementById('signOut').addEventListener('click', ()=> {
-  localStorage.removeItem('loggedInUser');
-  sessionStorage.removeItem('loggedInUser');
-  window.location.href='/login';
-});
+ 
+  document.getElementById('signOut').addEventListener('click', () => {
+    localStorage.removeItem('loggedInUser');
+    sessionStorage.removeItem('loggedInUser');
+    window.location.href = '/login';
+  });
 
-const form = document.getElementById('contactForm');
-const alertEl = document.getElementById('alert');
-
-form.addEventListener('submit', async function(e){
-  e.preventDefault();
-  const data = new FormData(form);
-  const res = await fetch(form.action, { method:'POST', body:data, headers:{ 'Accept':'application/json' }});
-  if(res.ok){
-    showAlert('Message Sent!', 'success');
-    form.reset();
-  } else showAlert('Something went wrong.', 'error');
-});
-
-function showAlert(msg, type='success'){
-  alertEl.textContent = msg;
-  alertEl.style.background = type==='success'? 'var(--alert-success)' : 'var(--alert-error)';
-  alertEl.classList.add('show');
-  setTimeout(()=> alertEl.classList.remove('show'), 3000);
-}
+  window.formspree = window.formspree || function () { (formspree.q = formspree.q || []).push(arguments); };
+  formspree('initForm', { formElement: '#contactForm', formId: 'mkopegvo' });
 </script>
+<script src="https://unpkg.com/@formspree/ajax@1" defer></script>
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </body>
 </html>
-
 
 
