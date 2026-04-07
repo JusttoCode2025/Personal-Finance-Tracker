@@ -99,6 +99,7 @@ h2{font-size:1.2em;margin-bottom:10px;}
         <button id="saveIncomeBtn">Save Income</button>
     </div>
     </div>
+  
   <div class="section">
     <h2>Budget Usage</h2>
     <div class="progress-bar-wrapper">
@@ -107,13 +108,7 @@ h2{font-size:1.2em;margin-bottom:10px;}
     <p id="dashboard-summary"></p>
   </div>
   <div class="budget-bar-container">
-        <h2>Budget Overview</h2>
-        <div class="progress-bar-wrapper">
-            <div class="progress-bar-fill" id="dashboard-progress"></div>
-        </div>
-        <p id="dashboard-summary"></p>
-    </div>
-
+     
   <!-- Charts -->
   <div class="flex-row">
 
@@ -137,12 +132,13 @@ h2{font-size:1.2em;margin-bottom:10px;}
 </div>
 
 <script>
-  async function loadDashboard() {
+async function loadDashboard() {
     const response = await fetch("/dashboard_data");
     const data = await response.json();
 
     const totalSpent = data.total_spent;
-    
+
+   // monthly income
 let income = parseFloat(localStorage.getItem("monthly_income")) || 0;
 
 const incomeInput = document.getElementById("monthlyIncomeInput");
@@ -171,6 +167,23 @@ if (saveIncomeBtn) {
     });
 }
 
+// Function to update bar
+function updateIncomeBar(currentIncome) {
+
+    const remaining = currentIncome - totalSpent;
+    const percentUsed = (totalSpent / currentIncome) * 100;
+
+    progressBar.style.width = Math.min(percentUsed, 100) + "%";
+
+    summaryText.textContent =
+        `Income: $${currentIncome.toFixed(2)} | Spent: $${totalSpent.toFixed(2)} | Remaining: $${remaining.toFixed(2)} (${percentUsed.toFixed(1)}% used)`;
+}
+
+
+if (income > 0) {
+    updateIncomeBar(income);
+}
+
     // Category Chart
     const categoryLabels = data.categories.map(c => c.category);
     const categoryValues = data.categories.map(c => c.total);
@@ -182,7 +195,14 @@ if (saveIncomeBtn) {
             labels: categoryLabels,
             datasets: [{
              data: categoryValues,
-            backgroundColor:['#1f1f1f','#3a3a3a','#5c5c5c','#8c8c8c','#bdbdbd'],
+             backgroundColor: [
+                '#6D4C41',
+                '#8D6E63',
+                '#A1887F',
+                '#D7CCC8',
+                '#5D4037',
+                '#4E342E'
+            ],
              borderWidth: 1
             }]
         },
@@ -203,7 +223,7 @@ if (saveIncomeBtn) {
             datasets: [{
                 label: 'Actual Spending',
                 data: categoryValues,
-                 backgroundColor:'#2c2c2c'.
+                backgroundColor: '#6D4C41'
             }]
         },
         options: {
@@ -222,7 +242,7 @@ if (saveIncomeBtn) {
             datasets: [{
                 label: 'Total Spent',
                 data: monthlyValues,
-                borderColor:'#1f1f1f',
+                borderColor: '#6D4C41',
                 fill: false
             }]
         }
@@ -230,6 +250,7 @@ if (saveIncomeBtn) {
 }
 
 loadDashboard();
+
 const storedUser = JSON.parse(localStorage.getItem('loggedInUser')) || JSON.parse(sessionStorage.getItem('loggedInUser'));
 if(!storedUser) window.location.href='/login';
 else document.getElementById('profileName').textContent = storedUser.name;
