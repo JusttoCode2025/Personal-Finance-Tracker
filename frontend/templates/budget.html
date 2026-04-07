@@ -1,129 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Budget Tracker</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Haven - Budget</title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Geist&display=swap" rel="stylesheet">
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+<style>
+:root {
+  --font-sans:'Inter',sans-serif;
+  --font-heading:'Geist',sans-serif;
+  --radius:30px;
+  --shadow-sm:0px 4px 6px rgba(0,0,0,0.08);
+  --background:hsl(20,31%,52%);
+  --foreground:hsl(0,0%,10%);
+  --card:hsl(0,0%,100%);
+  --primary:hsl(0,0%,13%);
+  --primary-foreground:hsl(0,0%,100%);
+  --border:hsl(0,0%,90%);
+  --muted:hsl(0,0%,95%);
+  --muted-foreground:hsl(0,0%,40%);
+  --link-color:hsl(0,0%,13%);
+  --link-hover:hsl(0,0%,0%);
+  --alert-success:hsl(120,50%,40%);
+  --alert-error:hsl(0,70%,50%);
+}
+
+* { box-sizing:border-box; margin:0; padding:0; font-family:var(--font-sans); }
+body { background:var(--background); color:var(--foreground); min-height:100vh; }
+a { text-decoration:none; color:inherit; }
+button { cursor:pointer; }
+
+.navbar {
+  display:flex; justify-content:space-between; align-items:center;
+  background:var(--card); padding:15px 30px;
+  border-radius:var(--radius); box-shadow:var(--shadow-sm);
+  margin-bottom:20px;
+}
+
+.nav-left { display:flex; align-items:center; gap:20px; font-weight:600; }
+.nav-left .logo { font-family:var(--font-heading); font-size:1.4em; transition:0.3s; }
+.nav-left .logo:hover { transform:scale(1.1); }
+.nav-left a.active, .nav-left a:hover { transform:scale(1.05); }
+
+.nav-right { display:flex; align-items:center; gap:15px; }
+.nav-right #profileIcon:hover, .nav-right #signOut:hover { transform:scale(1.05); }
+
+.container { max-width:1000px; margin:0 auto; padding:0 15px; }
+
+.section {
+  background:var(--card);
+  padding:25px;
+  border-radius:var(--radius);
+  box-shadow:var(--shadow-sm);
+  margin-bottom:20px;
+  transition:0.3s;
+}
+.section:hover { transform:translateY(-3px); }
+
+h1,h2 { font-family:var(--font-heading); }
+h1 { font-size:2em; margin-bottom:5px; }
+h2 { font-size:1.2em; margin-bottom:10px; }
+
+.description { color:var(--muted-foreground); margin-bottom:15px; }
+
+.flex-row { display:flex; gap:20px; flex-wrap:wrap; }
+.flex-item { flex:1; min-width:280px; }
+
+input, select, button {
+  width:100%;
+  padding:12px;
+  border-radius:var(--radius);
+  border:1px solid var(--border);
+  margin-bottom:10px;
+}
+
+button {
+  background:var(--primary);
+  color:var(--primary-foreground);
+  border:none;
+}
+button:hover { transform:scale(1.05); }
+
+.expenses-list { list-style:none; }
+.expenses-list li {
+  padding:10px;
+  border-radius:var(--radius);
+  background:var(--muted);
+  margin-bottom:5px;
+}
+</style>
 </head>
 
 <body>
 
-<!-- nav bar-->
 <nav class="navbar">
-    <div class="nav-left">
-       <span class="logo">BudgetTracker</span>
+  <div class="nav-left">
+    <a href="/home" class="logo">Haven</a>
+    <a href="/home">Home</a>
+    <a href="/budget" class="active">Budget</a>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/travel-goal">Travel Goal</a>
+    <a href="/about">About</a>
+  </div>
 
-        <a href="/home">Home</a>
-        <a href="/budget" class="active">Budget</a>
-        <a href="/dashboard">Dashboard</a>
-        <a href="/travel-goal">Travel Goal</a>
-        <a href="/about">About</a>
-    </div>
-
-    <div class="nav-right">
-        <a href="/login">Sign Out</a>
-    </div>
+  <div class="nav-right">
+    <i class="fas fa-user-alt" id="profileIcon"></i>
+    <span id="profileName"></span>
+    <a href="/login" id="signOut">Sign Out</a>
+  </div>
 </nav>
 
-<!-- Page header-->
- <div class="section">
-        <h1>Budget </h1>
-        <p style="color:#555; margin-top:8px;">
-           Set limits and track spending across categories
-        </p>
-    </div>
+<div class="container">
+
+<div class="section">
+  <h1>Budget</h1>
+  <p class="description">Track your spending, set limits, and manage your budget efficiently.</p>
+</div>
+
 <div class="flex-row">
 
-    <!-- set limits -->
-    <section class="section flex-item">
-        <h2>Set Category Limit</h2>
+<section class="section flex-item">
+  <h2>Category Limit</h2>
 
-        <div class="form-row">
-            <select id="limitCategory">
-                <option value="">Select Category</option>
-                <option>Rent</option>
-                <option>Groceries</option>
-                <option>Utilities</option>
-                <option>Transportation</option>
-                <option>Entertainment</option>
-                <option>Other</option>
-            </select>
+  <select id="limitCategory">
+    <option value="">Select Category</option>
+    <option>Rent</option>
+    <option>Groceries</option>
+    <option>Utilities</option>
+    <option>Transportation</option>
+    <option>Entertainment</option>
+    <option>Other</option>
+  </select>
 
-            <input
-                id="categoryLimit"
-                type="number"
-                placeholder="Monthly Limit"
-            >
+  <input id="categoryLimit" type="number" placeholder="Monthly Limit">
 
-            <button onclick="setCategoryLimit()">Set Limit</button>
-        </div>
-        <p id="limitMessage"></p>
-            <!-- transfer remaining budget to travel page -->
-        <div style="margin-top: 10px;">
-            <button class="transfer-btn" onclick="transferToTravel()">
-                Transfer Remaining Budget
-            </button>
-            <p id="transferMessage"></p>
-    </div>
-    </section>
+  <button onclick="setCategoryLimit()">Set Limit</button>
 
-    <!-- add purchases -->
-    <section class="section flex-item">
-        <h2>Add Purchase</h2>
+   <p id="limitMessage"></p>
 
-        <div class="form-row">
-            <select id="purchaseCategory">
-                <option value="">Select Category</option>
-                <option>Rent</option>
-                <option>Groceries</option>
-                <option>Utilities</option>
-                <option>Transportation</option>
-                <option>Entertainment</option>
-                <option>Other</option>
-            </select>
+  <button onclick="transferToTravel()">Transfer Remaining Budget</button>
+  <p id="transferMessage"></p>
+</section>
 
-            <input
-                id="purchaseAmount"
-                type="number"
-                placeholder="Amount"
-            >
+<section class="section flex-item">
+  <h2>Add Purchase</h2>
 
-            <button onclick="addPurchase()">Add Purchase</button>
-        </div>
+  <select id="purchaseCategory">
+    <option value="">Select Category</option>
+    <option>Rent</option>
+    <option>Groceries</option>
+    <option>Utilities</option>
+    <option>Transportation</option>
+    <option>Entertainment</option>
+    <option>Other</option>
+  </select>
 
-        <p id="purchaseMessage"></p>
-    </section>
+  <input id="purchaseAmount" type="number" placeholder="Amount">
+
+  <button onclick="addPurchase()">Add Purchase</button>
+  <p id="purchaseMessage"></p>
+
+</section>
 
 </div>
 
-<!--catogories -->
 <div class="flex-row">
 
-    <section class="section flex-item">
-        <h2>Category Overview</h2>
+<section class="section flex-item">
+  <h2>Category Overview</h2>
+  <ul id="categoryTable" class="expenses-list">
+    <li>No categories yet</li>
+  </ul>
+</section>
 
-        <ul id="categoryTable" class="expenses-list">
-            <li class="empty-state">
-                No categories yet 
-            </li>
-        </ul>
-    </section>
-
-    <section class="section flex-item">
-        <h2>Last 5 Purchases</h2>
-
-        <ul id="recentPurchases" class="expenses-list">
-            <li class="empty-state">
-                No purchases yet.
-            </li>
-        </ul>
-    </section>
+<section class="section flex-item">
+  <h2>Recent Purchases</h2>
+  <ul id="recentPurchases" class="expenses-list">
+    <li>No purchases yet.</li>
+  </ul>
+</section>
 
 </div>
+
+</div>
+
+<script>
+const storedUser = JSON.parse(localStorage.getItem('loggedInUser')) || JSON.parse(sessionStorage.getItem('loggedInUser'));
+if(!storedUser) window.location.href='/login';
+else document.getElementById('profileName').textContent = storedUser.name;
+
+document.getElementById('signOut').onclick=()=>{
+  localStorage.removeItem('loggedInUser');
+  sessionStorage.removeItem('loggedInUser');
+  window.location.href='/login';
+};
+
+</script>
+
 </body>
 </html>
-
-

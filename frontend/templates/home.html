@@ -1,129 +1,187 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Budget Tracker</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Haven - Home</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Geist&display=swap" rel="stylesheet">
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+<style>
+:root {
+  --font-sans: 'Inter', sans-serif;
+  --font-heading: 'Geist', sans-serif;
+  --radius: 30px;
+  --shadow-sm: 0px 4px 6px rgba(0,0,0,0.08);
+  --background: hsl(20, 31%, 52%);
+  --foreground: hsl(0, 0%, 10%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(0, 0%, 10%);
+  --primary: hsl(0, 0%, 13%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --muted: hsl(0, 0%, 95%);
+  --muted-foreground: hsl(0, 0%, 40%);
+  --link-color: hsl(0,0%,13%);
+}
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+* { box-sizing:border-box; margin:0; padding:0; font-family:var(--font-sans); }
+body { background:var(--background); color:var(--foreground); min-height:100vh; }
+
+.navbar {
+  display:flex; justify-content:space-between; align-items:center;
+  width:100%; background:var(--card); padding:15px 30px; box-shadow: var(--shadow-sm); border-radius:var(--radius); position:sticky; top:0; z-index:1000;
+}
+.nav-left { display:flex; align-items:center; gap:20px; font-weight:600; }
+.nav-logo { font-family: var(--font-heading); font-size:1.4em; font-weight:bold; }
+.nav-left a { text-decoration:none; color:var(--foreground); font-weight:600; transition:0.3s; }
+.nav-left a.active, .nav-left a:hover { color:var(--link-color); }
+.nav-right { display:flex; align-items:center; gap:10px; }
+.nav-right #profileIcon { font-size:28px; cursor:pointer; }
+.nav-right #profileName { font-weight:500; margin-left:5px; }
+.nav-right a#signOut { text-decoration:none; color:var(--link-color); font-weight:500; margin-left:10px; }
+
+.container { max-width:1000px; margin:30px auto; padding:0 10px; }
+.section { background:var(--card); padding:30px; border-radius:var(--radius); box-shadow: var(--shadow-sm); margin-bottom:20px; }
+h1, h2 { font-family:var(--font-heading); color:var(--foreground); margin-bottom:15px; }
+h1 span { opacity:0; display:inline-block; transform:translateY(20px); transition:opacity 1s ease, transform 1s ease; }
+h1 span.show { opacity:1; transform:translateY(0); }
+p { margin-bottom:12px; line-height:1.6; color:#555; }
+
+.flex-row { display:flex; gap:20px; flex-wrap:wrap; }
+.flex-item { flex:1; min-width:300px; }
+  #recentPurchases {
+  list-style: none;
+  padding: 0;
+  margin-top: 10px;
+}
+
+#recentPurchases li {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+}
+
+#recentPurchases li:last-child {
+  border-bottom: none;
+}
+.goal-bar-wrapper {
+  background: #eee;
+  border-radius: 20px;
+  overflow: hidden;
+  height: 25px;
+  margin-top: 10px;
+}
+
+.goal-bar-fill {
+  background: linear-gradient(90deg, #333, #000);
+  height: 100%;
+  width: 0%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 12px;
+  transition: width 0.4s ease;
+}
+
+button {
+  width:100%;
+  height:45px;
+  background-color:var(--primary);
+  color:var(--primary-foreground);
+  border:none;
+  border-radius:var(--radius);
+  cursor:pointer;
+  font-size:16px;
+  transition:all 0.3s ease;
+  margin-bottom:12px;
+}
+button:hover { background:hsl(0,0%,0%); transform:scale(1.03); }
+
+@media screen and (max-width:900px){
+  .flex-row { flex-direction:column; }
+  .navbar { flex-direction:column; align-items:flex-start; gap:8px; padding:10px 20px; }
+  .flex-item { min-width:100%; }
+}
+</style>
 </head>
-
 <body>
 
-<nav class="navbar">
-    <div class="nav-left">
-        <span class="logo">BudgetTracker</span>
-        <a href="/home" class="active">Home</a>
-        <a href="/budget">Budget</a>
-        <a href="/dashboard">Dashboard</a>
-        <a href="/travel-goal">Travel Goal</a>
-        <a href="/about">About</a>
-    </div>
-    <div class="nav-right">
-        <a href="/login">Sign Out</a>
-    </div>
-</nav>
+<header class="navbar">
+  <div class="nav-left">
+    <a href="/home" class="nav-logo">Haven</a>
+    <a href="/home" class="active">Home</a>
+    <a href="/budget">Budget</a>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/travel-goal">Travel Goal</a>
+    <a href="/about">About</a>
+  </div>
+  <div class="nav-right">
+    <i class="fas fa-user-alt" id="profileIcon"></i>
+    <span id="profileName"></span>
+    <a href="/login" id="signOut">Sign Out</a>
+  </div>
+</header>
 
 <div class="container">
+  <div class="section">
+    <h1>Welcome to Haven,<span id="userName"></span></h1>
+    <p>Take control of your finances and track your goals in one polished, easy-to-use dashboard.</p>
+  </div>
 
-    <div class="section">
-        <h1>Welcome back </h1>
-        <p style="color:#555; margin-top:8px;">
-            Here’s your financial overview. Track your spending, manage your budget, 
-            and stay on top of your travel savings.
-        </p>
+  <div class="flex-row">
+    <div class="section flex-item">
+      <h2>Quick Links</h2>
+      <p>Access your favorite sections quickly:</p>
+      <button onclick="location.href='/budget'">Budget Tracker</button>
+      <button onclick="location.href='/dashboard'">Dashboard</button>
+      <button onclick="location.href='/travel-goal'">Travel Goals</button>
     </div>
 
-    <div class="section goal-status-card">
-
-        <div class="goal-header">
-            <h2>✈ Travel Goal Progress</h2>
-
-            <div class="goal-numbers">
-                <div>
-                    <span>Saved</span>
-                    <strong id="homeGoalSaved">$0</strong>
-                </div>
-                <div>
-                    <span>Remaining</span>
-                    <strong id="homeGoalLeft">$0</strong>
-                </div>
-            </div>
-        </div>
-
-        <div class="goal-bar-wrapper">
-            <div class="goal-bar-fill" id="homeTravelProgress">
-                <span class="goal-percent" id="homeTravelPercent">0%</span>
-            </div>
-            <span class="goal-remaining-text" id="homeGoalRemainingText">$0 left</span>
-        </div>
-
-        
-        <div style="margin-top:15px;">
-            <button onclick="window.location.href='/travel-goal'">
-                Manage Travel Goal →
-            </button>
-        </div>
-
+    <div class="section flex-item">
+      <h2>Recent Activity</h2>
+      <ul id="recentPurchases"></ul>
     </div>
+  </div>
 
-    <div class="section">
-        <h2> Recent Activity</h2>
-        <p style="color:#777; margin-bottom:10px;">
-            Your most recent purchases across all categories.
-        </p>
-
-        <ul id="recentPurchases" class="expenses-list">
-            <li class="empty-state">
-                No purchases yet.
-            </li>
-        </ul>
-
-        <div style="margin-top:10px;">
-            <button onclick="window.location.href='/budget'">
-                Add Purchase →
-            </button>
-        </div>
+  <div class="section">
+    <h2>Travel Goal</h2>
+    <p>Set up your categories, track your expenses, and watch your progress as you get closer to your goals.</p>
+    
+    <div class="goal-bar-wrapper">
+      <div class="goal-bar-fill" id="homeTravelProgress">
+      <span id="homeTravelPercent">0%</span>
+      </div>
     </div>
-
-   
-    <div class="section">
-        <h2> Explore Your Tools</h2>
-        <p style="color:#777; margin-bottom:10px;">
-            Manage your finances by navigating through different sections.
-        </p>
-
-        <div class="summary">
-
-            <div class="summary-card income" onclick="window.location.href='/budget'">
-                <div class="summary-overlay">
-                    <div class="summary-label">Budget</div>
-                </div>
-            </div>
-
-            <div class="summary-card expenses" onclick="window.location.href='/dashboard'">
-                <div class="summary-overlay">
-                    <div class="summary-label"> Dashboard</div>
-                </div>
-            </div>
-
-            <div class="summary-card remaining" onclick="window.location.href='/travel-goal'">
-                <div class="summary-overlay">
-                    <div class="summary-label"> Travel Goal</div>
-                </div>
-            </div>
-
-            <div class="summary-card travel" onclick="window.location.href='/about'">
-                <div class="summary-overlay">
-                    <div class="summary-label"> About</div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
+  <p>
+    Saved: <span id="homeGoalSaved">$0</span> |
+    Remaining: <span id="homeGoalLeft">$0</span>
+  </p>
+  </div>
 </div>
+
+<script>
+const storedUser = JSON.parse(localStorage.getItem('loggedInUser')) || JSON.parse(sessionStorage.getItem('loggedInUser'));
+if(!storedUser){ 
+  window.location.href='/login'; 
+} else { 
+  const name = storedUser.name || "User";
+  document.getElementById('profileName').textContent = name;
+
+  const userSpan = document.getElementById('userName');
+  userSpan.textContent = ` ${name}`;
+  setTimeout(() => { userSpan.classList.add('show'); }, 100);
+}
+
+document.getElementById('signOut').addEventListener('click', ()=> {
+  localStorage.removeItem('loggedInUser');
+  sessionStorage.removeItem('loggedInUser');
+  window.location.href='/login';
+});
+</script>
 
 </body>
 </html>
+
