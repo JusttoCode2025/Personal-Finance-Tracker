@@ -133,72 +133,92 @@ document.getElementById('signOut').onclick=()=>{
   sessionStorage.removeItem('loggedInUser');
   window.location.href='/login';
 };
+  
+<script>
 async function loadDashboard() {
 
-  const dashRes = await fetch("/dashboard_data");
-  const dashData = await dashRes.json();
+    const response = await fetch("/dashboard_data");
+    const data = await response.json();
 
-  const limitsRes = await fetch("/limits");
-  const limits = await limitsRes.json();
+    const limitsRes = await fetch("/limits");
+    const limits = await limitsRes.json();
 
-  const totalSpent = dashData.total_spent;
-// budget bar 
-  let totalBudget = 0;
-  limits.forEach(l => totalBudget += l.limit_amount);
+    const totalSpent = data.total_spent;
 
-  const percent = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
-  const remaining = totalBudget - totalSpent;
+  
+    let totalBudget = 0;
+    limits.forEach(l => totalBudget += l.limit_amount);
 
-  const bar = document.getElementById("dashboard-progress");
-  const summary = document.getElementById("dashboard-summary");
+    const percent = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
+    const remaining = totalBudget - totalSpent;
 
-  if (bar) bar.style.width = Math.min(percent,100) + "%";
+    const progressBar = document.getElementById("dashboard-progress");
+    const summaryText = document.getElementById("dashboard-summary");
 
-  if (summary){
-    summary.textContent =
-      `$${totalSpent.toFixed(2)} spent of $${totalBudget.toFixed(2)} | $${remaining.toFixed(2)} remaining (${percent.toFixed(1)}%)`;
-  }
+    if (progressBar) progressBar.style.width = Math.min(percent, 100) + "%";
 
-  // charts
-  // Category Chart
-
-    const labels = dashData.categories.map(c=>c.category);
-  const values = dashData.categories.map(c=>c.total);
-
-  new Chart(document.getElementById("pieChart"), {
-    type:'pie',
-    data:{
-      labels:labels,
-      datasets:[{
-        data:values,
-        backgroundColor:['#1f1f1f','#3a3a3a','#5c5c5c','#8c8c8c','#bdbdbd']
-      }]
+    if (summaryText) {
+        summaryText.textContent =
+            `$${totalSpent.toFixed(2)} spent of $${totalBudget.toFixed(2)} | $${remaining.toFixed(2)} remaining (${percent.toFixed(1)}%)`;
     }
-  });
 
-  new Chart(document.getElementById("barChart"), {
-    type:'bar',
-    data:{
-      labels:labels,
-      datasets:[{
-        data:values,
-        backgroundColor:'#2c2c2c'
-      }]
+
+    if (!data.categories || data.categories.length === 0) {
+        console.log("No data yet");
+        return;
     }
-  });
 
-  new Chart(document.getElementById("lineChart"), {
-    type:'line',
-    data:{
-      labels:dashData.monthly.map(m=>m.month),
-      datasets:[{
-        data:dashData.monthly.map(m=>m.total),
-        borderColor:'#1f1f1f',
-        fill:false
-      }]
+    // charts
+    const categoryLabels = data.categories.map(c => c.category);
+    const categoryValues = data.categories.map(c => c.total);
+
+    new Chart(document.getElementById("pieChart"), {
+        type: 'pie',
+        data: {
+            labels: categoryLabels,
+            datasets: [{
+                data: categoryValues,
+                backgroundColor: [
+                    '#1f1f1f',
+                    '#3a3a3a',
+                    '#5c5c5c',
+                    '#8c8c8c',
+                    '#bdbdbd'
+                ]
+            }]
+        }
+    });
+
+    new Chart(document.getElementById("barChart"), {
+        type: 'bar',
+        data: {
+            labels: categoryLabels,
+            datasets: [{
+                label: 'Spending',
+                data: categoryValues,
+                backgroundColor: '#2c2c2c'
+            }]
+        },
+        options: {
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    if (data.monthly && data.monthly.length > 0) {
+        new Chart(document.getElementById("lineChart"), {
+            type: 'line',
+            data: {
+                labels: data.monthly.map(m => m.month),
+                datasets: [{
+                    label: 'Total Spent',
+                    data: data.monthly.map(m => m.total),
+                    borderColor: '#1f1f1f',
+                    fill: false
+                }]
+            }
+        });
     }
-  });
-
 }
 
 loadDashboard();
+</script>
