@@ -123,7 +123,124 @@ h2{font-size:1.2em;margin-bottom:10px;}
 </div>
 
 <script>
+  async function loadDashboard() {
+    const response = await fetch("/dashboard_data");
+    const data = await response.json();
 
+    const totalSpent = data.total_spent;
+
+   // monthly income
+let income = parseFloat(localStorage.getItem("monthly_income")) || 0;
+
+const incomeInput = document.getElementById("monthlyIncomeInput");
+const saveIncomeBtn = document.getElementById("saveIncomeBtn");
+const progressBar = document.getElementById("dashboard-progress");
+const summaryText = document.getElementById("dashboard-summary");
+
+// Pre-fill input if stored
+if (income > 0 && incomeInput) {
+    incomeInput.value = income;
+}
+
+// Save income button
+if (saveIncomeBtn) {
+    saveIncomeBtn.addEventListener("click", () => {
+
+        const value = parseFloat(incomeInput.value);
+
+        if (!value || value <= 0) {
+            alert("Enter a valid income amount.");
+            return;
+        }
+
+        localStorage.setItem("monthly_income", value);
+        updateIncomeBar(value);
+    });
+}
+
+// Function to update bar
+function updateIncomeBar(currentIncome) {
+
+    const remaining = currentIncome - totalSpent;
+    const percentUsed = (totalSpent / currentIncome) * 100;
+
+    progressBar.style.width = Math.min(percentUsed, 100) + "%";
+
+    summaryText.textContent =
+        `Income: $${currentIncome.toFixed(2)} | Spent: $${totalSpent.toFixed(2)} | Remaining: $${remaining.toFixed(2)} (${percentUsed.toFixed(1)}% used)`;
+}
+
+
+if (income > 0) {
+    updateIncomeBar(income);
+}
+
+    // Category Chart
+    const categoryLabels = data.categories.map(c => c.category);
+    const categoryValues = data.categories.map(c => c.total);
+
+    // Pie Chart 
+    new Chart(document.getElementById("pieChart"), {
+        type: 'pie',
+        data: {
+            labels: categoryLabels,
+            datasets: [{
+             data: categoryValues,
+             backgroundColor: [
+                '#6D4C41',
+                '#8D6E63',
+                '#A1887F',
+                '#D7CCC8',
+                '#5D4037',
+                '#4E342E'
+            ],
+             borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+            }
+        }
+    }
+});
+// bar chart
+    new Chart(document.getElementById("barChart"), {
+        type: 'bar',
+        data: {
+            labels: categoryLabels,
+            datasets: [{
+                label: 'Actual Spending',
+                data: categoryValues,
+                backgroundColor: '#6D4C41'
+            }]
+        },
+        options: {
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    //Line Chart 
+    const monthlyLabels = data.monthly.map(m => m.month);
+    const monthlyValues = data.monthly.map(m => m.total);
+
+    new Chart(document.getElementById("lineChart"), {
+        type: 'line',
+        data: {
+            labels: monthlyLabels,
+            datasets: [{
+                label: 'Total Spent',
+                data: monthlyValues,
+                borderColor: '#6D4C41',
+                fill: false
+            }]
+        }
+    });
+}
+
+loadDashboard();
 const storedUser = JSON.parse(localStorage.getItem('loggedInUser')) || JSON.parse(sessionStorage.getItem('loggedInUser'));
 if(!storedUser) window.location.href='/login';
 else document.getElementById('profileName').textContent = storedUser.name;
@@ -134,93 +251,6 @@ document.getElementById('signOut').onclick=()=>{
   window.location.href='/login';
 };
   
-async function loadDashboard() {
-
-    const response = await fetch("/dashboard_data");
-    const data = await response.json();
-
-    const limitsRes = await fetch("/limits");
-    const limits = await limitsRes.json();
-
-    const totalSpent = data.total_spent;
-
-  
-    let totalBudget = 0;
-    limits.forEach(l => totalBudget += l.limit_amount);
-
-    const percent = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
-    const remaining = totalBudget - totalSpent;
-
-    const progressBar = document.getElementById("dashboard-progress");
-    const summaryText = document.getElementById("dashboard-summary");
-
-    if (progressBar) progressBar.style.width = Math.min(percent, 100) + "%";
-
-    if (summaryText) {
-        summaryText.textContent =
-            `$${totalSpent.toFixed(2)} spent of $${totalBudget.toFixed(2)} | $${remaining.toFixed(2)} remaining (${percent.toFixed(1)}%)`;
-    }
-
-
-    if (!data.categories || data.categories.length === 0) {
-        console.log("No data yet");
-        return;
-    }
-
-    // charts
-    const categoryLabels = data.categories.map(c => c.category);
-    const categoryValues = data.categories.map(c => c.total);
-
-    new Chart(document.getElementById("pieChart"), {
-        type: 'pie',
-        data: {
-            labels: categoryLabels,
-            datasets: [{
-                data: categoryValues,
-                backgroundColor: [
-                    '#1f1f1f',
-                    '#3a3a3a',
-                    '#5c5c5c',
-                    '#8c8c8c',
-                    '#bdbdbd'
-                ]
-            }]
-        }
-    });
-
-    new Chart(document.getElementById("barChart"), {
-        type: 'bar',
-        data: {
-            labels: categoryLabels,
-            datasets: [{
-                label: 'Spending',
-                data: categoryValues,
-                backgroundColor: '#2c2c2c'
-            }]
-        },
-        options: {
-            scales: { y: { beginAtZero: true } }
-        }
-    });
-
-    if (data.monthly && data.monthly.length > 0) {
-        new Chart(document.getElementById("lineChart"), {
-            type: 'line',
-            data: {
-                labels: data.monthly.map(m => m.month),
-                datasets: [{
-                    label: 'Total Spent',
-                    data: data.monthly.map(m => m.total),
-                    borderColor: '#1f1f1f',
-                    fill: false
-                }]
-            }
-        });
-    }
-}
-
-await loadDashboard();
-
 </script>
 
 </body>
