@@ -129,51 +129,20 @@ h2{font-size:1.2em;margin-bottom:10px;}
 
     const totalSpent = data.total_spent;
 
-   // monthly income
-let income = parseFloat(localStorage.getItem("monthly_income")) || 0;
+    let totalBudget = 0;
+    limits.forEach(l => totalBudget += l.limit_amount);
 
-const incomeInput = document.getElementById("monthlyIncomeInput");
-const saveIncomeBtn = document.getElementById("saveIncomeBtn");
-const progressBar = document.getElementById("dashboard-progress");
-const summaryText = document.getElementById("dashboard-summary");
+    const percent = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
+    const remaining = totalBudget - totalSpent;
+    const progressBar = document.getElementById("dashboard-progress");
+    const summaryText = document.getElementById("dashboard-summary");
+    
+    if (progressBar) progressBar.style.width = Math.min(percent, 100) + "%";
+    if (summaryText) {
+        summaryText.textContent =
+            `$${totalSpent.toFixed(2)} spent of $${totalBudget.toFixed(2)} | $${remaining.toFixed(2)} remaining (${percent.toFixed(1)}%)`;
+    }
 
-// Pre-fill input if stored
-if (income > 0 && incomeInput) {
-    incomeInput.value = income;
-}
-
-// Save income button
-if (saveIncomeBtn) {
-    saveIncomeBtn.addEventListener("click", () => {
-
-        const value = parseFloat(incomeInput.value);
-
-        if (!value || value <= 0) {
-            alert("Enter a valid income amount.");
-            return;
-        }
-
-        localStorage.setItem("monthly_income", value);
-        updateIncomeBar(value);
-    });
-}
-
-// Function to update bar
-function updateIncomeBar(currentIncome) {
-
-    const remaining = currentIncome - totalSpent;
-    const percentUsed = (totalSpent / currentIncome) * 100;
-
-    progressBar.style.width = Math.min(percentUsed, 100) + "%";
-
-    summaryText.textContent =
-        `Income: $${currentIncome.toFixed(2)} | Spent: $${totalSpent.toFixed(2)} | Remaining: $${remaining.toFixed(2)} (${percentUsed.toFixed(1)}% used)`;
-}
-
-
-if (income > 0) {
-    updateIncomeBar(income);
-}
 
     // Category Chart
     const categoryLabels = data.categories.map(c => c.category);
