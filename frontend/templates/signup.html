@@ -20,6 +20,7 @@
   --muted: hsl(0, 0%, 95%);
   --border: hsl(0, 0%, 90%);
   --success: #4CAF50;
+  --error: hsl(0, 70%, 50%);
   --gray: #888;
 }
 
@@ -87,6 +88,7 @@ body {
 
 .submit-btn:hover { transform: translateY(-2px) scale(1.02); }
 .submit-btn:active { transform: scale(0.98); }
+.submit-btn:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
 
 .password-rules {
   text-align:left;
@@ -112,12 +114,46 @@ body {
   transform: translateX(0);
 }
 
+.fs-success-msg {
+  display:none;
+  color: var(--success);
+  font-weight:600;
+  margin-bottom:15px;
+  padding:12px 16px;
+  background:hsl(120, 50%, 95%);
+  border-radius:12px;
+  border:1px solid hsl(120, 50%, 80%);
+  font-size:0.95em;
+}
+
+.fs-error-msg {
+  display:none;
+  color: var(--error);
+  font-weight:600;
+  margin-bottom:15px;
+  padding:12px 16px;
+  background:hsl(0, 70%, 97%);
+  border-radius:12px;
+  border:1px solid hsl(0, 70%, 85%);
+  font-size:0.95em;
+}
+
+[data-fs-error] {
+  display:block;
+  color: var(--error);
+  font-size:0.82em;
+  text-align:left;
+  margin-top:-6px;
+  margin-bottom:8px;
+  padding-left:4px;
+  min-height:1em;
+}
+
 .login-link { margin-top:18px; font-size:0.9em; }
 .login-link a { text-decoration:none; font-weight:500; }
 .login-link a:hover { text-decoration:underline; }
 
 @keyframes fadeInUp { from { opacity:0; transform:translateY(20px);} to{opacity:1; transform:translateY(0);} }
-
 </style>
 </head>
 
@@ -127,10 +163,22 @@ body {
   <div class="logo">Haven</div>
   <div class="subtitle">Create your account</div>
 
-  <form id="signupForm" action="https://formspree.io/f/mqeglrwg" method="POST">
-    <input type="text" name="name" class="input-field" placeholder="Full Name" required>
-    <input type="email" name="email" class="input-field" placeholder="Email" required>
-    <input type="password" name="password" class="input-field" placeholder="Password" required>
+  <div class="fs-success-msg" data-fs-success>
+    ✅ Account created! Redirecting to login...
+  </div>
+  <div class="fs-error-msg" data-fs-error>
+    ⚠️ Something went wrong, please try again.
+  </div>
+
+  <form id="signupForm">
+    <input type="text" name="name" class="input-field" placeholder="Full Name" required data-fs-field>
+    <span data-fs-error="name"></span>
+
+    <input type="email" name="email" class="input-field" placeholder="Email" required data-fs-field>
+    <span data-fs-error="email"></span>
+
+    <input type="password" name="password" class="input-field" placeholder="Password" required data-fs-field>
+    <span data-fs-error="password"></span>
 
     <ul class="password-rules">
       <li class="rule" id="ruleLength">At least 8 characters</li>
@@ -140,7 +188,7 @@ body {
       <li class="rule" id="ruleSpecial">At least 1 special character</li>
     </ul>
 
-    <button type="submit" class="submit-btn">Create Account</button>
+    <button type="submit" class="submit-btn" data-fs-submit-btn>Create Account</button>
   </form>
 
   <div class="login-link">
@@ -149,60 +197,52 @@ body {
 </div>
 
 <script>
-const form = document.getElementById('signupForm');
-const passwordField = form.password;
+  const form = document.getElementById('signupForm');
+  const passwordField = form.password;
 
-const rules = {
-  ruleLength: /.{8,}/,
-  ruleUpper: /[A-Z]/,
-  ruleLower: /[a-z]/,
-  ruleNumber: /\d/,
-  ruleSpecial: /[\W_]/
-};
 
-passwordField.addEventListener('input', ()=> {
-  const pass = passwordField.value;
-  for(let id in rules){
-    const el = document.getElementById(id);
-    if(rules[id].test(pass)){
-      el.classList.add('valid');
-    } else {
-      el.classList.remove('valid');
+  const rules = {
+    ruleLength: /.{8,}/,
+    ruleUpper: /[A-Z]/,
+    ruleLower: /[a-z]/,
+    ruleNumber: /\d/,
+    ruleSpecial: /[\W_]/
+  };
+
+  passwordField.addEventListener('input', () => {
+    const pass = passwordField.value;
+    for (let id in rules) {
+      const el = document.getElementById(id);
+      rules[id].test(pass) ? el.classList.add('valid') : el.classList.remove('valid');
     }
-  }
-});
-
-form.addEventListener('submit', async function(e){
-  e.preventDefault();
-
-  const pass = passwordField.value;
-  for(let id in rules){
-    if(!rules[id].test(pass)){
-      document.getElementById(id).scrollIntoView({behavior:'smooth'});
-      return;
-    }
-  }
-
-  const data = new FormData(form);
-
-  const res = await fetch(form.action, {
-    method: 'POST',
-    body: data,
-    headers: { 'Accept': 'application/json' }
   });
 
-  if(res.ok){
-    alert('Account created! Redirecting to login...');
-    form.reset();
-    const ruleDivs = document.querySelectorAll('.rule');
-    ruleDivs.forEach(r => r.classList.remove('valid'));
-    setTimeout(()=> window.location.href='/login', 1000);
-  } else {
-    alert('Something went wrong, try again.');
-  }
-});
+  // Block submission if password rules aren't met
+  form.addEventListener('submit', function(e) {
+    const pass = passwordField.value;
+    for (let id in rules) {
+      if (!rules[id].test(pass)) {
+        e.stopImmediatePropagation(); 
+        document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+    }
+  }, true); 
+
+ 
+  const successEl = document.querySelector('[data-fs-success]');
+  const observer = new MutationObserver(() => {
+    if (successEl.style.display !== 'none' && successEl.style.display !== '') {
+      setTimeout(() => window.location.href = '/login', 2000);
+    }
+  });
+  observer.observe(successEl, { attributes: true, attributeFilter: ['style'] });
+
+  // Formspree Ajax init
+  window.formspree = window.formspree || function () { (formspree.q = formspree.q || []).push(arguments); };
+  formspree('initForm', { formElement: '#signupForm', formId: 'mqeglrwg' });
 </script>
+<script src="https://unpkg.com/@formspree/ajax@1" defer></script>
 
 </body>
 </html>
-
