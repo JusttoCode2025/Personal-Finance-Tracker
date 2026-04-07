@@ -158,49 +158,69 @@ async function loadDashboard() {
   }
 
   // charts
-  const labels = dashData.categories.map(c=>c.category);
-  const values = dashData.categories.map(c=>c.total);
+  // Category Chart
+    const categoryLabels = data.categories.map(c => c.category);
+    const categoryValues = data.categories.map(c => c.total);
 
-  new Chart(document.getElementById("pieChart"), {
-    type:'pie',
-    data:{
-      labels:labels,
-      datasets:[{
-        data:values,
-        backgroundColor:['#1f1f1f','#3a3a3a','#5c5c5c','#8c8c8c','#bdbdbd']
-      }]
+    // Pie Chart 
+    new Chart(document.getElementById("pieChart"), {
+        type: 'pie',
+        data: {
+            labels: categoryLabels,
+            datasets: [{
+             data: categoryValues,
+             backgroundColor: [
+                '#6D4C41',
+                '#8D6E63',
+                '#A1887F',
+                '#D7CCC8',
+                '#5D4037',
+                '#4E342E'
+            ],
+             borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+            }
+        }
     }
-  });
+});
+// bar chart
+    new Chart(document.getElementById("barChart"), {
+        type: 'bar',
+        data: {
+            labels: categoryLabels,
+            datasets: [{
+                label: 'Actual Spending',
+                data: categoryValues,
+                backgroundColor: '#6D4C41'
+            }]
+        },
+        options: {
+            scales: { y: { beginAtZero: true } }
+        }
+    });
 
-  new Chart(document.getElementById("barChart"), {
-    type:'bar',
-    data:{
-      labels:labels,
-      datasets:[{
-        label: 'Actual Spending',
-        data:values,
-        backgroundColor:'#2c2c2c'
-      }]
-    }
-  });
+    //Line Chart 
+    const monthlyLabels = data.monthly.map(m => m.month);
+    const monthlyValues = data.monthly.map(m => m.total);
 
-  new Chart(document.getElementById("lineChart"), {
-    type:'line',
-    data:{
-      labels:dashData.monthly.map(m=>m.month),
-      datasets:[{
-        label: 'Monthly Spending',
-        data:dashData.monthly.map(m=>m.total),
-        borderColor:'#1f1f1f',
-        fill:false
-      }]
-    }
-  });
-
+    new Chart(document.getElementById("lineChart"), {
+        type: 'line',
+        data: {
+            labels: monthlyLabels,
+            datasets: [{
+                label: 'Total Spent',
+                data: monthlyValues,
+                borderColor: '#6D4C41',
+                fill: false
+            }]
+        }
+    });
 }
 
 loadDashboard();
-</script>
-
-</body>
-</html>
