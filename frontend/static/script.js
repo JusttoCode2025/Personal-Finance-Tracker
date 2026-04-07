@@ -747,8 +747,8 @@ async function executeTransfer(msg) {
         }
     }
  
-    loadTravelGoal();
-    loadCategories();
+    await loadCategories();
+    await loadTravelGoal();
 }
  
  
