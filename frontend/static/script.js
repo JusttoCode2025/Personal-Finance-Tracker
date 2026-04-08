@@ -766,7 +766,9 @@ function updateUI(saved, goal) {
     const remainingBarText = document.getElementById("goalRemainingText");
     const summary = document.getElementById("goalSummary");
     const celebrate = document.getElementById("goalCelebrate");
+    const goalText = document.getElementById("goalTarget");
  
+    if (goalText) goalText.textContent = "$" + goal.toFixed(0);
     if (progressBar) progressBar.style.width = percent + "%";
     if (percentText) percentText.textContent = percent.toFixed(1) + "%";
     if (savedText) savedText.textContent = "$" + saved.toFixed(0);
