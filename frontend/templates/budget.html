@@ -72,7 +72,7 @@ input, select, button {
 button { background:var(--primary); color:var(--primary-foreground); border:none; }
 button:hover { transform:scale(1.05); }
 
-/* Table header row */
+
 .table-header {
   display:flex;
   justify-content:space-between;
@@ -80,6 +80,7 @@ button:hover { transform:scale(1.05); }
   padding:0 0 8px 0;
   border-bottom:1px solid var(--border);
   margin-bottom:4px;
+ 
 }
 .table-header span {
   font-size:0.72em;
@@ -89,13 +90,14 @@ button:hover { transform:scale(1.05); }
   color:var(--muted-foreground);
   width:70px;
   text-align:right;
+  min-width: 80px;
 }
 .table-header span:first-child {
   flex:1;
   text-align:left;
 }
 
-/* Category list */
+
 .expenses-list { list-style:none; flex:1; }
 
 .expenses-list li {
@@ -128,7 +130,7 @@ button:hover { transform:scale(1.05); }
   text-transform:capitalize;
 }
 
-/* Purchase list */
+
 .purchases-header {
   display:flex;
   justify-content:space-between;
@@ -143,6 +145,7 @@ button:hover { transform:scale(1.05); }
   text-transform:uppercase;
   letter-spacing:0.05em;
   color:var(--muted-foreground);
+  min-width: 80px;
 }
 .purchases-header span:first-child { flex:1; }
 .purchases-header span:last-child { text-align:right; }
