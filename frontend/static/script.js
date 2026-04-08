@@ -545,21 +545,28 @@ async function loadCategories() {
         return;
     }
  
-    data.forEach(c => {
- 
-        const spent = c.limit_amount - c.remaining;
- 
-        list.innerHTML += `
-            <li>
-                <span><strong>${c.category}</strong></span>
-                <span>Limit: $${c.limit_amount}</span>
-                <span>Spent: $${spent}</span>
-                <span>Remaining: $${c.remaining}</span>
-            </li>
-        `;
-    });
-}
- 
+data.forEach(c => {
+    const spent = c.limit_amount - c.remaining;
+    list.innerHTML += `
+        <li>
+            <div class="category-item-name">${c.category}</div>
+            <div class="category-item-stats">
+                <div class="category-stat">
+                    <span class="category-stat-label">Limit</span>
+                    <span class="category-stat-value">$${c.limit_amount}</span>
+                </div>
+                <div class="category-stat">
+                    <span class="category-stat-label">Spent</span>
+                    <span class="category-stat-value">$${spent}</span>
+                </div>
+                <div class="category-stat">
+                    <span class="category-stat-label">Remaining</span>
+                    <span class="category-stat-value">$${c.remaining}</span>
+                </div>
+            </div>
+        </li>
+    `;
+}); 
  
 /* purchases */
  
@@ -578,17 +585,19 @@ async function loadRecentPurchases() {
         return;
     }
  
-    data.forEach(p => {
- 
-        list.innerHTML += `
-            <li>
-                <span><strong>${p.category}</strong></span>
-                <span>$${p.amount}</span>
-                <span>${new Date(p.date).toLocaleString()}</span>
-            </li>
-        `;
-    });
-}
+data.forEach(p => {
+    list.innerHTML += `
+        <li>
+            <div class="purchase-item">
+                <div class="purchase-item-left">
+                    <span class="purchase-item-category">${p.category}</span>
+                    <span class="purchase-item-date">${new Date(p.date).toLocaleString()}</span>
+                </div>
+                <span class="purchase-item-amount">$${p.amount}</span>
+            </div>
+        </li>
+    `;
+});
  
 /* add purchases*/
 async function addPurchase() {
