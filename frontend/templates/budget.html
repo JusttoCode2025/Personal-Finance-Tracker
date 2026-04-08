@@ -40,18 +40,24 @@ button { cursor:pointer; }
   border-radius:var(--radius); box-shadow:var(--shadow-sm);
   margin-bottom:20px;
 }
+
 .nav-left { display:flex; align-items:center; gap:20px; font-weight:600; }
 .nav-left .logo { font-family:var(--font-heading); font-size:1.4em; transition:0.3s; }
 .nav-left .logo:hover { transform:scale(1.1); }
 .nav-left a.active, .nav-left a:hover { transform:scale(1.05); }
+
 .nav-right { display:flex; align-items:center; gap:15px; }
 .nav-right #profileIcon:hover, .nav-right #signOut:hover { transform:scale(1.05); }
 
 .container { max-width:1000px; margin:0 auto; padding:0 15px; }
 
 .section {
-  background:var(--card); padding:25px; border-radius:var(--radius);
-  box-shadow:var(--shadow-sm); margin-bottom:20px; transition:0.3s;
+  background:var(--card);
+  padding:25px;
+  border-radius:var(--radius);
+  box-shadow:var(--shadow-sm);
+  margin-bottom:20px;
+  transition:0.3s;
 }
 .section:hover { transform:translateY(-3px); }
 
@@ -61,90 +67,30 @@ h2 { font-size:1.2em; margin-bottom:10px; }
 
 .description { color:var(--muted-foreground); margin-bottom:15px; }
 
-.flex-row { display:flex; gap:20px; flex-wrap:wrap; align-items:stretch; }
-.flex-item { flex:1; min-width:280px; display:flex; flex-direction:column; }
-.flex-item.section { margin-bottom:20px; }
+.flex-row { display:flex; gap:20px; flex-wrap:wrap; }
+.flex-item { flex:1; min-width:280px; }
 
 input, select, button {
-  width:100%; padding:12px; border-radius:var(--radius);
-  border:1px solid var(--border); margin-bottom:10px;
+  width:100%;
+  padding:12px;
+  border-radius:var(--radius);
+  border:1px solid var(--border);
+  margin-bottom:10px;
 }
-button { background:var(--primary); color:var(--primary-foreground); border:none; }
+
+button {
+  background:var(--primary);
+  color:var(--primary-foreground);
+  border:none;
+}
 button:hover { transform:scale(1.05); }
 
-/* Lists */
-.expenses-list { list-style:none; flex:1; }
-
+.expenses-list { list-style:none; }
 .expenses-list li {
-  padding:18px 20px;
-  border-radius:16px;
+  padding:10px;
+  border-radius:var(--radius);
   background:var(--muted);
-  margin-bottom:12px;
-}
-
-/* Category item */
-.category-item-name {
-  font-weight:600;
-  font-size:0.97em;
-  margin-bottom:12px;
-  text-transform:capitalize;
-}
-
-.category-item-stats {
-  display:grid;
-  grid-template-columns:repeat(3, 1fr);
-  gap:12px;
-}
-
-.category-stat {
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-}
-
-.category-stat-label {
-  font-size:0.72em;
-  color:var(--muted-foreground);
-  text-transform:uppercase;
-  letter-spacing:0.05em;
-}
-
-.category-stat-value {
-  font-size:1em;
-  font-weight:500;
-  color:var(--foreground);
-}
-
-/* Purchase item */
-.purchase-item {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-}
-
-.purchase-item-left {
-  display:flex;
-  flex-direction:column;
-  gap:5px;
-}
-
-.purchase-item-category {
-  font-weight:600;
-  font-size:0.97em;
-  text-transform:capitalize;
-}
-
-.purchase-item-date {
-  font-size:0.8em;
-  color:var(--muted-foreground);
-}
-
-.purchase-item-amount {
-  font-size:1.1em;
-  font-weight:600;
-  color:var(--foreground);
-  white-space:nowrap;
+  margin-bottom:5px;
 }
 </style>
 </head>
@@ -160,6 +106,7 @@ button:hover { transform:scale(1.05); }
     <a href="/travel-goal">Travel Goal</a>
     <a href="/about">About</a>
   </div>
+
   <div class="nav-right">
     <i class="fas fa-user-alt" id="profileIcon"></i>
     <span id="profileName"></span>
@@ -169,75 +116,89 @@ button:hover { transform:scale(1.05); }
 
 <div class="container">
 
-  <div class="section">
-    <h1>Budget</h1>
-    <p class="description">Track your spending, set limits, and manage your budget efficiently.</p>
-  </div>
+<div class="section">
+  <h1>Budget</h1>
+  <p class="description">Track your spending, set limits, and manage your budget efficiently.</p>
+</div>
 
-  <div class="flex-row">
-    <section class="section flex-item">
-      <h2>Category Limit</h2>
-      <select id="limitCategory">
-        <option value="">Select Category</option>
-        <option>Rent</option>
-        <option>Groceries</option>
-        <option>Utilities</option>
-        <option>Transportation</option>
-        <option>Entertainment</option>
-        <option>Other</option>
-      </select>
-      <input id="categoryLimit" type="number" placeholder="Monthly Limit">
-      <button onclick="setCategoryLimit()">Set Limit</button>
-      <p id="limitMessage"></p>
-      <button onclick="transferToTravel()">Transfer Remaining Budget</button>
-      <p id="transferMessage"></p>
-    </section>
+<div class="flex-row">
 
-    <section class="section flex-item">
-      <h2>Add Purchase</h2>
-      <select id="purchaseCategory">
-        <option value="">Select Category</option>
-        <option>Rent</option>
-        <option>Groceries</option>
-        <option>Utilities</option>
-        <option>Transportation</option>
-        <option>Entertainment</option>
-        <option>Other</option>
-      </select>
-      <input id="purchaseAmount" type="number" placeholder="Amount">
-      <button onclick="addPurchase()">Add Purchase</button>
-      <p id="purchaseMessage"></p>
-    </section>
-  </div>
+<section class="section flex-item">
+  <h2>Category Limit</h2>
 
-  <div class="flex-row" style="align-items:stretch;">
-    <section class="section flex-item" style="display:flex; flex-direction:column;">
-      <h2>Category Overview</h2>
-      <ul id="categoryTable" class="expenses-list">
-        <li>No categories yet</li>
-      </ul>
-    </section>
+  <select id="limitCategory">
+    <option value="">Select Category</option>
+    <option>Rent</option>
+    <option>Groceries</option>
+    <option>Utilities</option>
+    <option>Transportation</option>
+    <option>Entertainment</option>
+    <option>Other</option>
+  </select>
 
-    <section class="section flex-item" style="display:flex; flex-direction:column;">
-      <h2>Recent Purchases</h2>
-      <ul id="recentPurchases" class="expenses-list">
-        <li>No purchases yet.</li>
-      </ul>
-    </section>
-  </div>
+  <input id="categoryLimit" type="number" placeholder="Monthly Limit">
+
+  <button onclick="setCategoryLimit()">Set Limit</button>
+
+   <p id="limitMessage"></p>
+
+  <button onclick="transferToTravel()">Transfer Remaining Budget</button>
+  <p id="transferMessage"></p>
+</section>
+
+<section class="section flex-item">
+  <h2>Add Purchase</h2>
+
+  <select id="purchaseCategory">
+    <option value="">Select Category</option>
+    <option>Rent</option>
+    <option>Groceries</option>
+    <option>Utilities</option>
+    <option>Transportation</option>
+    <option>Entertainment</option>
+    <option>Other</option>
+  </select>
+
+  <input id="purchaseAmount" type="number" placeholder="Amount">
+
+  <button onclick="addPurchase()">Add Purchase</button>
+  <p id="purchaseMessage"></p>
+
+</section>
+
+</div>
+
+<div class="flex-row">
+
+<section class="section flex-item">
+  <h2>Category Overview</h2>
+  <ul id="categoryTable" class="expenses-list">
+    <li>No categories yet</li>
+  </ul>
+</section>
+
+<section class="section flex-item">
+  <h2>Recent Purchases</h2>
+  <ul id="recentPurchases" class="expenses-list">
+    <li>No purchases yet.</li>
+  </ul>
+</section>
+
+</div>
 
 </div>
 
 <script>
 const storedUser = JSON.parse(localStorage.getItem('loggedInUser')) || JSON.parse(sessionStorage.getItem('loggedInUser'));
-if (!storedUser) window.location.href = '/login';
+if(!storedUser) window.location.href='/login';
 else document.getElementById('profileName').textContent = storedUser.name;
 
-document.getElementById('signOut').onclick = () => {
+document.getElementById('signOut').onclick=()=>{
   localStorage.removeItem('loggedInUser');
   sessionStorage.removeItem('loggedInUser');
-  window.location.href = '/login';
+  window.location.href='/login';
 };
+
 </script>
 
 </body>
