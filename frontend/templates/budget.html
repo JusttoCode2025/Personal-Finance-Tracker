@@ -40,24 +40,18 @@ button { cursor:pointer; }
   border-radius:var(--radius); box-shadow:var(--shadow-sm);
   margin-bottom:20px;
 }
-
 .nav-left { display:flex; align-items:center; gap:20px; font-weight:600; }
 .nav-left .logo { font-family:var(--font-heading); font-size:1.4em; transition:0.3s; }
 .nav-left .logo:hover { transform:scale(1.1); }
 .nav-left a.active, .nav-left a:hover { transform:scale(1.05); }
-
 .nav-right { display:flex; align-items:center; gap:15px; }
 .nav-right #profileIcon:hover, .nav-right #signOut:hover { transform:scale(1.05); }
 
 .container { max-width:1000px; margin:0 auto; padding:0 15px; }
 
 .section {
-  background:var(--card);
-  padding:25px;
-  border-radius:var(--radius);
-  box-shadow:var(--shadow-sm);
-  margin-bottom:20px;
-  transition:0.3s;
+  background:var(--card); padding:25px; border-radius:var(--radius);
+  box-shadow:var(--shadow-sm); margin-bottom:20px; transition:0.3s;
 }
 .section:hover { transform:translateY(-3px); }
 
@@ -67,30 +61,128 @@ h2 { font-size:1.2em; margin-bottom:10px; }
 
 .description { color:var(--muted-foreground); margin-bottom:15px; }
 
-.flex-row { display:flex; gap:20px; flex-wrap:wrap; }
-.flex-item { flex:1; min-width:280px; }
+.flex-row { display:flex; gap:20px; flex-wrap:wrap; align-items:stretch; }
+.flex-item { flex:1; min-width:280px; display:flex; flex-direction:column; }
+.flex-item.section { margin-bottom:20px; }
 
 input, select, button {
-  width:100%;
-  padding:12px;
-  border-radius:var(--radius);
-  border:1px solid var(--border);
-  margin-bottom:10px;
+  width:100%; padding:12px; border-radius:var(--radius);
+  border:1px solid var(--border); margin-bottom:10px;
 }
-
-button {
-  background:var(--primary);
-  color:var(--primary-foreground);
-  border:none;
-}
+button { background:var(--primary); color:var(--primary-foreground); border:none; }
 button:hover { transform:scale(1.05); }
 
-.expenses-list { list-style:none; }
+/* Table header row */
+.table-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0 0 8px 0;
+  border-bottom:1px solid var(--border);
+  margin-bottom:4px;
+}
+.table-header span {
+  font-size:0.72em;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:0.05em;
+  color:var(--muted-foreground);
+  width:70px;
+  text-align:right;
+}
+.table-header span:first-child {
+  flex:1;
+  text-align:left;
+}
+
+/* Category list */
+.expenses-list { list-style:none; flex:1; }
+
 .expenses-list li {
-  padding:10px;
-  border-radius:var(--radius);
-  background:var(--muted);
-  margin-bottom:5px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:11px 0;
+  border-bottom:0.5px solid var(--border);
+  background:none;
+  border-radius:0;
+  margin-bottom:0;
+}
+
+.expenses-list li:last-child {
+  border-bottom:none;
+}
+
+.expenses-list li span {
+  font-size:0.88em;
+  color:var(--muted-foreground);
+  width:70px;
+  text-align:right;
+}
+
+.expenses-list li strong {
+  flex:1;
+  font-size:0.92em;
+  font-weight:600;
+  color:var(--foreground);
+  text-transform:capitalize;
+}
+
+/* Purchase list */
+.purchases-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0 0 8px 0;
+  border-bottom:1px solid var(--border);
+  margin-bottom:4px;
+}
+.purchases-header span {
+  font-size:0.72em;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:0.05em;
+  color:var(--muted-foreground);
+}
+.purchases-header span:first-child { flex:1; }
+.purchases-header span:last-child { text-align:right; }
+
+.purchases-list { list-style:none; flex:1; }
+
+.purchases-list li {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:11px 0;
+  border-bottom:0.5px solid var(--border);
+  background:none;
+  border-radius:0;
+  margin-bottom:0;
+  gap:12px;
+}
+
+.purchases-list li:last-child { border-bottom:none; }
+
+.purchases-list li strong {
+  flex:1;
+  font-size:0.92em;
+  font-weight:600;
+  color:var(--foreground);
+  text-transform:capitalize;
+}
+
+.purchases-list li .purchase-date {
+  font-size:0.8em;
+  color:var(--muted-foreground);
+  white-space:nowrap;
+}
+
+.purchases-list li .purchase-amount {
+  font-size:0.92em;
+  font-weight:600;
+  color:var(--foreground);
+  text-align:right;
+  min-width:50px;
 }
 </style>
 </head>
@@ -106,7 +198,6 @@ button:hover { transform:scale(1.05); }
     <a href="/travel-goal">Travel Goal</a>
     <a href="/about">About</a>
   </div>
-
   <div class="nav-right">
     <i class="fas fa-user-alt" id="profileIcon"></i>
     <span id="profileName"></span>
@@ -116,89 +207,88 @@ button:hover { transform:scale(1.05); }
 
 <div class="container">
 
-<div class="section">
-  <h1>Budget</h1>
-  <p class="description">Track your spending, set limits, and manage your budget efficiently.</p>
-</div>
+  <div class="section">
+    <h1>Budget</h1>
+    <p class="description">Track your spending, set limits, and manage your budget efficiently.</p>
+  </div>
 
-<div class="flex-row">
+  <div class="flex-row">
+    <section class="section flex-item">
+      <h2>Category Limit</h2>
+      <select id="limitCategory">
+        <option value="">Select Category</option>
+        <option>Rent</option>
+        <option>Groceries</option>
+        <option>Utilities</option>
+        <option>Transportation</option>
+        <option>Entertainment</option>
+        <option>Other</option>
+      </select>
+      <input id="categoryLimit" type="number" placeholder="Monthly Limit">
+      <button onclick="setCategoryLimit()">Set Limit</button>
+      <p id="limitMessage"></p>
+      <button onclick="transferToTravel()">Transfer Remaining Budget</button>
+      <p id="transferMessage"></p>
+    </section>
 
-<section class="section flex-item">
-  <h2>Category Limit</h2>
+    <section class="section flex-item">
+      <h2>Add Purchase</h2>
+      <select id="purchaseCategory">
+        <option value="">Select Category</option>
+        <option>Rent</option>
+        <option>Groceries</option>
+        <option>Utilities</option>
+        <option>Transportation</option>
+        <option>Entertainment</option>
+        <option>Other</option>
+      </select>
+      <input id="purchaseAmount" type="number" placeholder="Amount">
+      <button onclick="addPurchase()">Add Purchase</button>
+      <p id="purchaseMessage"></p>
+    </section>
+  </div>
 
-  <select id="limitCategory">
-    <option value="">Select Category</option>
-    <option>Rent</option>
-    <option>Groceries</option>
-    <option>Utilities</option>
-    <option>Transportation</option>
-    <option>Entertainment</option>
-    <option>Other</option>
-  </select>
+  <div class="flex-row" style="align-items:stretch;">
 
-  <input id="categoryLimit" type="number" placeholder="Monthly Limit">
+    <section class="section flex-item" style="display:flex; flex-direction:column;">
+      <h2>Category Overview</h2>
+      <div class="table-header">
+        <span>Category</span>
+        <span>Limit</span>
+        <span>Spent</span>
+        <span>Remaining</span>
+      </div>
+      <ul id="categoryTable" class="expenses-list">
+        <li><strong>No categories yet</strong></li>
+      </ul>
+    </section>
 
-  <button onclick="setCategoryLimit()">Set Limit</button>
+    <section class="section flex-item" style="display:flex; flex-direction:column;">
+      <h2>Recent Purchases</h2>
+      <div class="purchases-header">
+        <span>Category</span>
+        <span>Date</span>
+        <span>Amount</span>
+      </div>
+      <ul id="recentPurchases" class="purchases-list">
+        <li><strong>No purchases yet.</strong></li>
+      </ul>
+    </section>
 
-   <p id="limitMessage"></p>
-
-  <button onclick="transferToTravel()">Transfer Remaining Budget</button>
-  <p id="transferMessage"></p>
-</section>
-
-<section class="section flex-item">
-  <h2>Add Purchase</h2>
-
-  <select id="purchaseCategory">
-    <option value="">Select Category</option>
-    <option>Rent</option>
-    <option>Groceries</option>
-    <option>Utilities</option>
-    <option>Transportation</option>
-    <option>Entertainment</option>
-    <option>Other</option>
-  </select>
-
-  <input id="purchaseAmount" type="number" placeholder="Amount">
-
-  <button onclick="addPurchase()">Add Purchase</button>
-  <p id="purchaseMessage"></p>
-
-</section>
-
-</div>
-
-<div class="flex-row">
-
-<section class="section flex-item">
-  <h2>Category Overview</h2>
-  <ul id="categoryTable" class="expenses-list">
-    <li>No categories yet</li>
-  </ul>
-</section>
-
-<section class="section flex-item">
-  <h2>Recent Purchases</h2>
-  <ul id="recentPurchases" class="expenses-list">
-    <li>No purchases yet.</li>
-  </ul>
-</section>
-
-</div>
+  </div>
 
 </div>
 
 <script>
 const storedUser = JSON.parse(localStorage.getItem('loggedInUser')) || JSON.parse(sessionStorage.getItem('loggedInUser'));
-if(!storedUser) window.location.href='/login';
+if (!storedUser) window.location.href = '/login';
 else document.getElementById('profileName').textContent = storedUser.name;
 
-document.getElementById('signOut').onclick=()=>{
+document.getElementById('signOut').onclick = () => {
   localStorage.removeItem('loggedInUser');
   sessionStorage.removeItem('loggedInUser');
-  window.location.href='/login';
+  window.location.href = '/login';
 };
-
 </script>
 
 </body>
