@@ -200,7 +200,6 @@ body {
   const form = document.getElementById('signupForm');
   const passwordField = form.password;
 
-
   const rules = {
     ruleLength: /.{8,}/,
     ruleUpper: /[A-Z]/,
@@ -217,19 +216,17 @@ body {
     }
   });
 
-  // Block submission if password rules aren't met
   form.addEventListener('submit', function(e) {
     const pass = passwordField.value;
     for (let id in rules) {
       if (!rules[id].test(pass)) {
-        e.stopImmediatePropagation(); 
+        e.stopImmediatePropagation();
         document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
         return;
       }
     }
-  }, true); 
+  }, true);
 
- 
   const successEl = document.querySelector('[data-fs-success]');
   const observer = new MutationObserver(() => {
     if (successEl.style.display !== 'none' && successEl.style.display !== '') {
@@ -238,9 +235,8 @@ body {
   });
   observer.observe(successEl, { attributes: true, attributeFilter: ['style'] });
 
-  // Formspree Ajax init
   window.formspree = window.formspree || function () { (formspree.q = formspree.q || []).push(arguments); };
-  formspree('initForm', { formElement: '#signupForm', formId: 'mqeglrwg' });
+  formspree('initForm', { formElement: '#signupForm', formId: 'mwvwzabl' });
 </script>
 <script src="https://unpkg.com/@formspree/ajax@1" defer></script>
 
