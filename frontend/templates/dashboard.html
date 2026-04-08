@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Haven - Dashboard</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Geist&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
@@ -24,9 +23,10 @@
   --muted-foreground:hsl(0,0%,40%);
   --link-color:hsl(0,0%,13%);
   --link-hover:hsl(0,0%,0%);
-  --alert-success:hsl(120, 50%, 40%);
-  --alert-error:hsl(0, 70%, 50%);
+  --success: hsl(120, 45%, 38%);
+  --danger: hsl(0, 65%, 48%);
 }
+
 *{box-sizing:border-box;margin:0;padding:0;font-family:var(--font-sans);}
 body{background:var(--background);color:var(--foreground);min-height:100vh;transition:background 0.3s;}
 a{text-decoration:none;color:inherit;}
@@ -40,59 +40,108 @@ button{cursor:pointer;}
 .nav-right{display:flex;align-items:center;gap:15px;}
 
 .container{max-width:1000px;margin:0 auto;padding:0 15px;}
-.section{background:var(--card);padding:25px;border-radius:var(--radius);box-shadow: var(--shadow-sm);margin-bottom:20px;transition:transform 0.3s;}
+.section{background:var(--card);padding:25px;border-radius:var(--radius);box-shadow:var(--shadow-sm);margin-bottom:20px;transition:transform 0.3s;}
 .section:hover{transform:translateY(-3px);}
 
 h1,h2{font-family:var(--font-heading);}
 h1{font-size:2em;margin-bottom:10px;text-align:center;}
-h2{font-size:1.2em;margin-bottom:10px;}
+h2{font-size:1.2em;margin-bottom:15px;}
 
 .flex-row{display:flex;gap:20px;flex-wrap:wrap;}
 .flex-item{flex:1;min-width:280px;}
 
-/* progress bar */
-.progress-bar-wrapper{
-  width:100%;
-  height:22px;
-  background:var(--muted);
-  border-radius:999px;
-  overflow:hidden;
+/* Income section */
+.income-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.income-input {
+  flex: 1;
+  padding: 11px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: 0.95em;
+  background: var(--muted);
+  color: var(--foreground);
+  transition: border-color 0.2s, background 0.2s;
+}
+.income-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: #fff;
+}
+.income-save-btn {
+  padding: 11px 22px;
+  border-radius: 999px;
+  border: none;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 0.95em;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: transform 0.2s, background 0.2s;
+}
+.income-save-btn:hover { transform: scale(1.04); }
+
+/* Stat cards */
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.stat-card {
+  background: var(--muted);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+.stat-card .stat-label {
+  font-size: 0.75em;
+  color: var(--muted-foreground);
+  margin-bottom: 4px;
+}
+.stat-card .stat-value {
+  font-size: 1.2em;
+  font-weight: 600;
+  color: var(--foreground);
+}
+.stat-card .stat-value.positive { color: var(--success); }
+.stat-card .stat-value.negative { color: var(--danger); }
+
+/* Progress bar */
+.progress-bar-wrapper {
+  width: 100%;
+  height: 10px;
+  background: var(--muted);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.progress-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--primary);
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+.progress-hint {
+  font-size: 0.8em;
+  color: var(--muted-foreground);
 }
 
-.progress-bar-fill{
-  height:100%;
-  width:0%;
-  background:linear-gradient(90deg,#1f1f1f,#3a3a3a);
-  border-radius:999px;
-  transition:width 0.5s ease;
+/* Charts */
+input[type="number"], select {
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  margin-bottom: 10px;
 }
-
-input, select, button {
-  width:100%;
-  padding:12px;
-  border-radius:var(--radius);
-  border:1px solid var(--border);
-  margin-bottom:10px;
-}
-  
-button {
-  background:var(--primary);
-  color:var(--primary-foreground);
-  border:none;
-}
-  
-button:hover { transform:scale(1.05); }
-
-.expenses-list { list-style:none; }
-.expenses-list li {
-  padding:10px;
-  border-radius:var(--radius);
-  background:var(--muted);
-  margin-bottom:5px;
-}
+.expenses-list{list-style:none;}
+.expenses-list li{padding:10px;border-radius:var(--radius);background:var(--muted);margin-bottom:5px;}
 </style>
 </head>
-
 <body>
 
 <nav class="navbar">
@@ -107,49 +156,56 @@ button:hover { transform:scale(1.05); }
   <div class="nav-right">
     <i class="fas fa-user-alt" id="profileIcon"></i>
     <span id="profileName"></span>
-    <a href="/login">Sign Out</a>
+    <a href="/login" id="signOut">Sign Out</a>
   </div>
 </nav>
 
 <div class="container">
 
-  
   <div class="section">
-  <h1>Dashboard</h1>
-  <p class="description">Monitor, track, and analyze your spending habits to optimize budget performance.</p>
-</div>
+    <h1>Dashboard</h1>
+    <p style="text-align:center; color:var(--muted-foreground);">Monitor, track, and analyze your spending habits to optimize budget performance.</p>
+  </div>
 
-  <!-- Income  -->
-   <div class="section">
-    <h2>Set Monthly Income</h2>
-    <div style="display:flex; gap:15px; align-items:center;">
-        <input type="number" id="monthlyIncomeInput" placeholder="Enter income">
-        <button id="saveIncomeBtn">Save Income</button>
-    </div>
-    </div>
-  
   <div class="section">
-    <h2>Budget Usage</h2>
+    <h2>Monthly Budget</h2>
+
+    <div class="income-row">
+      <input class="income-input" type="number" id="monthlyIncomeInput" placeholder="Enter monthly income">
+      <button class="income-save-btn" id="saveIncomeBtn">Save</button>
+    </div>
+
+    <div class="stat-cards">
+      <div class="stat-card">
+        <div class="stat-label">Income</div>
+        <div class="stat-value" id="statIncome">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Spent</div>
+        <div class="stat-value" id="statSpent">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Remaining</div>
+        <div class="stat-value" id="statRemaining">—</div>
+      </div>
+    </div>
+
     <div class="progress-bar-wrapper">
       <div class="progress-bar-fill" id="dashboard-progress"></div>
     </div>
-    <p id="dashboard-summary"></p>
+    <p class="progress-hint" id="dashboard-summary">Set an income above to see usage.</p>
   </div>
-  <div class="budget-bar-container">
-     
+
   <!-- Charts -->
   <div class="flex-row">
-
     <div class="section flex-item">
       <h2>Spending by Category</h2>
       <canvas id="pieChart"></canvas>
     </div>
-
     <div class="section flex-item">
       <h2>Actual Spending</h2>
       <canvas id="barChart"></canvas>
     </div>
-
   </div>
 
   <div class="section">
@@ -161,136 +217,111 @@ button:hover { transform:scale(1.05); }
 
 <script>
 async function loadDashboard() {
-    const response = await fetch("/dashboard_data");
-    const data = await response.json();
+  const response = await fetch("/dashboard_data");
+  const data = await response.json();
+  const totalSpent = data.total_spent;
 
-    const totalSpent = data.total_spent;
+  let income = parseFloat(localStorage.getItem("monthly_income")) || 0;
+  const incomeInput = document.getElementById("monthlyIncomeInput");
+  const saveBtn = document.getElementById("saveIncomeBtn");
+  const progressBar = document.getElementById("dashboard-progress");
+  const summaryText = document.getElementById("dashboard-summary");
+  const statIncome = document.getElementById("statIncome");
+  const statSpent = document.getElementById("statSpent");
+  const statRemaining = document.getElementById("statRemaining");
 
-   // monthly income
-let income = parseFloat(localStorage.getItem("monthly_income")) || 0;
+  if (income > 0) incomeInput.value = income;
 
-const incomeInput = document.getElementById("monthlyIncomeInput");
-const saveIncomeBtn = document.getElementById("saveIncomeBtn");
-const progressBar = document.getElementById("dashboard-progress");
-const summaryText = document.getElementById("dashboard-summary");
-
-// Pre-fill input if stored
-if (income > 0 && incomeInput) {
-    incomeInput.value = income;
-}
-
-// Save income button
-if (saveIncomeBtn) {
-    saveIncomeBtn.addEventListener("click", () => {
-
-        const value = parseFloat(incomeInput.value);
-
-        if (!value || value <= 0) {
-            alert("Enter a valid income amount.");
-            return;
-        }
-
-        localStorage.setItem("monthly_income", value);
-        updateIncomeBar(value);
-    });
-}
-
-// Function to update bar
-function updateIncomeBar(currentIncome) {
-
+  function updateIncomeBar(currentIncome) {
     const remaining = currentIncome - totalSpent;
     const percentUsed = (totalSpent / currentIncome) * 100;
 
-    progressBar.style.width = Math.min(percentUsed, 100) + "%";
+    statIncome.textContent = '$' + currentIncome.toFixed(2);
+    statSpent.textContent = '$' + totalSpent.toFixed(2);
+    statRemaining.textContent = '$' + remaining.toFixed(2);
+    statRemaining.className = 'stat-value ' + (remaining >= 0 ? 'positive' : 'negative');
 
-    summaryText.textContent =
-        `Income: $${currentIncome.toFixed(2)} | Spent: $${totalSpent.toFixed(2)} | Remaining: $${remaining.toFixed(2)} (${percentUsed.toFixed(1)}% used)`;
-}
+    progressBar.style.width = Math.min(percentUsed, 100) + '%';
+    summaryText.textContent = percentUsed.toFixed(1) + '% of income used this month';
+  }
 
+  if (income > 0) updateIncomeBar(income);
 
-if (income > 0) {
-    updateIncomeBar(income);
-}
-
-    // Category Chart
-    const categoryLabels = data.categories.map(c => c.category);
-    const categoryValues = data.categories.map(c => c.total);
-
-    // Pie Chart 
-    new Chart(document.getElementById("pieChart"), {
-        type: 'pie',
-        data: {
-            labels: categoryLabels,
-            datasets: [{
-             data: categoryValues,
-             backgroundColor: [
-                '#1f1f1f',
-                '#3a3a3a',
-                '#5c5c5c',
-                '#8c8c8c',
-                '#bdbdbd',
-                '#7f7f7f'
-            ],
-             borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-            }
-        }
+  saveBtn.addEventListener("click", () => {
+    const value = parseFloat(incomeInput.value);
+    if (!value || value <= 0) {
+      incomeInput.style.borderColor = 'var(--danger)';
+      setTimeout(() => incomeInput.style.borderColor = '', 1500);
+      return;
     }
-});
-// bar chart
-    new Chart(document.getElementById("barChart"), {
-        type: 'bar',
-        data: {
-            labels: categoryLabels,
-            datasets: [{
-                label: 'Actual Spending',
-                data: categoryValues,
-                backgroundColor: '#1f1f1f'
-            }]
-        },
-        options: {
-            scales: { y: { beginAtZero: true } }
-        }
-    });
+    localStorage.setItem("monthly_income", value);
+    updateIncomeBar(value);
+  });
 
-    //Line Chart 
-    const monthlyLabels = data.monthly.map(m => m.month);
-    const monthlyValues = data.monthly.map(m => m.total);
+  // Pie Chart
+  const categoryLabels = data.categories.map(c => c.category);
+  const categoryValues = data.categories.map(c => c.total);
 
-    new Chart(document.getElementById("lineChart"), {
-        type: 'line',
-        data: {
-            labels: monthlyLabels,
-            datasets: [{
-                label: 'Total Spent',
-                data: monthlyValues,
-                borderColor: '#bdbdbd',
-                fill: false
-            }]
-        }
-    });
+  new Chart(document.getElementById("pieChart"), {
+    type: 'pie',
+    data: {
+      labels: categoryLabels,
+      datasets: [{
+        data: categoryValues,
+        backgroundColor: ['#1f1f1f','#3a3a3a','#5c5c5c','#8c8c8c','#bdbdbd','#7f7f7f'],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom' } }
+    }
+  });
+
+  // Bar Chart
+  new Chart(document.getElementById("barChart"), {
+    type: 'bar',
+    data: {
+      labels: categoryLabels,
+      datasets: [{
+        label: 'Actual Spending',
+        data: categoryValues,
+        backgroundColor: '#1f1f1f'
+      }]
+    },
+    options: { scales: { y: { beginAtZero: true } } }
+  });
+
+  // Line Chart
+  const monthlyLabels = data.monthly.map(m => m.month);
+  const monthlyValues = data.monthly.map(m => m.total);
+
+  new Chart(document.getElementById("lineChart"), {
+    type: 'line',
+    data: {
+      labels: monthlyLabels,
+      datasets: [{
+        label: 'Total Spent',
+        data: monthlyValues,
+        borderColor: '#bdbdbd',
+        fill: false
+      }]
+    }
+  });
 }
 
 loadDashboard();
 
 const storedUser = JSON.parse(localStorage.getItem('loggedInUser')) || JSON.parse(sessionStorage.getItem('loggedInUser'));
-if(!storedUser) window.location.href='/login';
+if (!storedUser) window.location.href = '/login';
 else document.getElementById('profileName').textContent = storedUser.name;
 
-document.getElementById('signOut').onclick=()=>{
+document.getElementById('signOut').onclick = () => {
   localStorage.removeItem('loggedInUser');
   sessionStorage.removeItem('loggedInUser');
-  window.location.href='/login';
+  window.location.href = '/login';
 };
-  
 </script>
 
 </body>
-
-</html>
+</html>    
