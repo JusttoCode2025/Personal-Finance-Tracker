@@ -114,7 +114,7 @@ body {
   transform: translateX(0);
 }
 
-.fs-success-msg {
+.success-msg {
   display:none;
   color: var(--success);
   font-weight:600;
@@ -124,29 +124,6 @@ body {
   border-radius:12px;
   border:1px solid hsl(120, 50%, 80%);
   font-size:0.95em;
-}
-
-.fs-error-msg {
-  display:none;
-  color: var(--error);
-  font-weight:600;
-  margin-bottom:15px;
-  padding:12px 16px;
-  background:hsl(0, 70%, 97%);
-  border-radius:12px;
-  border:1px solid hsl(0, 70%, 85%);
-  font-size:0.95em;
-}
-
-[data-fs-error] {
-  display:block;
-  color: var(--error);
-  font-size:0.82em;
-  text-align:left;
-  margin-top:-6px;
-  margin-bottom:8px;
-  padding-left:4px;
-  min-height:1em;
 }
 
 .login-link { margin-top:18px; font-size:0.9em; }
@@ -163,22 +140,14 @@ body {
   <div class="logo">Haven</div>
   <div class="subtitle">Create your account</div>
 
-  <div class="fs-success-msg" data-fs-success>
+  <div class="success-msg" id="successMsg">
     ✅ Account created! Redirecting to login...
-  </div>
-  <div class="fs-error-msg" data-fs-error>
-    ⚠️ Something went wrong, please try again.
   </div>
 
   <form id="signupForm">
-    <input type="text" name="name" class="input-field" placeholder="Full Name" required data-fs-field>
-    <span data-fs-error="name"></span>
-
-    <input type="email" name="email" class="input-field" placeholder="Email" required data-fs-field>
-    <span data-fs-error="email"></span>
-
-    <input type="password" name="password" class="input-field" placeholder="Password" required data-fs-field>
-    <span data-fs-error="password"></span>
+    <input type="text" id="nameField" class="input-field" placeholder="Full Name" required>
+    <input type="email" id="emailField" class="input-field" placeholder="Email" required>
+    <input type="password" id="passwordField" class="input-field" placeholder="Password" required>
 
     <ul class="password-rules">
       <li class="rule" id="ruleLength">At least 8 characters</li>
@@ -188,7 +157,7 @@ body {
       <li class="rule" id="ruleSpecial">At least 1 special character</li>
     </ul>
 
-    <button type="submit" class="submit-btn" data-fs-submit-btn>Create Account</button>
+    <button type="submit" class="submit-btn" id="submitBtn">Create Account</button>
   </form>
 
   <div class="login-link">
@@ -198,7 +167,9 @@ body {
 
 <script>
   const form = document.getElementById('signupForm');
-  const passwordField = form.password;
+  const passwordField = document.getElementById('passwordField');
+  const submitBtn = document.getElementById('submitBtn');
+  const successMsg = document.getElementById('successMsg');
 
   const rules = {
     ruleLength: /.{8,}/,
@@ -217,30 +188,28 @@ body {
   });
 
   form.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const name = document.getElementById('nameField').value.trim();
+    const email = document.getElementById('emailField').value.trim();
     const pass = passwordField.value;
+
+    if (!name || !email) return;
+
     for (let id in rules) {
       if (!rules[id].test(pass)) {
-        e.stopImmediatePropagation();
         document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
         return;
       }
     }
-  }, true);
 
-  const successEl = document.querySelector('[data-fs-success]');
-  const redirectCheck = setInterval(() => {
-  const visible = successEl.offsetParent !== null || 
-                  (successEl.style.display !== '' && successEl.style.display !== 'none');
-  if (visible) {
-    clearInterval(redirectCheck);
+    submitBtn.disabled = true;
+    successMsg.style.display = 'block';
+    form.style.display = 'none';
+
     setTimeout(() => window.location.href = '/login', 2000);
-  }
-}, 300);
-
-  window.formspree = window.formspree || function () { (formspree.q = formspree.q || []).push(arguments); };
-  formspree('initForm', { formElement: '#signupForm', formId: 'mwvwzabl' });
+  });
 </script>
-<script src="https://unpkg.com/@formspree/ajax@1" defer></script>
 
 </body>
 </html>
