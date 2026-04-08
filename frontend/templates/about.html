@@ -1,100 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>About & Contact - Budget Tracker</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Geist&display=swap" rel="stylesheet">
-   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='style3.css') }}">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Haven - About & Contact</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Geist&display=swap" rel="stylesheet">
+<style>
+:root {
+  --font-sans:'Inter',sans-serif;
+  --font-heading:'Geist',sans-serif;
+  --radius:30px;
+  --shadow-sm:0px 4px 6px rgba(0,0,0,0.08);
+  --background:hsl(20,31%,52%);
+  --foreground:hsl(0,0%,10%);
+  --card:hsl(0,0%,100%);
+  --primary:hsl(0,0%,13%);
+  --primary-foreground:hsl(0,0%,100%);
+  --border:hsl(0,0%,90%);
+  --muted:hsl(0,0%,95%);
+  --muted-foreground:hsl(0,0%,40%);
+  --link-color:hsl(0,0%,13%);
+  --link-hover:hsl(0,0%,0%);
+  --alert-success:hsl(120, 50%, 40%);
+  --alert-error:hsl(0, 70%, 50%);
+}
+
+* { box-sizing:border-box; margin:0; padding:0; font-family:var(--font-sans); }
+body { background:var(--background); color:var(--foreground); min-height:100vh; transition:background 0.3s; }
+a { text-decoration:none; color:inherit; }
+button { cursor:pointer; }
+
+.navbar {
+  display:flex; justify-content:space-between; align-items:center;
+  background:var(--card); padding:15px 30px; border-radius:var(--radius); box-shadow:var(--shadow-sm); margin-bottom:20px;
+}
+.nav-left { display:flex; align-items:center; gap:20px; font-weight:600; }
+.nav-left .logo { font-family:var(--font-heading); font-size:1.4em; transition:transform 0.3s; }
+.nav-left .logo:hover { transform:scale(1.1); }
+.nav-left a.active, .nav-left a:hover { color:var(--link-color); transform:scale(1.05); }
+.nav-right { display:flex; align-items:center; gap:15px; }
+.nav-right #profileIcon, .nav-right #signOut { transition:transform 0.3s; }
+.nav-right #profileIcon:hover, .nav-right #signOut:hover { transform:scale(1.05); }
+
+.container { max-width:1000px; margin:0 auto; padding:0 15px; }
+.section { background:var(--card); padding:25px; border-radius:var(--radius); box-shadow: var(--shadow-sm); margin-bottom:20px; transition:transform 0.3s; }
+.section:hover { transform:translateY(-3px); }
+
+h1, h2 { font-family:var(--font-heading); color:var(--foreground); }
+h1 { font-size:2em; margin-bottom:10px; }
+h2 { font-size:1.2em; margin-bottom:10px; }
+
+p { margin-bottom:15px; }
+.highlight { font-weight:600; color:var(--primary); }
+
+.flex-row { display:flex; gap:20px; flex-wrap:wrap; }
+.flex-item { flex:1; min-width:280px; }
+
+.input-field { width:100%; padding:10px; margin-bottom:10px; border:1px solid var(--border); border-radius:var(--radius); font-size:0.95em; }
+.input-field:focus { outline:none; border-color:var(--primary); }
+textarea.input-field { min-height:120px; resize:vertical; }
+
+.submit-btn { padding:10px 20px; background:var(--primary); color:var(--primary-foreground); border:none; border-radius:var(--radius); font-weight:600; transition:0.3s; }
+.submit-btn:hover { background:var(--link-hover); }
+.submit-btn:disabled { opacity:0.6; cursor:not-allowed; }
+
+.fs-success-msg {
+  display:none;
+  color:var(--alert-success);
+  font-weight:600;
+  margin-bottom:15px;
+  padding:12px 16px;
+  background:hsl(120, 50%, 95%);
+  border-radius:12px;
+  border:1px solid hsl(120, 50%, 80%);
+}
+.fs-error-msg {
+  display:none;
+  color:var(--alert-error);
+  font-weight:600;
+  margin-bottom:15px;
+  padding:12px 16px;
+  background:hsl(0, 70%, 97%);
+  border-radius:12px;
+  border:1px solid hsl(0, 70%, 85%);
+}
+[data-fs-error] {
+  display:block;
+  color:var(--alert-error);
+  font-size:0.82em;
+  margin-top:-8px;
+  margin-bottom:8px;
+  min-height:1em;
+}
+</style>
 </head>
 <body>
-  <header class="navbar">
-      <div class="nav-left">
-      <a href="/home" class="nav-logo">Budget Tracker</a>
-      <a href="/home">Home</a>
-      <a href="/budget">Budget Tracker</a>
-      <a href="/dashboard">Dashboard</a>
-      <a href="/travel-goal">Travel Goal</a>
-      <a href="/about" class="active">About</a>
-    </div>
-    <div class="nav-right">
-      <a href="/login" class="btn-login">Login / Sign Up</a>
-    </div>
-  
-  </header>
 
-  <div class="container">
-    <div class="content-wrapper">
-      <div class="text-column">
-        <div class="login-header">
-          <header>Budget Tracker</header>
-        </div>
-
-        <p class="about-text highlight">Budget Better.</p>
-        <p class="about-text">We're building tools to help you take control of your financial future. Simple, transparent, and focused on what matters most to you.</p>
-
-        <p class="about-text highlight">Our Mission</p>
-        <p class="about-text">Founded by a group of developers who were tired of bloated, expensive financial apps. We believe that financial literacy should be accessible to everyone, and that starts with having the right tools.</p>
-
-        <p class="about-text highlight">100% Open Source</p>
-        <p class="about-text highlight">0% Ad Supported</p>
-
-        <p class="about-text highlight">Need immediate help?</p>
-        <p class="about-text">Our support team is available 24/7 for urgent financial inquiries.<br><strong>Toll Free:</strong> 1800-BUDGET</p>
-
-        <div class="sign-up-link">
-          <p>Connect with us:</p>
-          <p>
-            <a href="#" target="_blank" class="icon-link">
-              <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 0.5C5.37 0.5 0 5.87 0 12.5C0 17.84 3.44 22.32 8.21 23.82C8.82 23.92 9.05 23.54 9.05 23.2C9.05 22.88 9.04 22.06 9.04 21.18C5.67 21.91 4.97 19.97 4.97 19.97C4.42 18.57 3.63 18.21 3.63 18.21C2.54 17.48 3.7 17.5 3.7 17.5C4.9 17.58 5.54 18.74 5.54 18.74C6.62 20.5 8.36 19.95 9.05 19.63C9.15 18.88 9.45 18.39 9.78 18.09C7.13 17.79 4.34 16.74 4.34 11.88C4.34 10.53 4.79 9.45 5.54 8.64C5.43 8.34 5.06 7.06 5.65 5.34C5.65 5.34 6.61 5 9.03 6.62C9.93 6.37 10.9 6.24 11.87 6.24C12.84 6.24 13.81 6.37 14.71 6.62C17.12 5 18.08 5.34 18.08 5.34C18.67 7.06 18.3 8.34 18.19 8.64C18.94 9.45 19.39 10.53 19.39 11.88C19.39 16.75 16.59 17.78 13.94 18.08C14.38 18.45 14.78 19.15 14.78 20.23C14.78 21.76 14.77 22.83 14.77 23.2C14.77 23.55 15 23.93 15.62 23.82C20.39 22.32 23.83 17.84 23.83 12.5C23.83 5.87 18.46 0.5 11.83 0.5H12Z"/>
-              </svg>
-              GitHub
-            </a> | 
-            <a href="#" target="_blank" class="icon-link">
-              <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53A4.48 4.48 0 0 0 22.4.36a9.12 9.12 0 0 1-2.88 1.1A4.52 4.52 0 0 0 16.88 0c-2.48 0-4.5 2.03-4.5 4.53 0 .35.03.69.1 1.02A12.9 12.9 0 0 1 1.64.89a4.52 4.52 0 0 0-.61 2.28c0 1.57.8 2.95 2.02 3.77A4.48 4.48 0 0 1 .8 6.1v.06c0 2.2 1.57 4.04 3.65 4.46a4.53 4.53 0 0 1-2.04.08c.57 1.78 2.22 3.08 4.18 3.12A9.07 9.07 0 0 1 0 19.54a12.81 12.81 0 0 0 6.92 2.03c8.3 0 12.85-6.88 12.85-12.85 0-.2 0-.39-.01-.58A9.22 9.22 0 0 0 23 3z"/>
-              </svg>
-              Twitter
-            </a>
-          </p>
-        </div>
-      </div>
-
-      <div class="form-column">
-        <p class="about-text highlight">Get in Touch</p>
-        <p class="about-text">Have questions or suggestions? We'd love to hear from you.</p>
-
-        <form class="input-box" id="contactForm">
-          <input class="input-field" type="text" name="name" placeholder="Name" required>
-          <input class="input-field" type="email" name="email" placeholder="Email" required>
-          <input class="input-field" type="text" name="subject" placeholder="Subject" required>
-          <textarea class="input-field" name="message" placeholder="Message" required></textarea>
-
-          <div class="input-submit">
-            <button class="submit-btn" type="submit">Send Message</button>
-          </div>
-
-          <p id="successMessage" class="success-message">Message Sent!</p>
-        </form>
-      </div>
-    </div>
+<nav class="navbar">
+  <div class="nav-left">
+    <span class="logo">Haven</span>
+    <a href="/home">Home</a>
+    <a href="/budget">Budget</a>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/travel-goal">Travel Goal</a>
+    <a href="/about" class="active">About</a>
   </div>
+  <div class="nav-right">
+    <i class="fas fa-user-alt" id="profileIcon"></i>
+    <span id="profileName"></span>
+    <a href="/login" id="signOut">Sign Out</a>
+  </div>
+</nav>
 
-  <script>
-    const form = document.getElementById('contactForm');
-    const successMessage = document.getElementById('successMessage');
-    successMessage.style.display = 'none';
-    form.addEventListener('submit', function(e){
-      e.preventDefault();
-      successMessage.style.display = 'block';
-      form.reset();
-      setTimeout(() => { successMessage.style.display = 'none'; }, 4000);
-    });
-  </script>
+<div class="container">
+  <div class="flex-row">
+
+    <!-- About Section -->
+    <section class="section flex-item">
+      <h1>About Haven</h1>
+      <p class="highlight">Budget Better.</p>
+      <p>We're building tools to help you take control of your financial future. Simple, transparent, and focused on what matters most to you.</p>
+
+      <p class="highlight">Our Mission</p>
+      <p>Founded by a group of developers who were tired of bloated, expensive financial apps. We believe financial literacy should be accessible to everyone, starting with the right tools.</p>
+
+      <p class="highlight">100% Open Source</p>
+      <p class="highlight">0% Ad Supported</p>
+
+      <p class="highlight">Need immediate help?</p>
+      <p>Our support team is available 24/7 for urgent financial inquiries.<br><strong>Toll Free:</strong> 1800-BUDGET</p>
+
+      <p class="highlight">Connect with us:</p>
+      <p>
+        <a href="https://github.com/JusttoCode2025/Personal-Finance-Tracker" target="_blank">GitHub</a> |
+        <a href="#" target="_blank">Twitter</a>
+      </p>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="section flex-item">
+      <h2>Contact Us</h2>
+
+      <div class="fs-success-msg" data-fs-success>
+        ✅ Message sent! We'll get back to you soon.
+      </div>
+      <div class="fs-error-msg" data-fs-error>
+        ⚠️ Something went wrong. Please try again.
+      </div>
+
+      <form id="contactForm">
+        <input class="input-field" type="text" name="name" placeholder="Name" required data-fs-field>
+        <span data-fs-error="name"></span>
+
+        <input class="input-field" type="email" name="email" placeholder="Email" required data-fs-field>
+        <span data-fs-error="email"></span>
+
+        <input class="input-field" type="text" name="subject" placeholder="Subject" required data-fs-field>
+        <span data-fs-error="subject"></span>
+
+        <textarea class="input-field" name="message" placeholder="Message" required data-fs-field></textarea>
+        <span data-fs-error="message"></span>
+
+        <button class="submit-btn" type="submit" data-fs-submit-btn>Send Message</button>
+      </form>
+    </section>
+
+  </div>
+</div>
+
+<script>
+ 
+  const storedUser = JSON.parse(localStorage.getItem('loggedInUser')) || JSON.parse(sessionStorage.getItem('loggedInUser'));
+  if (!storedUser) window.location.href = '/login';
+  else document.getElementById('profileName').textContent = storedUser.name;
+
+ 
+  document.getElementById('signOut').addEventListener('click', () => {
+    localStorage.removeItem('loggedInUser');
+    sessionStorage.removeItem('loggedInUser');
+    window.location.href = '/login';
+  });
+
+  window.formspree = window.formspree || function () { (formspree.q = formspree.q || []).push(arguments); };
+  formspree('initForm', { formElement: '#contactForm', formId: 'xzdkwyoo' });
+</script>
+<script src="https://unpkg.com/@formspree/ajax@1" defer></script>
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </body>
 </html>
-
 
 

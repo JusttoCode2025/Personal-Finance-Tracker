@@ -1,44 +1,203 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>login</title>
-     <link rel="stylesheet" href="{{ url_for('static', filename='style2.css') }}">
-</head>
-<body>
-    <div class="login-box">
-        <div class="login-header">
-            <header>Login</header>
-            <div class=" input-box">
-                <input type="text" id="email" class="input-field" placeholder="Email" autocomplete="off" required>
-            </div>
-            <div class=" input-box">
-                <input type="password" id="password" class="input-field" placeholder="Password" autocomplete="off" required>
-            </div>
-            <div class="forgot">
-                <section>
-                    <input type="checkbox" id="check">
-                        <label for="check">Remember me</label>
-                    </imput>
-                </section>
-                <section>
-                    <a href="#">Forgot Password</a>
-                </section>
-            </div>
-            <div class="input-submit">
-                 <button type="button" class="submit-btn" id="submit-btn">
-                    Sign In
-                 </button>
-            </div>
-            <div class="sign-up-link">
-                <p>Don't have an account? <a href="/signup">Sign Up</a></p>
-            </div>
-        </div>
-    </div>
-    
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-</body>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - Haven</title>
 
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Geist:wght@500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --font-sans: 'Inter', sans-serif;
+  --font-heading: 'Geist', sans-serif;
+  --radius: 30px;
+  --shadow-sm: 0px 10px 25px rgba(0,0,0,0.12);
+  --background: hsl(20, 31%, 52%);
+  --card: hsl(0, 0%, 100%);
+  --primary: hsl(0, 0%, 13%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --muted: hsl(0, 0%, 95%);
+  --border: hsl(0, 0%, 90%);
+}
+
+* {
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:var(--font-sans);
+}
+
+body {
+  background: var(--background);
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.login-box {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  width:100%;
+  max-width:400px;
+  padding:35px 30px;
+  text-align:center;
+  animation: fadeInUp 0.6s ease;
+}
+
+.logo {
+  font-family: var(--font-heading);
+  font-size:2.2em;
+  font-weight:600;
+  margin-bottom:5px;
+}
+
+.subtitle {
+  font-size:0.95em;
+  color:#555;
+  margin-bottom:25px;
+}
+
+.input-field {
+  width:100%;
+  padding:14px;
+  border-radius: var(--radius);
+  border:1px solid var(--border);
+  font-size:1em;
+  margin-bottom:15px;
+  transition: all 0.25s ease;
+}
+
+.input-field:focus {
+  outline:none;
+  border-color:black;
+  background:var(--muted);
+  transform: scale(1.01);
+}
+
+.submit-btn {
+  width:100%;
+  padding:14px;
+  border-radius:var(--radius);
+  border:none;
+  background:var(--primary);
+  color:var(--primary-foreground);
+  font-size:1.05em;
+  font-weight:600;
+  cursor:pointer;
+  transition: all 0.25s ease;
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+}
+
+.submit-btn:active {
+  transform: scale(0.98);
+}
+
+.message {
+  display:none;
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:15px;
+  font-size:0.9em;
+  animation: fadeIn 0.3s ease;
+}
+
+.success { background:#E8F5E9; border:2px solid #4CAF50; }
+.error { background:#FFEBEE; border:2px solid #F44336; }
+
+.sign-up-link {
+  margin-top:18px;
+  font-size:0.9em;
+}
+
+.sign-up-link a {
+  text-decoration:none;
+  font-weight:500;
+}
+
+.sign-up-link a:hover {
+  text-decoration:underline;
+}
+
+@keyframes fadeInUp {
+  from { opacity:0; transform:translateY(20px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity:0; }
+  to { opacity:1; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="login-box">
+  <div class="logo">Haven</div>
+  <div class="subtitle">Welcome back</div>
+
+  <div class="message success" id="successMessage">Login complete. Redirecting...</div>
+  <div class="message error" id="errorMessage">Invalid email or password</div>
+
+  <input type="text" id="email" class="input-field" placeholder="Email" required>
+  <input type="password" id="password" class="input-field" placeholder="Password" required>
+
+  <div style="text-align:left; margin-bottom:15px;">
+    <label style="display:flex; align-items:center; cursor:pointer;">
+      <input type="checkbox" id="remember" style="margin-right:8px;">
+      Remember me
+    </label>
+  </div>
+
+  <button type="button" class="submit-btn" id="loginBtn">Sign In</button>
+
+  <div class="sign-up-link">
+    Don’t have an account? <a href="/signup">Sign Up</a>
+  </div>
+</div>
+
+<script>
+const users = [
+  { name: "John Doe", email:"johndoe@gmail.com", password:"haventracker" },
+  { name: "Jane Doe", email:"janedoe@gmail.com", password:"haventracker" }
+];
+
+const loginBtn = document.getElementById('loginBtn');
+const errorMessage = document.getElementById('errorMessage');
+const successMessage = document.getElementById('successMessage');
+
+loginBtn.addEventListener('click', ()=> {
+  const email = document.getElementById('email').value.trim().toLowerCase();
+  const password = document.getElementById('password').value;
+  const remember = document.getElementById('remember').checked;
+
+  const user = users.find(u => u.email.toLowerCase() === email && u.password === password);
+
+  if(user){
+    errorMessage.style.display = 'none';
+    successMessage.style.display = 'block';
+    loginBtn.textContent = 'Redirecting...';
+
+    if(remember){
+      localStorage.setItem('loggedInUser', JSON.stringify(user));
+    } else {
+      sessionStorage.setItem('loggedInUser', JSON.stringify(user));
+    }
+
+    setTimeout(()=> window.location.href = '/home', 1400);
+  } else {
+    successMessage.style.display = 'none';
+    errorMessage.style.display = 'block';
+  }
+});
+</script>
+
+</body>
 </html>
 
