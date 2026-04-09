@@ -68,37 +68,27 @@ function showConfirm(message, onConfirm, onCancel = null) {
 const notificationStyles = document.createElement('style');
 notificationStyles.textContent = `
     .notification {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: white;
-        padding: 16px 20px;
-        border-radius: 8px;
+        position: fixed; top: 20px; right: 20px; background: white;
+        padding: 16px 20px; border-radius: 8px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        max-width: 400px;
-        z-index: 10000;
-        opacity: 0;
-        transform: translateX(400px);
-        transition: all 0.3s ease;
+        display: flex; align-items: center; gap: 12px;
+        max-width: 400px; z-index: 10000;
+        opacity: 0; transform: translateX(400px); transition: all 0.3s ease;
     }
     .notification.show { opacity: 1; transform: translateX(0); }
     .notification-success { border-left: 4px solid #4CAF50; }
-    .notification-error { border-left: 4px solid #f44336; }
+    .notification-error   { border-left: 4px solid #f44336; }
     .notification-warning { border-left: 4px solid #ff9800; }
-    .notification-info { border-left: 4px solid #2196F3; }
+    .notification-info    { border-left: 4px solid #2196F3; }
     .notification-icon { font-size: 20px; font-weight: bold; }
     .notification-success .notification-icon { color: #4CAF50; }
-    .notification-error .notification-icon { color: #f44336; }
+    .notification-error   .notification-icon { color: #f44336; }
     .notification-warning .notification-icon { color: #ff9800; }
-    .notification-info .notification-icon { color: #2196F3; }
+    .notification-info    .notification-icon { color: #2196F3; }
     .notification-message { flex: 1; color: #333; font-size: 14px; }
     .notification-close {
         background: none; border: none; font-size: 24px;
-        color: #999; cursor: pointer; padding: 0;
-        width: 24px; height: 24px; line-height: 20px;
+        color: #999; cursor: pointer; padding: 0; width: 24px; height: 24px; line-height: 20px;
     }
     .notification-close:hover { color: #333; }
     .confirm-modal {
@@ -136,6 +126,8 @@ document.head.appendChild(notificationStyles);
 // MAIN APPLICATION CODE
 // ============================================
 
+const MAX_AMOUNT = 10000;
+
 document.addEventListener('DOMContentLoaded', () => {
 
     /* home travel bar */
@@ -152,16 +144,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const percent = homeGoal > 0 ? Math.min((homeSaved / homeGoal) * 100, 100) : 0;
         const remaining = Math.max(homeGoal - homeSaved, 0);
 
-        const homeBar = document.getElementById("homeTravelProgress");
-        const homePercent = document.getElementById("homeTravelPercent");
-        const homeSavedText = document.getElementById("homeGoalSaved");
-        const homeLeftText = document.getElementById("homeGoalLeft");
+        const homeBar          = document.getElementById("homeTravelProgress");
+        const homePercent      = document.getElementById("homeTravelPercent");
+        const homeSavedText    = document.getElementById("homeGoalSaved");
+        const homeLeftText     = document.getElementById("homeGoalLeft");
         const homeRemainingText = document.getElementById("homeGoalRemainingText");
 
-        if (homeBar) homeBar.style.width = percent + "%";
-        if (homePercent) homePercent.textContent = percent.toFixed(1) + "%";
-        if (homeSavedText) homeSavedText.textContent = "$" + homeSaved.toFixed(0);
-        if (homeLeftText) homeLeftText.textContent = "$" + remaining.toFixed(0);
+        if (homeBar)           homeBar.style.width = percent + "%";
+        if (homePercent)       homePercent.textContent = percent.toFixed(1) + "%";
+        if (homeSavedText)     homeSavedText.textContent = "$" + homeSaved.toFixed(0);
+        if (homeLeftText)      homeLeftText.textContent = "$" + remaining.toFixed(0);
         if (homeRemainingText) homeRemainingText.textContent = "$" + remaining.toFixed(0) + " left";
     }
 
@@ -170,13 +162,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /* travel page */
 
-    const goalInput = document.getElementById("goalAmount");
+    const goalInput        = document.getElementById("goalAmount");
     const contributionInput = document.getElementById("contributionAmount");
-    const addBtn = document.getElementById("addBtn");
-    const setBtn = document.getElementById("setGoalBtn");
-    const resetBtn = document.getElementById("resetGoal");
-    const goalMsg = document.getElementById("goalMessage");
-    const contributionMsg = document.getElementById("contributionMessage");
+    const addBtn           = document.getElementById("addBtn");
+    const setBtn           = document.getElementById("setGoalBtn");
+    const resetBtn         = document.getElementById("resetGoal");
+    const goalMsg          = document.getElementById("goalMessage");
+    const contributionMsg  = document.getElementById("contributionMessage");
 
     let currentGoalId = null;
     let savedGoal = 0;
@@ -318,9 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const recentList = document.getElementById("recentPurchases");
-    if (recentList) {
-        loadRecentPurchases();
-    }
+    if (recentList) loadRecentPurchases();
 
 }); // end DOMContentLoaded
 
@@ -340,6 +330,13 @@ async function setCategoryLimit() {
 
     if (limit <= 0) {
         msg.textContent = "Limit must be greater than 0.";
+        msg.style.color = "red";
+        return;
+    }
+
+    // $10,000 hard cap
+    if (limit > MAX_AMOUNT) {
+        msg.textContent = "Limit cannot exceed $10,000.";
         msg.style.color = "red";
         return;
     }
@@ -386,12 +383,22 @@ async function loadCategories() {
 
     data.forEach(c => {
         const spent = c.limit_amount - c.remaining;
+        const pctUsed = c.limit_amount > 0 ? (spent / c.limit_amount) * 100 : 0;
+
+        // Colour the remaining column based on usage
+        let remainingClass = "remaining-ok";
+        if (c.remaining < 0) {
+            remainingClass = "remaining-danger";
+        } else if (pctUsed >= 80) {
+            remainingClass = "remaining-warn";
+        }
+
         list.innerHTML += `
             <li>
                 <strong>${c.category}</strong>
                 <span>$${c.limit_amount}</span>
                 <span>$${spent}</span>
-                <span>$${c.remaining}</span>
+                <span class="${remainingClass}">$${c.remaining}</span>
             </li>
         `;
     });
@@ -441,6 +448,13 @@ async function addPurchase() {
 
     if (amount <= 0) {
         msg.textContent = "Amount must be greater than 0.";
+        msg.style.color = "red";
+        return;
+    }
+
+    // $10,000 hard cap
+    if (amount > MAX_AMOUNT) {
+        msg.textContent = "Purchase cannot exceed $10,000.";
         msg.style.color = "red";
         return;
     }
@@ -570,35 +584,35 @@ async function executeTransfer(msg) {
 /* travel bar */
 
 function updateUI(saved, goal) {
-    const percent = goal > 0 ? Math.min((saved / goal) * 100, 100) : 0;
+    const percent   = goal > 0 ? Math.min((saved / goal) * 100, 100) : 0;
     const remaining = goal > 0 ? Math.max(goal - saved, 0) : 0;
 
-    const progressBar = document.getElementById("travelProgress");
-    const percentText = document.getElementById("travelPercent");
-    const savedText = document.getElementById("goalSaved");
-    const leftText = document.getElementById("goalLeft");
+    const progressBar    = document.getElementById("travelProgress");
+    const percentText    = document.getElementById("travelPercent");
+    const savedText      = document.getElementById("goalSaved");
+    const leftText       = document.getElementById("goalLeft");
     const remainingBarText = document.getElementById("goalRemainingText");
-    const summary = document.getElementById("goalSummary");
-    const celebrate = document.getElementById("goalCelebrate");
-    const goalText = document.getElementById("goalTarget");
+    const summary        = document.getElementById("goalSummary");
+    const celebrate      = document.getElementById("goalCelebrate");
+    const goalText       = document.getElementById("goalTarget");
 
-    if (progressBar) progressBar.style.width = percent + "%";
-    if (percentText) percentText.textContent = percent.toFixed(1) + "%";
-    if (savedText) savedText.textContent = "$" + saved.toFixed(0);
-    if (leftText) leftText.textContent = "$" + remaining.toFixed(0);
+    if (progressBar)     progressBar.style.width = percent + "%";
+    if (percentText)     percentText.textContent = percent.toFixed(1) + "%";
+    if (savedText)       savedText.textContent = "$" + saved.toFixed(0);
+    if (leftText)        leftText.textContent = "$" + remaining.toFixed(0);
     if (remainingBarText) remainingBarText.textContent = "$" + remaining.toFixed(0) + " left";
-    if (goalText) goalText.textContent = "$" + goal.toFixed(0);
+    if (goalText)        goalText.textContent = "$" + goal.toFixed(0);
 
     if (summary) {
         summary.textContent = `Saved: $${saved.toFixed(2)} / $${goal.toFixed(2)} (${percent.toFixed(1)}%)`;
     }
 
     if (celebrate) {
-        if (saved > goal) celebrate.textContent = "Goal exceeded!";
+        if (saved > goal)        celebrate.textContent = "Goal exceeded!";
         else if (percent >= 100) celebrate.textContent = "Congratulations! You've reached your travel goal!";
-        else if (percent >= 75) celebrate.textContent = "Almost there!";
-        else if (percent >= 50) celebrate.textContent = "Halfway there!";
-        else if (percent >= 25) celebrate.textContent = "Great start!";
-        else celebrate.textContent = "";
+        else if (percent >= 75)  celebrate.textContent = "Almost there!";
+        else if (percent >= 50)  celebrate.textContent = "Halfway there!";
+        else if (percent >= 25)  celebrate.textContent = "Great start!";
+        else                     celebrate.textContent = "";
     }
 }
