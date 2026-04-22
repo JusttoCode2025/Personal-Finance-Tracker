@@ -446,6 +446,18 @@ def transfer_to_travel():
     return jsonify({
         "message": f"${total_remaining:.2f} transferred to travel goal"
     }), 200
+    
+@app.route("/clear_db")
+def clear_db():
+    conn = db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM purchases")
+    cursor.execute("DELETE FROM spending_limits")
+    cursor.execute("DELETE FROM travel_goals")
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return "Database cleared!"
 
 
 if __name__ == '__main__':
