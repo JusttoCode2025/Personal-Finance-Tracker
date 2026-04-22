@@ -74,7 +74,6 @@ input, select, button {
 button { background:var(--primary); color:var(--primary-foreground); border:none; }
 button:hover { transform:scale(1.05); }
 
-
 .table-header {
   display:flex;
   justify-content:space-between;
@@ -92,10 +91,8 @@ button:hover { transform:scale(1.05); }
   min-width:80px;
   text-align:right;
 }
-.table-header span:first-child {
-  flex:1;
-  text-align:left;
-}
+.table-header span:first-child { flex:1; text-align:left; }
+.table-header span:last-child { min-width:72px; }
 
 /* Category list */
 .expenses-list { list-style:none; flex:1; }
@@ -109,6 +106,7 @@ button:hover { transform:scale(1.05); }
   background:none;
   border-radius:0;
   margin-bottom:0;
+  gap:4px;
 }
 .expenses-list li:last-child { border-bottom:none; }
 
@@ -127,9 +125,19 @@ button:hover { transform:scale(1.05); }
 }
 .expenses-list li span.remaining-ok     { color:var(--muted-foreground); }
 .expenses-list li span.remaining-warn   { color:var(--warning); font-weight:600; }
-.expenses-list li span.remaining-danger { color:var(--danger);  font-weight:600; }
+.expenses-list li span.remaining-danger { color:var(--danger); font-weight:600; }
 
+/* Row action buttons */
+.row-actions { display:flex; gap:4px; min-width:72px; justify-content:flex-end; }
+.row-btn {
+  width:auto; padding:4px 8px; font-size:0.75em; font-weight:600;
+  border-radius:6px; border:none; margin-bottom:0; transition:opacity 0.2s;
+}
+.row-btn:hover { transform:none; opacity:0.8; }
+.row-btn.edit  { background:var(--muted); color:var(--foreground); }
+.row-btn.delete { background:hsl(0,70%,92%); color:var(--danger); }
 
+/* Purchases header */
 .purchases-header {
   display:flex;
   justify-content:space-between;
@@ -257,6 +265,7 @@ button:hover { transform:scale(1.05); }
         <span>Limit</span>
         <span>Spent</span>
         <span>Remaining</span>
+        <span></span>
       </div>
       <ul id="categoryTable" class="expenses-list">
         <li><strong>No categories yet</strong></li>
