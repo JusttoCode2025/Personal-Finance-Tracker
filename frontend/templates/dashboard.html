@@ -50,40 +50,6 @@ h2{font-size:1.2em;margin-bottom:15px;}
 .flex-row{display:flex;gap:20px;flex-wrap:wrap;}
 .flex-item{flex:1;min-width:280px;}
 
-/* Top stat pills */
-.stat-pills {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
-}
-.stat-pill {
-  background: var(--card);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
-  padding: 16px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  transition: transform 0.3s;
-}
-.stat-pill:hover { transform: translateY(-3px); }
-.stat-pill-label {
-  font-size: 0.72em;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--muted-foreground);
-}
-.stat-pill-value {
-  font-size: 1.4em;
-  font-weight: 600;
-  color: var(--foreground);
-  font-family: var(--font-heading);
-}
-.stat-pill-value.positive { color: var(--success); }
-.stat-pill-value.negative { color: var(--danger); }
-
 /* Stat cards */
 .stat-cards {
   display: grid;
@@ -130,9 +96,8 @@ h2{font-size:1.2em;margin-bottom:15px;}
   color: var(--muted-foreground);
 }
 
-@media(max-width:600px){
-  .stat-pills { grid-template-columns: repeat(2, 1fr); }
-}
+.expenses-list{list-style:none;}
+.expenses-list li{padding:10px;border-radius:var(--radius);background:var(--muted);margin-bottom:5px;}
 </style>
 </head>
 <body>
@@ -158,26 +123,6 @@ h2{font-size:1.2em;margin-bottom:15px;}
   <div class="section">
     <h1>Dashboard</h1>
     <p style="text-align:center; color:var(--muted-foreground);">Monitor, track, and analyze your spending habits to optimize budget performance.</p>
-  </div>
-
-  <!-- Top stat pills -->
-  <div class="stat-pills">
-    <div class="stat-pill">
-      <span class="stat-pill-label">Total Limit</span>
-      <span class="stat-pill-value" id="pillLimit">—</span>
-    </div>
-    <div class="stat-pill">
-      <span class="stat-pill-label">Spent</span>
-      <span class="stat-pill-value" id="pillSpent">—</span>
-    </div>
-    <div class="stat-pill">
-      <span class="stat-pill-label">Remaining</span>
-      <span class="stat-pill-value" id="pillRemaining">—</span>
-    </div>
-    <div class="stat-pill">
-      <span class="stat-pill-label">Used</span>
-      <span class="stat-pill-value" id="pillPercent">—</span>
-    </div>
   </div>
 
   <!-- Monthly Budget -->
@@ -237,7 +182,6 @@ async function loadDashboard() {
   const limitsData = await limitsRes.json();
   const totalLimit = limitsData.reduce((sum, l) => sum + l.limit_amount, 0);
 
-  // Category limit map for bar chart reference line
   const limitMap = {};
   limitsData.forEach(l => { limitMap[l.category] = l.limit_amount; });
 
@@ -247,37 +191,25 @@ async function loadDashboard() {
   const progressBar   = document.getElementById("dashboard-progress");
   const summaryText   = document.getElementById("dashboard-summary");
 
-  const pillLimit     = document.getElementById("pillLimit");
-  const pillSpent     = document.getElementById("pillSpent");
-  const pillRemaining = document.getElementById("pillRemaining");
-  const pillPercent   = document.getElementById("pillPercent");
-
-  pillSpent.textContent = '$' + totalSpent.toFixed(2);
-
   if (totalLimit > 0) {
     const remaining   = totalLimit - totalSpent;
     const percentUsed = (totalSpent / totalLimit) * 100;
 
-    // Stat cards
     statIncome.textContent    = '$' + totalLimit.toFixed(2);
     statSpent.textContent     = '$' + totalSpent.toFixed(2);
     statRemaining.textContent = '$' + remaining.toFixed(2);
     statRemaining.className   = 'stat-value ' + (remaining >= 0 ? 'positive' : 'negative');
 
     progressBar.style.width = Math.min(percentUsed, 100) + '%';
-    summaryText.textContent = percentUsed.toFixed(1) + '% of total budget used this month';
-
-    // Top pills
-    pillLimit.textContent     = '$' + totalLimit.toFixed(2);
-    pillRemaining.textContent = '$' + remaining.toFixed(2);
-    pillRemaining.className   = 'stat-pill-value ' + (remaining >= 0 ? 'positive' : 'negative');
-    pillPercent.textContent   = percentUsed.toFixed(1) + '%';
+    summaryText.textContent = percentUsed > 100
+      ? `Over budget by $${Math.abs(remaining).toFixed(2)}`
+      : `${percentUsed.toFixed(1)}% of total budget used this month`;
   } else {
     statSpent.textContent   = '$' + totalSpent.toFixed(2);
     summaryText.textContent = 'Set category limits on the Budget page to see usage.';
   }
 
-  // Pie Chart — distinct colors
+  // Pie Chart
   const categoryLabels = data.categories.map(c => c.category);
   const categoryValues = data.categories.map(c => c.total);
   const chartColors    = categoryLabels.map((_, i) => CHART_COLORS[i % CHART_COLORS.length]);
@@ -299,7 +231,7 @@ async function loadDashboard() {
     }
   });
 
-  // Bar Chart — distinct colors + budget limit line
+  // Bar Chart with budget limit line
   const limitValues = categoryLabels.map(cat => limitMap[cat.toLowerCase()] || 0);
 
   new Chart(document.getElementById("barChart"), {
@@ -332,7 +264,7 @@ async function loadDashboard() {
     }
   });
 
-  // Line Chart — curved
+  // Line Chart — curved, last 30 days
   const monthlyLabels = data.monthly.map(m => m.month);
   const monthlyValues = data.monthly.map(m => m.total);
 
