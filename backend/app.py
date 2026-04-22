@@ -245,7 +245,11 @@ def dashboard_data():
     conn = db_connection()  
     cursor = conn.cursor()
 
-    cursor.execute("SELECT COALESCE(SUM(amount), 0) FROM purchases")
+    
+    cursor.execute("""
+        SELECT COALESCE(SUM(amount), 0) FROM purchases
+        WHERE DATE_TRUNC('month', date) = DATE_TRUNC('month', CURRENT_DATE)
+    """)
     total_spent = float(cursor.fetchone()[0])
 
     cursor.execute("""
@@ -261,11 +265,11 @@ def dashboard_data():
     ]
 
     cursor.execute("""
-        SELECT TO_CHAR(date, 'YYYY-MM') as month, SUM(amount)
+        SELECT TO_CHAR(date, 'YYYY-MM-DD') as day, SUM(amount)
         FROM purchases
-        GROUP BY month
-        ORDER BY month DESC
-        LIMIT 12
+        WHERE date >= CURRENT_DATE - INTERVAL '30 days'
+        GROUP BY day
+        ORDER BY day ASC
     """)
     monthly_rows = cursor.fetchall()
 
