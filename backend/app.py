@@ -1,4 +1,3 @@
-
 from flask import Flask, request, jsonify, render_template
 import psycopg2
 import os
@@ -10,7 +9,6 @@ app = Flask(
     static_folder="../frontend/static"
 )
 
-#  dbs connect to render 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
@@ -19,7 +17,6 @@ if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
 def db_connection():
     return psycopg2.connect(DATABASE_URL)
 
-#creation of dbs
 def init_db():
     conn = db_connection()
     cursor = conn.cursor()
@@ -42,15 +39,20 @@ def init_db():
     )
     """)
 
-  
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS travel_goals (
         id SERIAL PRIMARY KEY,
         destination TEXT NOT NULL,
         target_amount REAL NOT NULL,
         saved_amount REAL DEFAULT 0,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        note TEXT DEFAULT ''
     )
+    """)
+
+
+    cursor.execute("""
+        ALTER TABLE travel_goals ADD COLUMN IF NOT EXISTS note TEXT DEFAULT ''
     """)
 
     conn.commit()
@@ -61,12 +63,12 @@ def init_db():
 init_db()
 
 
-#html routes
+# HTML routes
 @app.route("/")
 @app.route("/login")
 def login():
     return render_template("login.html")
-    
+
 @app.route("/budget")
 def budget():
     return render_template("budget.html")
@@ -195,7 +197,7 @@ def add_purchase():
         return jsonify({
             "warning": "This purchase exceeds the category limit. Continue anyway?"
         }), 200
-        
+
     cursor.execute(
         "UPDATE spending_limits SET remaining=%s WHERE category=%s",
         (new_remaining, category)
@@ -242,10 +244,13 @@ def view_limits():
 
 @app.route("/dashboard_data")
 def dashboard_data():
-    conn = db_connection()  
+    conn = db_connection()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT COALESCE(SUM(amount), 0) FROM purchases")
+    cursor.execute("""
+        SELECT COALESCE(SUM(amount), 0) FROM purchases
+        WHERE DATE_TRUNC('month', date) = DATE_TRUNC('month', CURRENT_DATE)
+    """)
     total_spent = float(cursor.fetchone()[0])
 
     cursor.execute("""
@@ -260,12 +265,13 @@ def dashboard_data():
         for r in category_rows
     ]
 
+    # Last 30 days daily spending
     cursor.execute("""
-        SELECT TO_CHAR(date, 'YYYY-MM') as month, SUM(amount)
+        SELECT TO_CHAR(date, 'YYYY-MM-DD') as day, SUM(amount)
         FROM purchases
-        GROUP BY month
-        ORDER BY month DESC
-        LIMIT 12
+        WHERE date >= CURRENT_DATE - INTERVAL '30 days'
+        GROUP BY day
+        ORDER BY day ASC
     """)
     monthly_rows = cursor.fetchall()
 
@@ -284,7 +290,7 @@ def dashboard_data():
     })
 
 
-#travel goal
+# Travel goal routes
 
 @app.route("/travel_goal", methods=["POST"])
 def add_travel_goal():
@@ -295,11 +301,11 @@ def add_travel_goal():
 
     conn = db_connection()
     cursor = conn.cursor()
-    
+
     cursor.execute("DELETE FROM travel_goals")
-    
+
     cursor.execute(
-        "INSERT INTO travel_goals (destination, target_amount, saved_amount) VALUES (%s, %s, 0)",
+        "INSERT INTO travel_goals (destination, target_amount, saved_amount, note) VALUES (%s, %s, 0, '')",
         (destination, target_amount)
     )
 
@@ -316,7 +322,7 @@ def get_travel_goals():
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT id, destination, target_amount, saved_amount, created_at
+        SELECT id, destination, target_amount, saved_amount, created_at, note
         FROM travel_goals
         ORDER BY created_at DESC
     """)
@@ -331,10 +337,36 @@ def get_travel_goals():
             "destination": r[1],
             "target_amount": float(r[2]),
             "saved_amount": float(r[3]),
-            "created_at": str(r[4])
+            "created_at": str(r[4]),
+            "note": r[5] or ""
         }
         for r in rows
     ])
+
+
+@app.route("/travel_goal/note", methods=["POST"])
+def save_note():
+    data = request.get_json()
+
+    goal_id = data.get("id")
+    note = data.get("note", "")
+
+    if not goal_id:
+        return jsonify({"error": "Invalid goal ID"}), 400
+
+    conn = db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "UPDATE travel_goals SET note=%s WHERE id=%s",
+        (note, goal_id)
+    )
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return jsonify({"message": "Note saved"}), 200
 
 
 @app.route("/travel_goal/save", methods=["POST"])
@@ -376,7 +408,8 @@ def reset_travel_goal():
 
     return jsonify({"message": "Reset successful"}), 200
 
-#transfer to travel route 
+
+# Transfer to travel route
 @app.route("/transfer_to_travel", methods=["POST"])
 def transfer_to_travel():
     conn = db_connection()
@@ -390,7 +423,6 @@ def transfer_to_travel():
         conn.close()
         return jsonify({"error": "No remaining budget to transfer"}), 400
 
-    
     cursor.execute("SELECT id FROM travel_goals LIMIT 1")
     goal = cursor.fetchone()
 
@@ -399,17 +431,13 @@ def transfer_to_travel():
         conn.close()
         return jsonify({"error": "Please set a travel goal first"}), 400
 
-    
     cursor.execute("""
         UPDATE travel_goals
         SET saved_amount = saved_amount + %s
         WHERE id = %s
     """, (total_remaining, goal[0]))
 
-    cursor.execute("""
-        UPDATE spending_limits
-        SET remaining = 0
-    """)
+    cursor.execute("UPDATE spending_limits SET remaining = 0")
 
     conn.commit()
     cursor.close()
@@ -418,6 +446,7 @@ def transfer_to_travel():
     return jsonify({
         "message": f"${total_remaining:.2f} transferred to travel goal"
     }), 200
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

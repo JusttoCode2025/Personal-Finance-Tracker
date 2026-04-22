@@ -50,40 +50,6 @@ h2{font-size:1.2em;margin-bottom:15px;}
 .flex-row{display:flex;gap:20px;flex-wrap:wrap;}
 .flex-item{flex:1;min-width:280px;}
 
-/* Income section */
-.income-row {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-.income-input {
-  flex: 1;
-  padding: 11px 16px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  font-size: 0.95em;
-  background: var(--muted);
-  color: var(--foreground);
-  transition: border-color 0.2s, background 0.2s;
-}
-.income-input:focus {
-  outline: none;
-  border-color: var(--primary);
-  background: #fff;
-}
-.income-save-btn {
-  padding: 11px 22px;
-  border-radius: 999px;
-  border: none;
-  background: var(--primary);
-  color: var(--primary-foreground);
-  font-size: 0.95em;
-  font-weight: 600;
-  white-space: nowrap;
-  transition: transform 0.2s, background 0.2s;
-}
-.income-save-btn:hover { transform: scale(1.04); }
-
 /* Stat cards */
 .stat-cards {
   display: grid;
@@ -130,14 +96,6 @@ h2{font-size:1.2em;margin-bottom:15px;}
   color: var(--muted-foreground);
 }
 
-/* Charts */
-input[type="number"], select {
-  width: 100%;
-  padding: 12px;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  margin-bottom: 10px;
-}
 .expenses-list{list-style:none;}
 .expenses-list li{padding:10px;border-radius:var(--radius);background:var(--muted);margin-bottom:5px;}
 </style>
@@ -167,17 +125,12 @@ input[type="number"], select {
     <p style="text-align:center; color:var(--muted-foreground);">Monitor, track, and analyze your spending habits to optimize budget performance.</p>
   </div>
 
+  <!-- Monthly Budget -->
   <div class="section">
     <h2>Monthly Budget</h2>
-
-    <div class="income-row">
-      <input class="income-input" type="number" id="monthlyIncomeInput" placeholder="Enter monthly income">
-      <button class="income-save-btn" id="saveIncomeBtn">Save</button>
-    </div>
-
     <div class="stat-cards">
       <div class="stat-card">
-        <div class="stat-label">Income</div>
+        <div class="stat-label">Total Limit</div>
         <div class="stat-value" id="statIncome">—</div>
       </div>
       <div class="stat-card">
@@ -189,11 +142,10 @@ input[type="number"], select {
         <div class="stat-value" id="statRemaining">—</div>
       </div>
     </div>
-
     <div class="progress-bar-wrapper">
       <div class="progress-bar-fill" id="dashboard-progress"></div>
     </div>
-    <p class="progress-hint" id="dashboard-summary">Set an income above to see usage.</p>
+    <p class="progress-hint" id="dashboard-summary">Set category limits on the Budget page to see usage.</p>
   </div>
 
   <!-- Charts -->
@@ -209,58 +161,58 @@ input[type="number"], select {
   </div>
 
   <div class="section">
-    <h2>Spending Over Time</h2>
+    <h2>Spending — Last 30 Days</h2>
     <canvas id="lineChart"></canvas>
   </div>
 
 </div>
 
 <script>
+const CHART_COLORS = [
+  '#4e79a7', '#f28e2b', '#e15759', '#76b7b2',
+  '#59a14f', '#edc948', '#b07aa1', '#ff9da7'
+];
+
 async function loadDashboard() {
   const response = await fetch("/dashboard_data");
   const data = await response.json();
   const totalSpent = data.total_spent;
 
-  let income = parseFloat(localStorage.getItem("monthly_income")) || 0;
-  const incomeInput = document.getElementById("monthlyIncomeInput");
-  const saveBtn = document.getElementById("saveIncomeBtn");
-  const progressBar = document.getElementById("dashboard-progress");
-  const summaryText = document.getElementById("dashboard-summary");
-  const statIncome = document.getElementById("statIncome");
-  const statSpent = document.getElementById("statSpent");
+  const limitsRes = await fetch("/limits");
+  const limitsData = await limitsRes.json();
+  const totalLimit = limitsData.reduce((sum, l) => sum + l.limit_amount, 0);
+
+  const limitMap = {};
+  limitsData.forEach(l => { limitMap[l.category] = l.limit_amount; });
+
+  const statIncome    = document.getElementById("statIncome");
+  const statSpent     = document.getElementById("statSpent");
   const statRemaining = document.getElementById("statRemaining");
+  const progressBar   = document.getElementById("dashboard-progress");
+  const summaryText   = document.getElementById("dashboard-summary");
 
-  if (income > 0) incomeInput.value = income;
+  if (totalLimit > 0) {
+    const remaining   = totalLimit - totalSpent;
+    const percentUsed = (totalSpent / totalLimit) * 100;
 
-  function updateIncomeBar(currentIncome) {
-    const remaining = currentIncome - totalSpent;
-    const percentUsed = (totalSpent / currentIncome) * 100;
-
-    statIncome.textContent = '$' + currentIncome.toFixed(2);
-    statSpent.textContent = '$' + totalSpent.toFixed(2);
+    statIncome.textContent    = '$' + totalLimit.toFixed(2);
+    statSpent.textContent     = '$' + totalSpent.toFixed(2);
     statRemaining.textContent = '$' + remaining.toFixed(2);
-    statRemaining.className = 'stat-value ' + (remaining >= 0 ? 'positive' : 'negative');
+    statRemaining.className   = 'stat-value ' + (remaining >= 0 ? 'positive' : 'negative');
 
     progressBar.style.width = Math.min(percentUsed, 100) + '%';
-    summaryText.textContent = percentUsed.toFixed(1) + '% of income used this month';
+    summaryText.textContent = percentUsed > 100
+      ? `Over budget by $${Math.abs(remaining).toFixed(2)}`
+      : `${percentUsed.toFixed(1)}% of total budget used this month`;
+  } else {
+    statSpent.textContent   = '$' + totalSpent.toFixed(2);
+    summaryText.textContent = 'Set category limits on the Budget page to see usage.';
   }
-
-  if (income > 0) updateIncomeBar(income);
-
-  saveBtn.addEventListener("click", () => {
-    const value = parseFloat(incomeInput.value);
-    if (!value || value <= 0) {
-      incomeInput.style.borderColor = 'var(--danger)';
-      setTimeout(() => incomeInput.style.borderColor = '', 1500);
-      return;
-    }
-    localStorage.setItem("monthly_income", value);
-    updateIncomeBar(value);
-  });
 
   // Pie Chart
   const categoryLabels = data.categories.map(c => c.category);
   const categoryValues = data.categories.map(c => c.total);
+  const chartColors    = categoryLabels.map((_, i) => CHART_COLORS[i % CHART_COLORS.length]);
 
   new Chart(document.getElementById("pieChart"), {
     type: 'pie',
@@ -268,31 +220,51 @@ async function loadDashboard() {
       labels: categoryLabels,
       datasets: [{
         data: categoryValues,
-        backgroundColor: ['#1f1f1f','#3a3a3a','#5c5c5c','#8c8c8c','#bdbdbd','#7f7f7f'],
+        backgroundColor: chartColors,
         borderWidth: 1
       }]
     },
     options: {
       responsive: true,
+      animation: { duration: 800 },
       plugins: { legend: { position: 'bottom' } }
     }
   });
 
-  // Bar Chart
+  // Bar Chart with budget limit line
+  const limitValues = categoryLabels.map(cat => limitMap[cat.toLowerCase()] || 0);
+
   new Chart(document.getElementById("barChart"), {
     type: 'bar',
     data: {
       labels: categoryLabels,
-      datasets: [{
-        label: 'Actual Spending',
-        data: categoryValues,
-        backgroundColor: '#1f1f1f'
-      }]
+      datasets: [
+        {
+          label: 'Actual Spending',
+          data: categoryValues,
+          backgroundColor: chartColors,
+        },
+        {
+          label: 'Budget Limit',
+          data: limitValues,
+          type: 'line',
+          borderColor: '#e15759',
+          borderWidth: 2,
+          borderDash: [6, 4],
+          pointRadius: 4,
+          pointBackgroundColor: '#e15759',
+          fill: false,
+          tension: 0
+        }
+      ]
     },
-    options: { scales: { y: { beginAtZero: true } } }
+    options: {
+      animation: { duration: 800 },
+      scales: { y: { beginAtZero: true } }
+    }
   });
 
-  // Line Chart
+  // Line Chart — curved, last 30 days
   const monthlyLabels = data.monthly.map(m => m.month);
   const monthlyValues = data.monthly.map(m => m.total);
 
@@ -301,11 +273,19 @@ async function loadDashboard() {
     data: {
       labels: monthlyLabels,
       datasets: [{
-        label: 'Total Spent',
+        label: 'Daily Spending (Last 30 Days)',
         data: monthlyValues,
-        borderColor: '#bdbdbd',
-        fill: false
+        borderColor: '#4e79a7',
+        backgroundColor: 'rgba(78,121,167,0.1)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 4,
+        pointBackgroundColor: '#4e79a7'
       }]
+    },
+    options: {
+      animation: { duration: 800 },
+      scales: { y: { beginAtZero: true } }
     }
   });
 }
@@ -324,4 +304,4 @@ document.getElementById('signOut').onclick = () => {
 </script>
 
 </body>
-</html>    
+</html>

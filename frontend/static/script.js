@@ -127,6 +127,7 @@ document.head.appendChild(notificationStyles);
 // ============================================
 
 const MAX_AMOUNT = 10000;
+const MAX_GOAL   = 1000000;
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -139,22 +140,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.length === 0) { updateUI(0, 0); return; }
 
         const goal = data[0];
-        const homeSaved = goal.saved_amount;
-        const homeGoal = goal.target_amount;
-        const percent = homeGoal > 0 ? Math.min((homeSaved / homeGoal) * 100, 100) : 0;
-        const remaining = Math.max(homeGoal - homeSaved, 0);
+        const homeSaved  = goal.saved_amount;
+        const homeGoal   = goal.target_amount;
+        const percent    = homeGoal > 0 ? Math.min((homeSaved / homeGoal) * 100, 100) : 0;
+        const remaining  = Math.max(homeGoal - homeSaved, 0);
 
-        const homeBar          = document.getElementById("homeTravelProgress");
-        const homePercent      = document.getElementById("homeTravelPercent");
-        const homeSavedText    = document.getElementById("homeGoalSaved");
-        const homeLeftText     = document.getElementById("homeGoalLeft");
+        const homeBar           = document.getElementById("homeTravelProgress");
+        const homePercent       = document.getElementById("homeTravelPercent");
+        const homeSavedText     = document.getElementById("homeGoalSaved");
+        const homeLeftText      = document.getElementById("homeGoalLeft");
         const homeRemainingText = document.getElementById("homeGoalRemainingText");
 
-        if (homeBar)           homeBar.style.width = percent + "%";
-        if (homePercent)       homePercent.textContent = percent.toFixed(1) + "%";
-        if (homeSavedText)     homeSavedText.textContent = "$" + homeSaved.toFixed(0);
-        if (homeLeftText)      homeLeftText.textContent = "$" + remaining.toFixed(0);
-        if (homeRemainingText) homeRemainingText.textContent = "$" + remaining.toFixed(0) + " left";
+        if (homeBar)            homeBar.style.width = percent + "%";
+        if (homePercent)        homePercent.textContent = percent.toFixed(1) + "%";
+        if (homeSavedText)      homeSavedText.textContent = "$" + homeSaved.toFixed(0);
+        if (homeLeftText)       homeLeftText.textContent = "$" + remaining.toFixed(0);
+        if (homeRemainingText)  homeRemainingText.textContent = "$" + remaining.toFixed(0) + " left";
     }
 
     loadHomeTravelBar();
@@ -162,28 +163,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /* travel page */
 
-    const goalInput        = document.getElementById("goalAmount");
+    const goalInput         = document.getElementById("goalAmount");
     const contributionInput = document.getElementById("contributionAmount");
-    const addBtn           = document.getElementById("addBtn");
-    const setBtn           = document.getElementById("setGoalBtn");
-    const resetBtn         = document.getElementById("resetGoal");
-    const goalMsg          = document.getElementById("goalMessage");
-    const contributionMsg  = document.getElementById("contributionMessage");
+    const addBtn            = document.getElementById("addBtn");
+    const setBtn            = document.getElementById("setGoalBtn");
+    const resetBtn          = document.getElementById("resetGoal");
+    const saveNoteBtn       = document.getElementById("saveNoteBtn");
+    const goalMsg           = document.getElementById("goalMessage");
+    const contributionMsg   = document.getElementById("contributionMessage");
+    const noteMsg           = document.getElementById("noteMessage");
+    const noteField         = document.getElementById("goalNote");
 
     let currentGoalId = null;
-    let savedGoal = 0;
+    let savedGoal     = 0;
 
     async function loadTravelGoal() {
-        const res = await fetch("/travel_goals");
+        const res  = await fetch("/travel_goals");
         const data = await res.json();
 
         if (data.length === 0) { currentGoalId = null; updateUI(0, 0); return; }
 
-        const goal = data[0];
+        const goal    = data[0];
         currentGoalId = goal.id;
-        savedGoal = goal.target_amount;
+        savedGoal     = goal.target_amount;
 
-        if (goalInput) goalInput.value = savedGoal;
+        if (goalInput)  goalInput.value = savedGoal;
+        if (noteField && goal.note) noteField.value = goal.note;
 
         updateUI(goal.saved_amount, goal.target_amount);
     }
@@ -199,7 +204,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!goal || goal <= 0) {
                 goalMsg.textContent = "Enter a valid goal.";
-                goalMsg.style.color = "red";
+                goalMsg.className = "inline-msg error";
+                return;
+            }
+
+            // $1,000,000 hard cap
+            if (goal > MAX_GOAL) {
+                goalMsg.textContent = "Goal cannot exceed $1,000,000.";
+                goalMsg.className = "inline-msg error";
                 return;
             }
 
@@ -209,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     async () => {
                         await saveGoal(goal);
                         goalMsg.textContent = "Goal set.";
-                        goalMsg.style.color = "orange";
+                        goalMsg.className = "inline-msg success";
                     }
                 );
                 return;
@@ -239,19 +251,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!contribution || contribution <= 0) {
                 contributionMsg.textContent = "Enter a valid contribution.";
-                contributionMsg.style.color = "red";
+                contributionMsg.className = "inline-msg error";
                 return;
             }
 
             if (!currentGoalId) {
                 contributionMsg.textContent = "Please set a goal first.";
-                contributionMsg.style.color = "red";
+                contributionMsg.className = "inline-msg error";
                 return;
             }
 
             if (contribution > savedGoal) {
                 contributionMsg.textContent = "Cannot exceed goal amount.";
-                contributionMsg.style.color = "red";
+                contributionMsg.className = "inline-msg error";
                 return;
             }
 
@@ -261,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     async () => {
                         await saveContribution(contribution);
                         contributionMsg.textContent = "Contribution added.";
-                        contributionMsg.style.color = "orange";
+                        contributionMsg.className = "inline-msg success";
                     }
                 );
                 return;
@@ -292,11 +304,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 "Are you sure you want to reset your travel goal? This action cannot be undone.",
                 async () => {
                     await fetch("/travel_goal/reset", { method: "POST" });
+                    if (noteField) noteField.value = "";
                     loadTravelGoal();
                     loadHomeTravelBar();
                     showNotification("Travel goal has been reset.", "info");
                 }
             );
+        });
+    }
+
+
+    /* save note */
+
+    if (saveNoteBtn) {
+        saveNoteBtn.addEventListener("click", async () => {
+            if (!currentGoalId) {
+                noteMsg.textContent = "Please set a goal first.";
+                noteMsg.className = "inline-msg error";
+                return;
+            }
+
+            const note = noteField.value.trim();
+
+            await fetch("/travel_goal/note", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ id: currentGoalId, note: note })
+            });
+
+            noteMsg.textContent = "Note saved!";
+            noteMsg.className = "inline-msg success";
+            setTimeout(() => { noteMsg.textContent = ""; noteMsg.className = "inline-msg"; }, 3000);
         });
     }
 
@@ -319,8 +357,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function setCategoryLimit() {
     const category = document.getElementById("limitCategory")?.value;
-    const limit = parseFloat(document.getElementById("categoryLimit")?.value);
-    const msg = document.getElementById("limitMessage");
+    const limit    = parseFloat(document.getElementById("categoryLimit")?.value);
+    const msg      = document.getElementById("limitMessage");
 
     if (!category || !limit) {
         msg.textContent = "Please select a category and enter a limit.";
@@ -334,7 +372,6 @@ async function setCategoryLimit() {
         return;
     }
 
-    // $10,000 hard cap
     if (limit > MAX_AMOUNT) {
         msg.textContent = "Limit cannot exceed $10,000.";
         msg.style.color = "red";
@@ -368,7 +405,7 @@ async function saveCategoryLimit(category, limit) {
 /* load category rows */
 
 async function loadCategories() {
-    const res = await fetch("/limits");
+    const res  = await fetch("/limits");
     const data = await res.json();
 
     const list = document.getElementById("categoryTable");
@@ -382,16 +419,12 @@ async function loadCategories() {
     }
 
     data.forEach(c => {
-        const spent = c.limit_amount - c.remaining;
+        const spent   = c.limit_amount - c.remaining;
         const pctUsed = c.limit_amount > 0 ? (spent / c.limit_amount) * 100 : 0;
 
-        // Colour the remaining column based on usage
         let remainingClass = "remaining-ok";
-        if (c.remaining < 0) {
-            remainingClass = "remaining-danger";
-        } else if (pctUsed >= 80) {
-            remainingClass = "remaining-warn";
-        }
+        if (c.remaining < 0)   remainingClass = "remaining-danger";
+        else if (pctUsed >= 80) remainingClass = "remaining-warn";
 
         list.innerHTML += `
             <li>
@@ -408,7 +441,7 @@ async function loadCategories() {
 /* load purchase rows */
 
 async function loadRecentPurchases() {
-    const res = await fetch("/recent_purchases");
+    const res  = await fetch("/recent_purchases");
     const data = await res.json();
 
     const list = document.getElementById("recentPurchases");
@@ -437,8 +470,8 @@ async function loadRecentPurchases() {
 
 async function addPurchase() {
     const category = document.getElementById("purchaseCategory").value.toLowerCase();
-    const amount = parseFloat(document.getElementById("purchaseAmount").value);
-    const msg = document.getElementById("purchaseMessage");
+    const amount   = parseFloat(document.getElementById("purchaseAmount").value);
+    const msg      = document.getElementById("purchaseMessage");
 
     if (!category || !amount) {
         msg.textContent = "Please select a category and enter an amount.";
@@ -452,14 +485,13 @@ async function addPurchase() {
         return;
     }
 
-    // $10,000 hard cap
     if (amount > MAX_AMOUNT) {
         msg.textContent = "Purchase cannot exceed $10,000.";
         msg.style.color = "red";
         return;
     }
 
-    const res = await fetch("/purchase", {
+    const res  = await fetch("/purchase", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({ category: category, amount: amount })
@@ -507,9 +539,9 @@ async function addPurchase() {
 /* budget to travel transfer */
 
 async function transferToTravel() {
-    const msg = document.getElementById("transferMessage");
+    const msg      = document.getElementById("transferMessage");
     const resCheck = await fetch("/limits");
-    const limits = await resCheck.json();
+    const limits   = await resCheck.json();
 
     let totalRemaining = 0;
     limits.forEach(l => { totalRemaining += l.remaining; });
@@ -521,7 +553,7 @@ async function transferToTravel() {
     }
 
     const resGoal = await fetch("/travel_goals");
-    const goals = await resGoal.json();
+    const goals   = await resGoal.json();
 
     if (goals.length === 0) {
         msg.textContent = "Please set a travel goal first.";
@@ -529,9 +561,9 @@ async function transferToTravel() {
         return;
     }
 
-    const goal = goals[0];
+    const goal   = goals[0];
     const target = goal.target_amount;
-    const saved = goal.saved_amount;
+    const saved  = goal.saved_amount;
 
     if (saved + totalRemaining > target) {
         showConfirm(
@@ -550,7 +582,7 @@ async function transferToTravel() {
 }
 
 async function executeTransfer(msg) {
-    const res = await fetch("/transfer_to_travel", { method: "POST" });
+    const res  = await fetch("/transfer_to_travel", { method: "POST" });
     const data = await res.json();
 
     if (data.error) {
@@ -564,7 +596,7 @@ async function executeTransfer(msg) {
     msg.style.color = "green";
 
     const resGoalAfter = await fetch("/travel_goals");
-    const goalsAfter = await resGoalAfter.json();
+    const goalsAfter   = await resGoalAfter.json();
 
     if (goalsAfter.length > 0) {
         const goalAfter = goalsAfter[0];
@@ -587,21 +619,21 @@ function updateUI(saved, goal) {
     const percent   = goal > 0 ? Math.min((saved / goal) * 100, 100) : 0;
     const remaining = goal > 0 ? Math.max(goal - saved, 0) : 0;
 
-    const progressBar    = document.getElementById("travelProgress");
-    const percentText    = document.getElementById("travelPercent");
-    const savedText      = document.getElementById("goalSaved");
-    const leftText       = document.getElementById("goalLeft");
+    const progressBar      = document.getElementById("travelProgress");
+    const percentText      = document.getElementById("travelPercent");
+    const savedText        = document.getElementById("goalSaved");
+    const leftText         = document.getElementById("goalLeft");
     const remainingBarText = document.getElementById("goalRemainingText");
-    const summary        = document.getElementById("goalSummary");
-    const celebrate      = document.getElementById("goalCelebrate");
-    const goalText       = document.getElementById("goalTarget");
+    const summary          = document.getElementById("goalSummary");
+    const celebrate        = document.getElementById("goalCelebrate");
+    const goalText         = document.getElementById("goalTarget");
 
-    if (progressBar)     progressBar.style.width = percent + "%";
-    if (percentText)     percentText.textContent = percent.toFixed(1) + "%";
-    if (savedText)       savedText.textContent = "$" + saved.toFixed(0);
-    if (leftText)        leftText.textContent = "$" + remaining.toFixed(0);
+    if (progressBar)      progressBar.style.width = percent + "%";
+    if (percentText)      percentText.textContent = percent.toFixed(1) + "%";
+    if (savedText)        savedText.textContent = "$" + saved.toFixed(0);
+    if (leftText)         leftText.textContent = "$" + remaining.toFixed(0);
     if (remainingBarText) remainingBarText.textContent = "$" + remaining.toFixed(0) + " left";
-    if (goalText)        goalText.textContent = "$" + goal.toFixed(0);
+    if (goalText)         goalText.textContent = "$" + goal.toFixed(0);
 
     if (summary) {
         summary.textContent = `Saved: $${saved.toFixed(2)} / $${goal.toFixed(2)} (${percent.toFixed(1)}%)`;
