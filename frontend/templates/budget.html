@@ -251,8 +251,11 @@ button:hover { transform:scale(1.05); }
   <div class="flex-row" style="align-items:stretch;">
 
     <section class="section flex-item" style="display:flex; flex-direction:column;">
-      <h2>Category Overview</h2>
-      <div class="table-header">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <h2 style="margin-bottom:0;">Category Overview</h2>
+      <button onclick="clearCategories()" style="width:auto; padding:6px 14px; font-size:0.8em; background:hsl(0,70%,50%); border-radius:999px;">Clear All</button>
+    </div>
+    <div class="table-header">  
         <span>Category</span>
         <span>Limit</span>
         <span>Spent</span>
