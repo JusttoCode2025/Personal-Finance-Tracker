@@ -25,6 +25,7 @@
   --link-hover:hsl(0,0%,0%);
   --success: hsl(120, 45%, 38%);
   --danger: hsl(0, 65%, 48%);
+  --warning: hsl(38, 95%, 45%);
 }
 
 *{box-sizing:border-box;margin:0;padding:0;font-family:var(--font-sans);}
@@ -43,61 +44,89 @@ button{cursor:pointer;}
 .section{background:var(--card);padding:25px;border-radius:var(--radius);box-shadow:var(--shadow-sm);margin-bottom:20px;transition:transform 0.3s;}
 .section:hover{transform:translateY(-3px);}
 
-h1,h2{font-family:var(--font-heading);}
+h1,h2,h3{font-family:var(--font-heading);}
 h1{font-size:2em;margin-bottom:10px;text-align:center;}
 h2{font-size:1.2em;margin-bottom:15px;}
+h3{font-size:0.95em;font-weight:600;margin-bottom:6px;}
 
 .flex-row{display:flex;gap:20px;flex-wrap:wrap;}
 .flex-item{flex:1;min-width:280px;}
 
+/* Month selector */
+.month-row {
+  display:flex;
+  justify-content:flex-end;
+  margin-bottom:16px;
+}
+.month-select {
+  padding:8px 14px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  font-size:0.88em;
+  background:var(--muted);
+  color:var(--foreground);
+  cursor:pointer;
+  width:auto;
+}
+
+/* Insight cards */
+.insight-row {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-bottom:16px;
+}
+.insight-card {
+  background:var(--muted);
+  border-radius:14px;
+  padding:14px 16px;
+}
+.insight-card.warn { background:hsl(38,95%,94%); }
+.insight-label {
+  font-size:0.72em;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:0.05em;
+  color:var(--muted-foreground);
+  margin-bottom:6px;
+}
+.insight-card.warn .insight-label { color:hsl(38,70%,35%); }
+.insight-value {
+  font-size:1.1em;
+  font-weight:600;
+  color:var(--foreground);
+}
+.insight-card.warn .insight-value { color:hsl(38,80%,30%); }
+.insight-sub {
+  font-size:0.8em;
+  color:var(--muted-foreground);
+  margin-top:3px;
+}
+.insight-card.warn .insight-sub { color:hsl(38,60%,40%); }
+
 /* Stat cards */
 .stat-cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 16px;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  margin-bottom:16px;
 }
-.stat-card {
-  background: var(--muted);
-  border-radius: 14px;
-  padding: 14px 16px;
-}
-.stat-card .stat-label {
-  font-size: 0.75em;
-  color: var(--muted-foreground);
-  margin-bottom: 4px;
-}
-.stat-card .stat-value {
-  font-size: 1.2em;
-  font-weight: 600;
-  color: var(--foreground);
-}
-.stat-card .stat-value.positive { color: var(--success); }
-.stat-card .stat-value.negative { color: var(--danger); }
+.stat-card { background:var(--muted); border-radius:14px; padding:14px 16px; }
+.stat-card .stat-label { font-size:0.75em; color:var(--muted-foreground); margin-bottom:4px; }
+.stat-card .stat-value { font-size:1.2em; font-weight:600; color:var(--foreground); }
+.stat-card .stat-value.positive { color:var(--success); }
+.stat-card .stat-value.negative { color:var(--danger); }
 
 /* Progress bar */
 .progress-bar-wrapper {
-  width: 100%;
-  height: 10px;
-  background: var(--muted);
-  border-radius: 999px;
-  overflow: hidden;
-  margin-bottom: 8px;
+  width:100%; height:10px; background:var(--muted);
+  border-radius:999px; overflow:hidden; margin-bottom:8px;
 }
 .progress-bar-fill {
-  height: 100%;
-  width: 0%;
-  background: var(--primary);
-  border-radius: 999px;
-  transition: width 0.5s ease;
+  height:100%; width:0%; background:var(--primary);
+  border-radius:999px; transition:width 0.5s ease;
 }
-.progress-hint {
-  font-size: 0.8em;
-  color: var(--muted-foreground);
-}
-
-.expenses-list{list-style:none;}
-.expenses-list li{padding:10px;border-radius:var(--radius);background:var(--muted);margin-bottom:5px;}
+.progress-hint { font-size:0.8em; color:var(--muted-foreground); }
 </style>
 </head>
 <body>
@@ -123,6 +152,27 @@ h2{font-size:1.2em;margin-bottom:15px;}
   <div class="section">
     <h1>Dashboard</h1>
     <p style="text-align:center; color:var(--muted-foreground);">Monitor, track, and analyze your spending habits to optimize budget performance.</p>
+  </div>
+
+  <!-- Month selector -->
+  <div class="month-row">
+    <select class="month-select" id="monthSelector">
+      <option value="">This Month</option>
+    </select>
+  </div>
+
+  <!-- Insight cards -->
+  <div class="insight-row">
+    <div class="insight-card" id="biggestExpenseCard">
+      <div class="insight-label">Biggest Expense This Month</div>
+      <div class="insight-value" id="biggestExpenseValue">—</div>
+      <div class="insight-sub" id="biggestExpenseSub"></div>
+    </div>
+    <div class="insight-card warn" id="closestLimitCard">
+      <div class="insight-label">Closest to Limit</div>
+      <div class="insight-value" id="closestLimitValue">—</div>
+      <div class="insight-sub" id="closestLimitSub"></div>
+    </div>
   </div>
 
   <!-- Monthly Budget -->
@@ -173,15 +223,55 @@ const CHART_COLORS = [
   '#59a14f', '#edc948', '#b07aa1', '#ff9da7'
 ];
 
-async function loadDashboard() {
-  const response = await fetch("/dashboard_data");
+let pieChartInstance   = null;
+let barChartInstance   = null;
+let lineChartInstance  = null;
+
+async function loadDashboard(month = "") {
+  const url = month ? `/dashboard_data?month=${month}` : "/dashboard_data";
+  const response = await fetch(url);
   const data = await response.json();
   const totalSpent = data.total_spent;
 
+  // Populate month selector
+  const selector = document.getElementById("monthSelector");
+  if (selector.options.length <= 1 && data.available_months) {
+    data.available_months.forEach(m => {
+      const opt = document.createElement("option");
+      opt.value = m;
+      opt.textContent = m;
+      if (m === month) opt.selected = true;
+      selector.appendChild(opt);
+    });
+  }
+
+  // Biggest expense
+  const biggestVal = document.getElementById("biggestExpenseValue");
+  const biggestSub = document.getElementById("biggestExpenseSub");
+  if (data.biggest_expense) {
+    biggestVal.textContent = `$${data.biggest_expense.amount.toFixed(2)}`;
+    biggestSub.textContent = `${data.biggest_expense.category} — ${new Date(data.biggest_expense.date).toLocaleDateString()}`;
+  } else {
+    biggestVal.textContent = "No purchases yet";
+    biggestSub.textContent = "";
+  }
+
+  // Closest to limit
+  const closestVal = document.getElementById("closestLimitValue");
+  const closestSub = document.getElementById("closestLimitSub");
+  if (data.closest_to_limit) {
+    const c = data.closest_to_limit;
+    closestVal.textContent = `${c.category} — ${c.pct_used}% used`;
+    closestSub.textContent = `$${c.remaining.toFixed(2)} remaining of $${c.limit_amount.toFixed(2)}`;
+  } else {
+    closestVal.textContent = "No limits set";
+    closestSub.textContent = "";
+  }
+
+  // Budget stats
   const limitsRes = await fetch("/limits");
   const limitsData = await limitsRes.json();
   const totalLimit = limitsData.reduce((sum, l) => sum + l.limit_amount, 0);
-
   const limitMap = {};
   limitsData.forEach(l => { limitMap[l.category] = l.limit_amount; });
 
@@ -194,14 +284,12 @@ async function loadDashboard() {
   if (totalLimit > 0) {
     const remaining   = totalLimit - totalSpent;
     const percentUsed = (totalSpent / totalLimit) * 100;
-
     statIncome.textContent    = '$' + totalLimit.toFixed(2);
     statSpent.textContent     = '$' + totalSpent.toFixed(2);
     statRemaining.textContent = '$' + remaining.toFixed(2);
     statRemaining.className   = 'stat-value ' + (remaining >= 0 ? 'positive' : 'negative');
-
-    progressBar.style.width = Math.min(percentUsed, 100) + '%';
-    summaryText.textContent = percentUsed > 100
+    progressBar.style.width   = Math.min(percentUsed, 100) + '%';
+    summaryText.textContent   = percentUsed > 100
       ? `Over budget by $${Math.abs(remaining).toFixed(2)}`
       : `${percentUsed.toFixed(1)}% of total budget used this month`;
   } else {
@@ -209,20 +297,20 @@ async function loadDashboard() {
     summaryText.textContent = 'Set category limits on the Budget page to see usage.';
   }
 
-  // Pie Chart
+  // Charts — destroy before redraw
+  if (pieChartInstance)  pieChartInstance.destroy();
+  if (barChartInstance)  barChartInstance.destroy();
+  if (lineChartInstance) lineChartInstance.destroy();
+
   const categoryLabels = data.categories.map(c => c.category);
   const categoryValues = data.categories.map(c => c.total);
   const chartColors    = categoryLabels.map((_, i) => CHART_COLORS[i % CHART_COLORS.length]);
 
-  new Chart(document.getElementById("pieChart"), {
+  pieChartInstance = new Chart(document.getElementById("pieChart"), {
     type: 'pie',
     data: {
       labels: categoryLabels,
-      datasets: [{
-        data: categoryValues,
-        backgroundColor: chartColors,
-        borderWidth: 1
-      }]
+      datasets: [{ data: categoryValues, backgroundColor: chartColors, borderWidth: 1 }]
     },
     options: {
       responsive: true,
@@ -231,44 +319,28 @@ async function loadDashboard() {
     }
   });
 
-  // Bar Chart with budget limit line
   const limitValues = categoryLabels.map(cat => limitMap[cat.toLowerCase()] || 0);
 
-  new Chart(document.getElementById("barChart"), {
+  barChartInstance = new Chart(document.getElementById("barChart"), {
     type: 'bar',
     data: {
       labels: categoryLabels,
       datasets: [
+        { label: 'Actual Spending', data: categoryValues, backgroundColor: chartColors },
         {
-          label: 'Actual Spending',
-          data: categoryValues,
-          backgroundColor: chartColors,
-        },
-        {
-          label: 'Budget Limit',
-          data: limitValues,
-          type: 'line',
-          borderColor: '#e15759',
-          borderWidth: 2,
-          borderDash: [6, 4],
-          pointRadius: 4,
-          pointBackgroundColor: '#e15759',
-          fill: false,
-          tension: 0
+          label: 'Budget Limit', data: limitValues, type: 'line',
+          borderColor: '#e15759', borderWidth: 2, borderDash: [6, 4],
+          pointRadius: 4, pointBackgroundColor: '#e15759', fill: false, tension: 0
         }
       ]
     },
-    options: {
-      animation: { duration: 800 },
-      scales: { y: { beginAtZero: true } }
-    }
+    options: { animation: { duration: 800 }, scales: { y: { beginAtZero: true } } }
   });
 
-  // Line Chart — curved, last 30 days
   const monthlyLabels = data.monthly.map(m => m.month);
   const monthlyValues = data.monthly.map(m => m.total);
 
-  new Chart(document.getElementById("lineChart"), {
+  lineChartInstance = new Chart(document.getElementById("lineChart"), {
     type: 'line',
     data: {
       labels: monthlyLabels,
@@ -277,20 +349,18 @@ async function loadDashboard() {
         data: monthlyValues,
         borderColor: '#4e79a7',
         backgroundColor: 'rgba(78,121,167,0.1)',
-        fill: true,
-        tension: 0.4,
-        pointRadius: 4,
-        pointBackgroundColor: '#4e79a7'
+        fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#4e79a7'
       }]
     },
-    options: {
-      animation: { duration: 800 },
-      scales: { y: { beginAtZero: true } }
-    }
+    options: { animation: { duration: 800 }, scales: { y: { beginAtZero: true } } }
   });
 }
 
 loadDashboard();
+
+document.getElementById("monthSelector").addEventListener("change", function() {
+  loadDashboard(this.value);
+});
 
 const storedUser = JSON.parse(localStorage.getItem('loggedInUser')) || JSON.parse(sessionStorage.getItem('loggedInUser'));
 if (!storedUser) window.location.href = '/login';
