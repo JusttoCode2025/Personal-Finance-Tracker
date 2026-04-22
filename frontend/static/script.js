@@ -134,16 +134,16 @@ document.addEventListener('DOMContentLoaded', () => {
     /* home travel bar */
 
     async function loadHomeTravelBar() {
-        const res = await fetch("/travel_goals");
+        const res  = await fetch("/travel_goals");
         const data = await res.json();
 
-        if (data.length === 0) { updateUI(0, 0); return; }
+        if (data.length === 0) { updateUI(0, 0, null); return; }
 
-        const goal = data[0];
-        const homeSaved  = goal.saved_amount;
-        const homeGoal   = goal.target_amount;
-        const percent    = homeGoal > 0 ? Math.min((homeSaved / homeGoal) * 100, 100) : 0;
-        const remaining  = Math.max(homeGoal - homeSaved, 0);
+        const goal      = data[0];
+        const homeSaved = goal.saved_amount;
+        const homeGoal  = goal.target_amount;
+        const percent   = homeGoal > 0 ? Math.min((homeSaved / homeGoal) * 100, 100) : 0;
+        const remaining = Math.max(homeGoal - homeSaved, 0);
 
         const homeBar           = document.getElementById("homeTravelProgress");
         const homePercent       = document.getElementById("homeTravelPercent");
@@ -169,10 +169,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const setBtn            = document.getElementById("setGoalBtn");
     const resetBtn          = document.getElementById("resetGoal");
     const saveNoteBtn       = document.getElementById("saveNoteBtn");
+    const saveDateBtn       = document.getElementById("saveDateBtn");
     const goalMsg           = document.getElementById("goalMessage");
     const contributionMsg   = document.getElementById("contributionMessage");
     const noteMsg           = document.getElementById("noteMessage");
+    const dateMsg           = document.getElementById("dateMessage");
     const noteField         = document.getElementById("goalNote");
+    const dateField         = document.getElementById("targetDate");
 
     let currentGoalId = null;
     let savedGoal     = 0;
@@ -181,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const res  = await fetch("/travel_goals");
         const data = await res.json();
 
-        if (data.length === 0) { currentGoalId = null; updateUI(0, 0); return; }
+        if (data.length === 0) { currentGoalId = null; updateUI(0, 0, null); return; }
 
         const goal    = data[0];
         currentGoalId = goal.id;
@@ -189,8 +192,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (goalInput)  goalInput.value = savedGoal;
         if (noteField && goal.note) noteField.value = goal.note;
+        if (dateField && goal.target_date) dateField.value = goal.target_date;
 
-        updateUI(goal.saved_amount, goal.target_amount);
+        updateUI(goal.saved_amount, goal.target_amount, goal.target_date);
     }
 
     if (goalInput) loadTravelGoal();
@@ -208,7 +212,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // $1,000,000 hard cap
             if (goal > MAX_GOAL) {
                 goalMsg.textContent = "Goal cannot exceed $1,000,000.";
                 goalMsg.className = "inline-msg error";
@@ -233,10 +236,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function saveGoal(goal) {
         goalMsg.textContent = "";
+        const targetDate = dateField ? dateField.value || null : null;
         await fetch("/travel_goal", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ destination: "My Trip", target_amount: goal })
+            body: JSON.stringify({ destination: "My Trip", target_amount: goal, target_date: targetDate })
         });
         loadTravelGoal();
         loadHomeTravelBar();
@@ -305,6 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 async () => {
                     await fetch("/travel_goal/reset", { method: "POST" });
                     if (noteField) noteField.value = "";
+                    if (dateField) dateField.value = "";
                     loadTravelGoal();
                     loadHomeTravelBar();
                     showNotification("Travel goal has been reset.", "info");
@@ -323,18 +328,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 noteMsg.className = "inline-msg error";
                 return;
             }
-
             const note = noteField.value.trim();
-
             await fetch("/travel_goal/note", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({ id: currentGoalId, note: note })
             });
-
             noteMsg.textContent = "Note saved!";
             noteMsg.className = "inline-msg success";
             setTimeout(() => { noteMsg.textContent = ""; noteMsg.className = "inline-msg"; }, 3000);
+        });
+    }
+
+
+    /* save target date */
+
+    if (saveDateBtn) {
+        saveDateBtn.addEventListener("click", async () => {
+            if (!currentGoalId) {
+                dateMsg.textContent = "Please set a goal first.";
+                dateMsg.className = "inline-msg error";
+                return;
+            }
+            const targetDate = dateField.value || null;
+            await fetch("/travel_goal/date", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ id: currentGoalId, target_date: targetDate })
+            });
+            dateMsg.textContent = "Date saved!";
+            dateMsg.className = "inline-msg success";
+            setTimeout(() => { dateMsg.textContent = ""; dateMsg.className = "inline-msg"; }, 3000);
+            loadTravelGoal();
         });
     }
 
@@ -351,6 +376,39 @@ document.addEventListener('DOMContentLoaded', () => {
     if (recentList) loadRecentPurchases();
 
 }); // end DOMContentLoaded
+
+
+/* edit category — pre-fills the form */
+
+function editCategory(category, currentLimit) {
+    const catSelect = document.getElementById("limitCategory");
+    const catInput  = document.getElementById("categoryLimit");
+    if (catSelect) {
+        for (let i = 0; i < catSelect.options.length; i++) {
+            if (catSelect.options[i].value.toLowerCase() === category.toLowerCase()) {
+                catSelect.selectedIndex = i;
+                break;
+            }
+        }
+    }
+    if (catInput) catInput.value = currentLimit;
+    catSelect.scrollIntoView({ behavior: "smooth" });
+}
+
+
+/* delete category */
+
+async function deleteCategory(category) {
+    showConfirm(
+        `Delete the "${category}" category and all its purchases? This cannot be undone.`,
+        async () => {
+            await fetch(`/limit/${encodeURIComponent(category)}`, { method: "DELETE" });
+            loadCategories();
+            loadRecentPurchases();
+            showNotification(`"${category}" category deleted.`, "info");
+        }
+    );
+}
 
 
 /* limit */
@@ -423,15 +481,19 @@ async function loadCategories() {
         const pctUsed = c.limit_amount > 0 ? (spent / c.limit_amount) * 100 : 0;
 
         let remainingClass = "remaining-ok";
-        if (c.remaining < 0)   remainingClass = "remaining-danger";
+        if (c.remaining < 0)    remainingClass = "remaining-danger";
         else if (pctUsed >= 80) remainingClass = "remaining-warn";
 
         list.innerHTML += `
             <li>
                 <strong>${c.category}</strong>
                 <span>$${c.limit_amount}</span>
-                <span>$${spent}</span>
-                <span class="${remainingClass}">$${c.remaining}</span>
+                <span>$${spent.toFixed(2)}</span>
+                <span class="${remainingClass}">$${c.remaining.toFixed(2)}</span>
+                <div class="row-actions">
+                    <button class="row-btn edit" onclick="editCategory('${c.category}', ${c.limit_amount})">Edit</button>
+                    <button class="row-btn delete" onclick="deleteCategory('${c.category}')">Delete</button>
+                </div>
             </li>
         `;
     });
@@ -576,9 +638,6 @@ async function transferToTravel() {
             async () => { await executeTransfer(msg); }
         );
     }
-
-    loadTravelGoal();
-    loadCategories();
 }
 
 async function executeTransfer(msg) {
@@ -615,7 +674,7 @@ async function executeTransfer(msg) {
 
 /* travel bar */
 
-function updateUI(saved, goal) {
+function updateUI(saved, goal, targetDate) {
     const percent   = goal > 0 ? Math.min((saved / goal) * 100, 100) : 0;
     const remaining = goal > 0 ? Math.max(goal - saved, 0) : 0;
 
@@ -627,6 +686,9 @@ function updateUI(saved, goal) {
     const summary          = document.getElementById("goalSummary");
     const celebrate        = document.getElementById("goalCelebrate");
     const goalText         = document.getElementById("goalTarget");
+    const dateInsightRow   = document.getElementById("dateInsightRow");
+    const daysLeftEl       = document.getElementById("daysLeft");
+    const dailyTargetEl    = document.getElementById("dailySavingsTarget");
 
     if (progressBar)      progressBar.style.width = percent + "%";
     if (percentText)      percentText.textContent = percent.toFixed(1) + "%";
@@ -637,6 +699,22 @@ function updateUI(saved, goal) {
 
     if (summary) {
         summary.textContent = `Saved: $${saved.toFixed(2)} / $${goal.toFixed(2)} (${percent.toFixed(1)}%)`;
+    }
+
+    // Days left  and daily savings target
+    if (targetDate && goal > 0 && dateInsightRow) {
+        const today   = new Date();
+        const endDate = new Date(targetDate);
+        const diffMs  = endDate - today;
+        const daysLeft = Math.max(Math.ceil(diffMs / (1000 * 60 * 60 * 24)), 0);
+        const amountLeft = Math.max(goal - saved, 0);
+        const dailyTarget = daysLeft > 0 ? amountLeft / daysLeft : amountLeft;
+
+        dateInsightRow.style.display = "grid";
+        if (daysLeftEl)    daysLeftEl.textContent = daysLeft > 0 ? `${daysLeft} days` : "Date passed";
+        if (dailyTargetEl) dailyTargetEl.textContent = daysLeft > 0 ? `$${dailyTarget.toFixed(2)} / day` : "—";
+    } else if (dateInsightRow) {
+        dateInsightRow.style.display = "none";
     }
 
     if (celebrate) {
