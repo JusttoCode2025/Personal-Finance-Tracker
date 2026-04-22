@@ -282,6 +282,13 @@ def dashboard_data():
         "categories": categories,
         "monthly": monthly
     })
+# reset
+@app.route('/reset_categories', methods=['POST'])
+def reset_categories():
+    db.session.query(Limit).delete()
+    db.session.query(Purchase).delete()
+    db.session.commit()
+    return jsonify({'success': True})
 
 
 #travel goal
