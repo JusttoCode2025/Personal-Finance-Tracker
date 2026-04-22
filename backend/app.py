@@ -136,12 +136,17 @@ def set_limit():
     if row:
         old_limit = float(row[2])
         old_remaining = float(row[1])
-        # Adjust remaining proportionally when editing
         spent = old_limit - old_remaining
-        new_remaining = max(limit_amount - spent, 0)
+
+        # Block if new limit is lower than already spent
+        if limit_amount < spent:
+            cursor.close()
+            conn.close()
+            return jsonify({"error": f"Cannot set limit below amount already spent (${spent:.2f})"}), 400
+
         cursor.execute(
             "UPDATE spending_limits SET limit_amount=%s, remaining=%s WHERE id=%s",
-            (limit_amount, new_remaining, row[0])
+            (limit_amount, limit_amount - spent, row[0])
         )
     else:
         cursor.execute(
@@ -156,7 +161,7 @@ def set_limit():
     return jsonify({"message": f"Limit set for '{category}'", "limit_amount": limit_amount}), 200
 
 
-# Delete a category limit and its purchases
+# Delete category limit only — purchases kept for history
 @app.route("/limit/<category>", methods=["DELETE"])
 def delete_limit(category):
     category = category.strip().lower()
@@ -164,7 +169,6 @@ def delete_limit(category):
     cursor = conn.cursor()
 
     cursor.execute("DELETE FROM spending_limits WHERE category=%s", (category,))
-    cursor.execute("DELETE FROM purchases WHERE category=%s", (category,))
 
     conn.commit()
     cursor.close()
@@ -238,7 +242,6 @@ def dashboard_data():
     conn = db_connection()
     cursor = conn.cursor()
 
-    # Accept optional month param e.g. ?month=2026-03
     month_param = request.args.get("month")
 
     if month_param:
@@ -250,11 +253,9 @@ def dashboard_data():
     else:
         month_filter = "DATE_TRUNC('month', date) = DATE_TRUNC('month', CURRENT_DATE)"
 
-    # Total spent for selected month
     cursor.execute(f"SELECT COALESCE(SUM(amount), 0) FROM purchases WHERE {month_filter}")
     total_spent = float(cursor.fetchone()[0])
 
-    # Biggest single purchase this month
     cursor.execute(f"""
         SELECT category, amount, date FROM purchases
         WHERE {month_filter}
@@ -267,7 +268,6 @@ def dashboard_data():
         "date": str(biggest_row[2])
     } if biggest_row else None
 
-    # Spending by category for selected month
     cursor.execute(f"""
         SELECT category, SUM(amount)
         FROM purchases
@@ -277,7 +277,6 @@ def dashboard_data():
     category_rows = cursor.fetchall()
     categories = [{"category": r[0], "total": float(r[1])} for r in category_rows]
 
-    # Last 30 days daily spending
     cursor.execute("""
         SELECT TO_CHAR(date, 'YYYY-MM-DD') as day, SUM(amount)
         FROM purchases
@@ -288,7 +287,6 @@ def dashboard_data():
     monthly_rows = cursor.fetchall()
     monthly = [{"month": r[0], "total": float(r[1])} for r in monthly_rows]
 
-    # Available months for selector
     cursor.execute("""
         SELECT DISTINCT TO_CHAR(date, 'YYYY-MM') as month
         FROM purchases
@@ -296,7 +294,6 @@ def dashboard_data():
     """)
     available_months = [r[0] for r in cursor.fetchall()]
 
-    # Category closest to limit (highest pct used, not yet over)
     cursor.execute("""
         SELECT s.category, s.limit_amount, s.remaining
         FROM spending_limits s
@@ -477,6 +474,71 @@ def transfer_to_travel():
     conn.close()
 
     return jsonify({"message": f"${total_remaining:.2f} transferred to travel goal"}), 200
+
+
+# Seed realistic test data — REMOVE AFTER USE
+@app.route("/seed_data")
+def seed_data():
+    conn = db_connection()
+    cursor = conn.cursor()
+    test_data = [
+        # January 2026
+        ("rent",           1500, "2026-01-01"),
+        ("groceries",       120, "2026-01-04"),
+        ("utilities",        85, "2026-01-06"),
+        ("groceries",        95, "2026-01-11"),
+        ("transportation",   45, "2026-01-13"),
+        ("entertainment",    60, "2026-01-15"),
+        ("groceries",       110, "2026-01-19"),
+        ("transportation",   30, "2026-01-22"),
+        ("entertainment",    35, "2026-01-25"),
+        ("other",            50, "2026-01-28"),
+
+        # February 2026
+        ("rent",           1500, "2026-02-01"),
+        ("utilities",        92, "2026-02-03"),
+        ("groceries",       130, "2026-02-06"),
+        ("entertainment",    75, "2026-02-08"),
+        ("groceries",        88, "2026-02-12"),
+        ("transportation",   55, "2026-02-14"),
+        ("other",            40, "2026-02-17"),
+        ("groceries",       100, "2026-02-20"),
+        ("entertainment",    50, "2026-02-22"),
+        ("transportation",   25, "2026-02-26"),
+
+        # March 2026
+        ("rent",           1500, "2026-03-01"),
+        ("utilities",        78, "2026-03-03"),
+        ("groceries",       145, "2026-03-05"),
+        ("transportation",   60, "2026-03-08"),
+        ("entertainment",    90, "2026-03-10"),
+        ("groceries",       115, "2026-03-14"),
+        ("other",            65, "2026-03-16"),
+        ("groceries",        80, "2026-03-20"),
+        ("transportation",   40, "2026-03-23"),
+        ("entertainment",    55, "2026-03-27"),
+
+        # April 2026
+        ("rent",           1500, "2026-04-01"),
+        ("utilities",        88, "2026-04-02"),
+        ("groceries",       125, "2026-04-04"),
+        ("transportation",   50, "2026-04-07"),
+        ("groceries",        95, "2026-04-10"),
+        ("entertainment",    70, "2026-04-12"),
+        ("other",            30, "2026-04-15"),
+        ("groceries",       105, "2026-04-18"),
+        ("transportation",   35, "2026-04-20"),
+        ("entertainment",    45, "2026-04-22"),
+    ]
+    for category, amount, date in test_data:
+        cursor.execute(
+            "INSERT INTO purchases (category, amount, date) VALUES (%s, %s, %s)",
+            (category, amount, date)
+        )
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return "Test data added! Remove this route before final deploy."
 
 
 if __name__ == '__main__':
