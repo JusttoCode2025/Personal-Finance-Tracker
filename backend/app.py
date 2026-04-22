@@ -538,7 +538,18 @@ def seed_data():
     conn.commit()
     cursor.close()
     conn.close()
-    return "Test data added! Remove this route before final deploy."
+    return "Test data added!"
+@app.route("/clear_db")
+def clear_db():
+    conn = db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM purchases")
+    cursor.execute("DELETE FROM spending_limits")
+    cursor.execute("DELETE FROM travel_goals")
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return "Database cleared!"
 
 
 if __name__ == '__main__':
