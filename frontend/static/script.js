@@ -502,6 +502,17 @@ async function addPurchase() {
     loadCategories();
     showNotification("Purchase added successfully!", "success");
 }
+async function clearCategories() {
+    showConfirm(
+        "This will remove all category limits and purchases. This cannot be undone.",
+        async () => {
+            await fetch('/reset_categories', { method: 'POST' });
+            loadCategories();
+            loadRecentPurchases();
+            showNotification("All categories cleared.", "info");
+        }
+    );
+}
 
 
 /* budget to travel transfer */
