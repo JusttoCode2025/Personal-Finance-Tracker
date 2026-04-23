@@ -58,7 +58,6 @@ def init_db():
     )
     """)
 
-  
     cursor.execute("SELECT COUNT(*) FROM settings")
     if cursor.fetchone()[0] == 0:
         cursor.execute("INSERT INTO settings (budget_reset_at) VALUES (NULL)")
@@ -111,7 +110,7 @@ def travel_goal():
     return render_template("travel_goal.html")
 
 
-# New month budget reset
+# New month — updates reset timestamp and resets remaining to full limits
 @app.route("/new_month", methods=["POST"])
 def new_month():
     conn = db_connection()
@@ -119,8 +118,6 @@ def new_month():
 
     now = datetime.now()
     cursor.execute("UPDATE settings SET budget_reset_at = %s", (now,))
-
-
     cursor.execute("UPDATE spending_limits SET remaining = limit_amount")
 
     conn.commit()
@@ -130,7 +127,6 @@ def new_month():
     return jsonify({"message": "New month started", "reset_at": str(now)}), 200
 
 
-# Get current reset timestamp
 @app.route("/settings")
 def get_settings():
     conn = db_connection()
@@ -160,6 +156,7 @@ def recent_purchases():
         cursor.execute("""
             SELECT category, amount, date
             FROM purchases
+            WHERE DATE_TRUNC('month', date) = DATE_TRUNC('month', CURRENT_DATE)
             ORDER BY date DESC
             LIMIT 5
         """)
@@ -265,8 +262,8 @@ def view_limits():
 
     reset_at = get_budget_reset_at(cursor)
 
-    # Calculate spent from purchases since reset
     if reset_at:
+        # Filter purchases since the last New Month reset
         cursor.execute("""
             SELECT s.category, s.limit_amount,
                    COALESCE(SUM(p.amount), 0) as spent_since_reset
@@ -276,11 +273,14 @@ def view_limits():
             GROUP BY s.category, s.limit_amount
         """, (reset_at,))
     else:
+        # No reset yet — default to current month only
         cursor.execute("""
             SELECT s.category, s.limit_amount,
                    COALESCE(SUM(p.amount), 0) as spent_since_reset
             FROM spending_limits s
-            LEFT JOIN purchases p ON p.category = s.category
+            LEFT JOIN purchases p
+                ON p.category = s.category
+                AND DATE_TRUNC('month', p.date) = DATE_TRUNC('month', CURRENT_DATE)
             GROUP BY s.category, s.limit_amount
         """)
 
@@ -537,11 +537,12 @@ def transfer_to_travel():
     return jsonify({"message": f"${total_remaining:.2f} transferred to travel goal"}), 200
 
 
-# Seed data for demonstration
+# Seed realistic test data — REMOVE AFTER USE
 @app.route("/seed_data")
 def seed_data():
     conn = db_connection()
     cursor = conn.cursor()
+
     test_data = [
         # January 2026
         ("rent",           1500, "2026-01-01"),
@@ -588,29 +589,32 @@ def seed_data():
         ("transportation",   35, "2026-04-20"),
         ("entertainment",    45, "2026-04-22"),
     ]
+
     for category, amount, date in test_data:
         cursor.execute(
             "INSERT INTO purchases (category, amount, date) VALUES (%s, %s, %s)",
             (category, amount, date)
         )
 
+    # Seed spending limits
     limits = [
-    ("rent", 1500),
-    ("groceries", 500),
-    ("utilities", 200),
-    ("transportation", 150),
-    ("entertainment", 200),
-    ("other", 250),
-]
-for category, limit in limits:
-    cursor.execute(
-        "INSERT INTO spending_limits (category, limit_amount, remaining) VALUES (%s, %s, %s) ON CONFLICT (category) DO NOTHING",
-        (category, limit, limit)
-    )
+        ("rent",           1500),
+        ("groceries",       500),
+        ("utilities",       200),
+        ("transportation",  150),
+        ("entertainment",   200),
+        ("other",           250),
+    ]
+    for category, limit in limits:
+        cursor.execute(
+            "INSERT INTO spending_limits (category, limit_amount, remaining) VALUES (%s, %s, %s) ON CONFLICT (category) DO NOTHING",
+            (category, limit, limit)
+        )
+
     conn.commit()
     cursor.close()
     conn.close()
-    return "Test data added!"
+    return "Test data added! Remove this route before final deploy."
 
 
 @app.route("/clear_db")
