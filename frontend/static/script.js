@@ -375,10 +375,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const recentList = document.getElementById("recentPurchases");
     if (recentList) loadRecentPurchases();
 
-}); // end DOMContentLoaded
+}); 
 
-
-/* edit category — pre-fills the form */
+/* edit category */
 
 function editCategory(category, currentLimit) {
     const catSelect = document.getElementById("limitCategory");
@@ -393,21 +392,6 @@ function editCategory(category, currentLimit) {
     }
     if (catInput) catInput.value = currentLimit;
     catSelect.scrollIntoView({ behavior: "smooth" });
-}
-
-
-/* delete category */
-
-async function deleteCategory(category) {
-    showConfirm(
-        `Delete the "${category}" category and all its purchases? This cannot be undone.`,
-        async () => {
-            await fetch(`/limit/${encodeURIComponent(category)}`, { method: "DELETE" });
-            loadCategories();
-            loadRecentPurchases();
-            showNotification(`"${category}" category deleted.`, "info");
-        }
-    );
 }
 
 
