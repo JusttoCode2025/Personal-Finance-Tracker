@@ -476,7 +476,6 @@ async function loadCategories() {
                 <span class="${remainingClass}">$${c.remaining.toFixed(2)}</span>
                 <div class="row-actions">
                     <button class="row-btn edit" onclick="editCategory('${c.category}', ${c.limit_amount})">Edit</button>
-                    <button class="row-btn delete" onclick="deleteCategory('${c.category}')">Delete</button>
                 </div>
             </li>
         `;
