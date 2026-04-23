@@ -130,7 +130,7 @@ def new_month():
     return jsonify({"message": "New month started", "reset_at": str(now)}), 200
 
 
-# Get current reset timestamp so frontend knows when the month started
+# Get current reset timestamp
 @app.route("/settings")
 def get_settings():
     conn = db_connection()
@@ -265,7 +265,7 @@ def view_limits():
 
     reset_at = get_budget_reset_at(cursor)
 
-    # Calculate spent dynamically from purchases since reset
+    # Calculate spent from purchases since reset
     if reset_at:
         cursor.execute("""
             SELECT s.category, s.limit_amount,
