@@ -446,8 +446,8 @@ def transfer_to_travel():
     return jsonify({
         "message": f"${total_remaining:.2f} transferred to travel goal"
     }), 200
-    @app.route("/clear_db")
     
+@app.route("/clear_db")   
 def clear_db():
     conn = db_connection()
     cursor = conn.cursor()
