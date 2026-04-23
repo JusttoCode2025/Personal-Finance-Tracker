@@ -69,42 +69,6 @@ h3{font-size:0.95em;font-weight:600;margin-bottom:6px;}
   width:auto;
 }
 
-/* Insight cards */
-.insight-row {
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
-  margin-bottom:16px;
-}
-.insight-card {
-  background:var(--muted);
-  border-radius:14px;
-  padding:14px 16px;
-}
-.insight-card.warn { background:hsl(38,95%,94%); }
-.insight-label {
-  font-size:0.72em;
-  font-weight:600;
-  text-transform:uppercase;
-  letter-spacing:0.05em;
-  color:var(--muted-foreground);
-  margin-bottom:6px;
-}
-.insight-card.warn .insight-label { color:hsl(38,70%,35%); }
-.insight-value {
-  font-size:1.1em;
-  font-weight:600;
-  color:var(--foreground);
-}
-.insight-card.warn .insight-value { color:hsl(38,80%,30%); }
-.insight-sub {
-  font-size:0.8em;
-  color:var(--muted-foreground);
-  margin-top:3px;
-}
-.insight-card.warn .insight-sub { color:hsl(38,60%,40%); }
-
-/* Stat cards */
 .stat-cards {
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -117,7 +81,7 @@ h3{font-size:0.95em;font-weight:600;margin-bottom:6px;}
 .stat-card .stat-value.positive { color:var(--success); }
 .stat-card .stat-value.negative { color:var(--danger); }
 
-/* Progress bar */
+
 .progress-bar-wrapper {
   width:100%; height:10px; background:var(--muted);
   border-radius:999px; overflow:hidden; margin-bottom:8px;
@@ -159,20 +123,6 @@ h3{font-size:0.95em;font-weight:600;margin-bottom:6px;}
     <select class="month-select" id="monthSelector">
       <option value="">This Month</option>
     </select>
-  </div>
-
-  <!-- Insight cards -->
-  <div class="insight-row">
-    <div class="insight-card" id="biggestExpenseCard">
-      <div class="insight-label">Biggest Expense This Month</div>
-      <div class="insight-value" id="biggestExpenseValue">—</div>
-      <div class="insight-sub" id="biggestExpenseSub"></div>
-    </div>
-    <div class="insight-card warn" id="closestLimitCard">
-      <div class="insight-label">Closest to Limit</div>
-      <div class="insight-value" id="closestLimitValue">—</div>
-      <div class="insight-sub" id="closestLimitSub"></div>
-    </div>
   </div>
 
   <!-- Monthly Budget -->
