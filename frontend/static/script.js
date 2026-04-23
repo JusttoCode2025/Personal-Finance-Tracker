@@ -368,6 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const categoryTable = document.getElementById("categoryTable");
     if (categoryTable) {
+        loadResetHint();
         loadCategories();
         loadRecentPurchases();
     }
@@ -375,7 +376,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const recentList = document.getElementById("recentPurchases");
     if (recentList) loadRecentPurchases();
 
-}); 
+});
+
+
+async function loadResetHint() {
+    const res  = await fetch("/settings");
+    const data = await res.json();
+    const hint = document.getElementById("resetHint");
+    if (!hint) return;
+
+    if (data.budget_reset_at) {
+        const date = new Date(data.budget_reset_at);
+        hint.textContent = `Month started: ${date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
+    } else {
+        hint.textContent = "Click \"New Month\" at the start of each month to reset your spending view.";
+    }
+}
+
+
+/* new month */
+
+async function startNewMonth() {
+    showConfirm(
+        "Start a new month?\n\nYour category limits will be kept but spending will reset to $0. Past purchases are saved in the dashboard history.",
+        async () => {
+            await fetch("/new_month", { method: "POST" });
+            loadResetHint();
+            loadCategories();
+            loadRecentPurchases();
+            showNotification("New month started! Spending has been reset.", "success");
+        }
+    );
+}
+
 
 /* edit category */
 
@@ -434,11 +467,17 @@ async function setCategoryLimit() {
 async function saveCategoryLimit(category, limit) {
     const msg = document.getElementById("limitMessage");
     msg.textContent = "";
-    await fetch("/limit", {
+    const res = await fetch("/limit", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({ category: category, limit_amount: limit })
     });
+    const data = await res.json();
+    if (data.error) {
+        msg.textContent = data.error;
+        msg.style.color = "red";
+        return;
+    }
     loadCategories();
     showNotification("Category limit set successfully!", "success");
 }
@@ -461,8 +500,7 @@ async function loadCategories() {
     }
 
     data.forEach(c => {
-        const spent   = c.limit_amount - c.remaining;
-        const pctUsed = c.limit_amount > 0 ? (spent / c.limit_amount) * 100 : 0;
+        const pctUsed = c.limit_amount > 0 ? (c.spent / c.limit_amount) * 100 : 0;
 
         let remainingClass = "remaining-ok";
         if (c.remaining < 0)    remainingClass = "remaining-danger";
@@ -472,7 +510,7 @@ async function loadCategories() {
             <li>
                 <strong>${c.category}</strong>
                 <span>$${c.limit_amount}</span>
-                <span>$${spent.toFixed(2)}</span>
+                <span>$${c.spent.toFixed(2)}</span>
                 <span class="${remainingClass}">$${c.remaining.toFixed(2)}</span>
                 <div class="row-actions">
                     <button class="row-btn edit" onclick="editCategory('${c.category}', ${c.limit_amount})">Edit</button>
@@ -684,12 +722,11 @@ function updateUI(saved, goal, targetDate) {
         summary.textContent = `Saved: $${saved.toFixed(2)} / $${goal.toFixed(2)} (${percent.toFixed(1)}%)`;
     }
 
-    // Days left  and daily savings target
     if (targetDate && goal > 0 && dateInsightRow) {
-        const today   = new Date();
-        const endDate = new Date(targetDate);
-        const diffMs  = endDate - today;
-        const daysLeft = Math.max(Math.ceil(diffMs / (1000 * 60 * 60 * 24)), 0);
+        const today      = new Date();
+        const endDate    = new Date(targetDate);
+        const diffMs     = endDate - today;
+        const daysLeft   = Math.max(Math.ceil(diffMs / (1000 * 60 * 60 * 24)), 0);
         const amountLeft = Math.max(goal - saved, 0);
         const dailyTarget = daysLeft > 0 ? amountLeft / daysLeft : amountLeft;
 
