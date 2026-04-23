@@ -25,7 +25,6 @@
   --link-hover:hsl(0,0%,0%);
   --success: hsl(120, 45%, 38%);
   --danger: hsl(0, 65%, 48%);
-  --warning: hsl(38, 95%, 45%);
 }
 
 *{box-sizing:border-box;margin:0;padding:0;font-family:var(--font-sans);}
@@ -44,10 +43,9 @@ button{cursor:pointer;}
 .section{background:var(--card);padding:25px;border-radius:var(--radius);box-shadow:var(--shadow-sm);margin-bottom:20px;transition:transform 0.3s;}
 .section:hover{transform:translateY(-3px);}
 
-h1,h2,h3{font-family:var(--font-heading);}
+h1,h2{font-family:var(--font-heading);}
 h1{font-size:2em;margin-bottom:10px;text-align:center;}
 h2{font-size:1.2em;margin-bottom:15px;}
-h3{font-size:0.95em;font-weight:600;margin-bottom:6px;}
 
 .flex-row{display:flex;gap:20px;flex-wrap:wrap;}
 .flex-item{flex:1;min-width:280px;}
@@ -69,6 +67,7 @@ h3{font-size:0.95em;font-weight:600;margin-bottom:6px;}
   width:auto;
 }
 
+/* Stat cards */
 .stat-cards {
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -81,7 +80,7 @@ h3{font-size:0.95em;font-weight:600;margin-bottom:6px;}
 .stat-card .stat-value.positive { color:var(--success); }
 .stat-card .stat-value.negative { color:var(--danger); }
 
-
+/* Progress bar */
 .progress-bar-wrapper {
   width:100%; height:10px; background:var(--muted);
   border-radius:999px; overflow:hidden; margin-bottom:8px;
@@ -173,9 +172,9 @@ const CHART_COLORS = [
   '#59a14f', '#edc948', '#b07aa1', '#ff9da7'
 ];
 
-let pieChartInstance   = null;
-let barChartInstance   = null;
-let lineChartInstance  = null;
+let pieChartInstance  = null;
+let barChartInstance  = null;
+let lineChartInstance = null;
 
 async function loadDashboard(month = "") {
   const url = month ? `/dashboard_data?month=${month}` : "/dashboard_data";
@@ -183,7 +182,7 @@ async function loadDashboard(month = "") {
   const data = await response.json();
   const totalSpent = data.total_spent;
 
-  //  month selector
+  
   const selector = document.getElementById("monthSelector");
   if (selector.options.length <= 1 && data.available_months) {
     data.available_months.forEach(m => {
@@ -195,17 +194,38 @@ async function loadDashboard(month = "") {
     });
   }
 
-  // Biggest expense
-  const biggestVal = document.getElementById("biggestExpenseValue");
-  const biggestSub = document.getElementById("biggestExpenseSub");
-  if (data.biggest_expense) {
-    biggestVal.textContent = `$${data.biggest_expense.amount.toFixed(2)}`;
-    biggestSub.textContent = `${data.biggest_expense.category} — ${new Date(data.biggest_expense.date).toLocaleDateString()}`;
+  // Fetch limits for budget stats and bar chart limit line
+  const limitsRes  = await fetch("/limits");
+  const limitsData = await limitsRes.json();
+  const totalLimit = limitsData.reduce((sum, l) => sum + l.limit_amount, 0);
+  const limitMap   = {};
+  limitsData.forEach(l => { limitMap[l.category] = l.limit_amount; });
+
+  const statIncome    = document.getElementById("statIncome");
+  const statSpent     = document.getElementById("statSpent");
+  const statRemaining = document.getElementById("statRemaining");
+  const progressBar   = document.getElementById("dashboard-progress");
+  const summaryText   = document.getElementById("dashboard-summary");
+
+  if (totalLimit > 0) {
+    const remaining   = totalLimit - totalSpent;
+    const percentUsed = (totalSpent / totalLimit) * 100;
+
+    statIncome.textContent    = '$' + totalLimit.toFixed(2);
+    statSpent.textContent     = '$' + totalSpent.toFixed(2);
+    statRemaining.textContent = '$' + remaining.toFixed(2);
+    statRemaining.className   = 'stat-value ' + (remaining >= 0 ? 'positive' : 'negative');
+
+    progressBar.style.width = Math.min(percentUsed, 100) + '%';
+    summaryText.textContent = percentUsed > 100
+      ? `Over budget by $${Math.abs(remaining).toFixed(2)}`
+      : `${percentUsed.toFixed(1)}% of total budget used this month`;
   } else {
-    biggestVal.textContent = "No purchases yet";
-    biggestSub.textContent = "";
+    statSpent.textContent   = '$' + totalSpent.toFixed(2);
+    summaryText.textContent = 'Set category limits on the Budget page to see usage.';
   }
-  // Charts sync
+
+  
   if (pieChartInstance)  pieChartInstance.destroy();
   if (barChartInstance)  barChartInstance.destroy();
   if (lineChartInstance) lineChartInstance.destroy();
@@ -214,6 +234,7 @@ async function loadDashboard(month = "") {
   const categoryValues = data.categories.map(c => c.total);
   const chartColors    = categoryLabels.map((_, i) => CHART_COLORS[i % CHART_COLORS.length]);
 
+  // Pie chart
   pieChartInstance = new Chart(document.getElementById("pieChart"), {
     type: 'pie',
     data: {
@@ -227,6 +248,7 @@ async function loadDashboard(month = "") {
     }
   });
 
+  // Bar chart
   const limitValues = categoryLabels.map(cat => limitMap[cat.toLowerCase()] || 0);
 
   barChartInstance = new Chart(document.getElementById("barChart"), {
@@ -245,6 +267,7 @@ async function loadDashboard(month = "") {
     options: { animation: { duration: 800 }, scales: { y: { beginAtZero: true } } }
   });
 
+  // Line chart — last 30 days
   const monthlyLabels = data.monthly.map(m => m.month);
   const monthlyValues = data.monthly.map(m => m.total);
 
