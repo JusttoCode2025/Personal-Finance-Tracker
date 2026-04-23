@@ -596,7 +596,7 @@ def seed_data():
     conn.commit()
     cursor.close()
     conn.close()
-    return "Test data added! Remove this route before final deploy."
+    return "Test data added!"
 
 
 @app.route("/clear_db")
