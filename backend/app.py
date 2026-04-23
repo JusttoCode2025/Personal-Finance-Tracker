@@ -161,21 +161,6 @@ def set_limit():
     return jsonify({"message": f"Limit set for '{category}'", "limit_amount": limit_amount}), 200
 
 
-# Delete category limit only — purchases kept for history
-@app.route("/limit/<category>", methods=["DELETE"])
-def delete_limit(category):
-    category = category.strip().lower()
-    conn = db_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("DELETE FROM spending_limits WHERE category=%s", (category,))
-
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-    return jsonify({"message": f"Category '{category}' deleted"}), 200
-
 
 @app.route("/purchase", methods=["POST"])
 def add_purchase():
@@ -476,8 +461,7 @@ def transfer_to_travel():
     return jsonify({"message": f"${total_remaining:.2f} transferred to travel goal"}), 200
 
 
-# Seed realistic test data — REMOVE AFTER USE
-@app.route("/seed_data")
+# Seed realistic test data 
 def seed_data():
     conn = db_connection()
     cursor = conn.cursor()
