@@ -593,6 +593,20 @@ def seed_data():
             "INSERT INTO purchases (category, amount, date) VALUES (%s, %s, %s)",
             (category, amount, date)
         )
+
+    limits = [
+    ("rent", 1500),
+    ("groceries", 500),
+    ("utilities", 200),
+    ("transportation", 150),
+    ("entertainment", 200),
+    ("other", 250),
+]
+for category, limit in limits:
+    cursor.execute(
+        "INSERT INTO spending_limits (category, limit_amount, remaining) VALUES (%s, %s, %s) ON CONFLICT (category) DO NOTHING",
+        (category, limit, limit)
+    )
     conn.commit()
     cursor.close()
     conn.close()
