@@ -51,6 +51,18 @@ def init_db():
     )
     """)
 
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS settings (
+        id SERIAL PRIMARY KEY,
+        budget_reset_at TIMESTAMP DEFAULT NULL
+    )
+    """)
+
+  
+    cursor.execute("SELECT COUNT(*) FROM settings")
+    if cursor.fetchone()[0] == 0:
+        cursor.execute("INSERT INTO settings (budget_reset_at) VALUES (NULL)")
+
     cursor.execute("ALTER TABLE travel_goals ADD COLUMN IF NOT EXISTS note TEXT DEFAULT ''")
     cursor.execute("ALTER TABLE travel_goals ADD COLUMN IF NOT EXISTS target_date DATE DEFAULT NULL")
 
@@ -60,6 +72,12 @@ def init_db():
 
 
 init_db()
+
+
+def get_budget_reset_at(cursor):
+    cursor.execute("SELECT budget_reset_at FROM settings LIMIT 1")
+    row = cursor.fetchone()
+    return row[0] if row and row[0] else None
 
 
 # HTML routes
@@ -93,17 +111,58 @@ def travel_goal():
     return render_template("travel_goal.html")
 
 
+# New month budget reset
+@app.route("/new_month", methods=["POST"])
+def new_month():
+    conn = db_connection()
+    cursor = conn.cursor()
+
+    now = datetime.now()
+    cursor.execute("UPDATE settings SET budget_reset_at = %s", (now,))
+
+
+    cursor.execute("UPDATE spending_limits SET remaining = limit_amount")
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return jsonify({"message": "New month started", "reset_at": str(now)}), 200
+
+
+# Get current reset timestamp so frontend knows when the month started
+@app.route("/settings")
+def get_settings():
+    conn = db_connection()
+    cursor = conn.cursor()
+    reset_at = get_budget_reset_at(cursor)
+    cursor.close()
+    conn.close()
+    return jsonify({"budget_reset_at": str(reset_at) if reset_at else None})
+
+
 @app.route("/recent_purchases")
 def recent_purchases():
     conn = db_connection()
     cursor = conn.cursor()
 
-    cursor.execute("""
-        SELECT category, amount, date
-        FROM purchases
-        ORDER BY date DESC
-        LIMIT 5
-    """)
+    reset_at = get_budget_reset_at(cursor)
+
+    if reset_at:
+        cursor.execute("""
+            SELECT category, amount, date
+            FROM purchases
+            WHERE date >= %s
+            ORDER BY date DESC
+            LIMIT 5
+        """, (reset_at,))
+    else:
+        cursor.execute("""
+            SELECT category, amount, date
+            FROM purchases
+            ORDER BY date DESC
+            LIMIT 5
+        """)
 
     rows = cursor.fetchall()
     cursor.close()
@@ -138,7 +197,6 @@ def set_limit():
         old_remaining = float(row[1])
         spent = old_limit - old_remaining
 
-        # Block if new limit is lower than already spent
         if limit_amount < spent:
             cursor.close()
             conn.close()
@@ -159,7 +217,6 @@ def set_limit():
     conn.close()
 
     return jsonify({"message": f"Limit set for '{category}'", "limit_amount": limit_amount}), 200
-
 
 
 @app.route("/purchase", methods=["POST"])
@@ -206,17 +263,36 @@ def view_limits():
     conn = db_connection()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT category, limit_amount, remaining FROM spending_limits")
-    rows = cursor.fetchall()
+    reset_at = get_budget_reset_at(cursor)
 
+    # Calculate spent dynamically from purchases since reset
+    if reset_at:
+        cursor.execute("""
+            SELECT s.category, s.limit_amount,
+                   COALESCE(SUM(p.amount), 0) as spent_since_reset
+            FROM spending_limits s
+            LEFT JOIN purchases p
+                ON p.category = s.category AND p.date >= %s
+            GROUP BY s.category, s.limit_amount
+        """, (reset_at,))
+    else:
+        cursor.execute("""
+            SELECT s.category, s.limit_amount,
+                   COALESCE(SUM(p.amount), 0) as spent_since_reset
+            FROM spending_limits s
+            LEFT JOIN purchases p ON p.category = s.category
+            GROUP BY s.category, s.limit_amount
+        """)
+
+    rows = cursor.fetchall()
     cursor.close()
     conn.close()
 
     limits = [{
         "category": r[0],
         "limit_amount": float(r[1]),
-        "remaining": float(r[2]),
-        "spent": float(r[1]) - float(r[2])
+        "remaining": float(r[1]) - float(r[2]),
+        "spent": float(r[2])
     } for r in rows]
 
     return jsonify(limits), 200
@@ -461,7 +537,8 @@ def transfer_to_travel():
     return jsonify({"message": f"${total_remaining:.2f} transferred to travel goal"}), 200
 
 
-# Seed realistic test data 
+# Seed data for demonstration
+@app.route("/seed_data")
 def seed_data():
     conn = db_connection()
     cursor = conn.cursor()
@@ -477,7 +554,6 @@ def seed_data():
         ("transportation",   30, "2026-01-22"),
         ("entertainment",    35, "2026-01-25"),
         ("other",            50, "2026-01-28"),
-
         # February 2026
         ("rent",           1500, "2026-02-01"),
         ("utilities",        92, "2026-02-03"),
@@ -489,7 +565,6 @@ def seed_data():
         ("groceries",       100, "2026-02-20"),
         ("entertainment",    50, "2026-02-22"),
         ("transportation",   25, "2026-02-26"),
-
         # March 2026
         ("rent",           1500, "2026-03-01"),
         ("utilities",        78, "2026-03-03"),
@@ -501,7 +576,6 @@ def seed_data():
         ("groceries",        80, "2026-03-20"),
         ("transportation",   40, "2026-03-23"),
         ("entertainment",    55, "2026-03-27"),
-
         # April 2026
         ("rent",           1500, "2026-04-01"),
         ("utilities",        88, "2026-04-02"),
@@ -522,7 +596,9 @@ def seed_data():
     conn.commit()
     cursor.close()
     conn.close()
-    return "Test data added!"
+    return "Test data added! Remove this route before final deploy."
+
+
 @app.route("/clear_db")
 def clear_db():
     conn = db_connection()
@@ -530,6 +606,7 @@ def clear_db():
     cursor.execute("DELETE FROM purchases")
     cursor.execute("DELETE FROM spending_limits")
     cursor.execute("DELETE FROM travel_goals")
+    cursor.execute("UPDATE settings SET budget_reset_at = NULL")
     conn.commit()
     cursor.close()
     conn.close()
