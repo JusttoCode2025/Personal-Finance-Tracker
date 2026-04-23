@@ -183,7 +183,7 @@ async function loadDashboard(month = "") {
   const data = await response.json();
   const totalSpent = data.total_spent;
 
-  // Populate month selector
+  //  month selector
   const selector = document.getElementById("monthSelector");
   if (selector.options.length <= 1 && data.available_months) {
     data.available_months.forEach(m => {
@@ -205,49 +205,7 @@ async function loadDashboard(month = "") {
     biggestVal.textContent = "No purchases yet";
     biggestSub.textContent = "";
   }
-
-  // Closest to limit
-  const closestVal = document.getElementById("closestLimitValue");
-  const closestSub = document.getElementById("closestLimitSub");
-  if (data.closest_to_limit) {
-    const c = data.closest_to_limit;
-    closestVal.textContent = `${c.category} — ${c.pct_used}% used`;
-    closestSub.textContent = `$${c.remaining.toFixed(2)} remaining of $${c.limit_amount.toFixed(2)}`;
-  } else {
-    closestVal.textContent = "No limits set";
-    closestSub.textContent = "";
-  }
-
-  // Budget stats
-  const limitsRes = await fetch("/limits");
-  const limitsData = await limitsRes.json();
-  const totalLimit = limitsData.reduce((sum, l) => sum + l.limit_amount, 0);
-  const limitMap = {};
-  limitsData.forEach(l => { limitMap[l.category] = l.limit_amount; });
-
-  const statIncome    = document.getElementById("statIncome");
-  const statSpent     = document.getElementById("statSpent");
-  const statRemaining = document.getElementById("statRemaining");
-  const progressBar   = document.getElementById("dashboard-progress");
-  const summaryText   = document.getElementById("dashboard-summary");
-
-  if (totalLimit > 0) {
-    const remaining   = totalLimit - totalSpent;
-    const percentUsed = (totalSpent / totalLimit) * 100;
-    statIncome.textContent    = '$' + totalLimit.toFixed(2);
-    statSpent.textContent     = '$' + totalSpent.toFixed(2);
-    statRemaining.textContent = '$' + remaining.toFixed(2);
-    statRemaining.className   = 'stat-value ' + (remaining >= 0 ? 'positive' : 'negative');
-    progressBar.style.width   = Math.min(percentUsed, 100) + '%';
-    summaryText.textContent   = percentUsed > 100
-      ? `Over budget by $${Math.abs(remaining).toFixed(2)}`
-      : `${percentUsed.toFixed(1)}% of total budget used this month`;
-  } else {
-    statSpent.textContent   = '$' + totalSpent.toFixed(2);
-    summaryText.textContent = 'Set category limits on the Budget page to see usage.';
-  }
-
-  // Charts — destroy before redraw
+  // Charts sync
   if (pieChartInstance)  pieChartInstance.destroy();
   if (barChartInstance)  barChartInstance.destroy();
   if (lineChartInstance) lineChartInstance.destroy();
