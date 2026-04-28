@@ -74,6 +74,32 @@ input, select, button {
 button { background:var(--primary); color:var(--primary-foreground); border:none; }
 button:hover { transform:scale(1.05); }
 
+/* New month button */
+.new-month-btn {
+  width:auto;
+  padding:8px 18px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--muted-foreground);
+  font-size:0.85em;
+  font-weight:600;
+  margin-bottom:0;
+  transition:background 0.2s, color 0.2s;
+}
+.new-month-btn:hover { background:var(--muted); color:var(--foreground); transform:none; }
+
+.header-row {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:5px;
+}
+.reset-hint {
+  font-size:0.78em;
+  color:var(--muted-foreground);
+  margin-bottom:15px;
+}
 
 .table-header {
   display:flex;
@@ -92,10 +118,8 @@ button:hover { transform:scale(1.05); }
   min-width:80px;
   text-align:right;
 }
-.table-header span:first-child {
-  flex:1;
-  text-align:left;
-}
+.table-header span:first-child { flex:1; text-align:left; }
+.table-header span:last-child { min-width:60px; }
 
 /* Category list */
 .expenses-list { list-style:none; flex:1; }
@@ -109,6 +133,7 @@ button:hover { transform:scale(1.05); }
   background:none;
   border-radius:0;
   margin-bottom:0;
+  gap:4px;
 }
 .expenses-list li:last-child { border-bottom:none; }
 
@@ -127,9 +152,18 @@ button:hover { transform:scale(1.05); }
 }
 .expenses-list li span.remaining-ok     { color:var(--muted-foreground); }
 .expenses-list li span.remaining-warn   { color:var(--warning); font-weight:600; }
-.expenses-list li span.remaining-danger { color:var(--danger);  font-weight:600; }
+.expenses-list li span.remaining-danger { color:var(--danger); font-weight:600; }
 
+/* Row action buttons */
+.row-actions { display:flex; gap:4px; min-width:60px; justify-content:flex-end; }
+.row-btn {
+  width:auto; padding:4px 8px; font-size:0.75em; font-weight:600;
+  border-radius:6px; border:none; margin-bottom:0; transition:opacity 0.2s;
+}
+.row-btn:hover { transform:none; opacity:0.8; }
+.row-btn.edit { background:var(--muted); color:var(--foreground); }
 
+/* Purchases header */
 .purchases-header {
   display:flex;
   justify-content:space-between;
@@ -208,8 +242,12 @@ button:hover { transform:scale(1.05); }
 <div class="container">
 
   <div class="section">
-    <h1>Budget</h1>
+    <div class="header-row">
+      <h1 style="margin-bottom:0;">Budget</h1>
+      <button class="new-month-btn" onclick="startNewMonth()">New Month</button>
+    </div>
     <p class="description">Track your spending, set limits, and manage your budget efficiently.</p>
+    <p class="reset-hint" id="resetHint"></p>
   </div>
 
   <div class="flex-row">
@@ -257,6 +295,7 @@ button:hover { transform:scale(1.05); }
         <span>Limit</span>
         <span>Spent</span>
         <span>Remaining</span>
+        <span></span>
       </div>
       <ul id="categoryTable" class="expenses-list">
         <li><strong>No categories yet</strong></li>
