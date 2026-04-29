@@ -559,11 +559,11 @@ def seed_data():
         ("rent",           1500, "2026-02-01"),
         ("utilities",        92, "2026-02-03"),
         ("groceries",       130, "2026-02-06"),
-        ("entertainment",    150, "2026-02-08"),
+        ("entertainment",    456, "2026-02-08"),
         ("groceries",        100, "2026-02-12"),
         ("transportation",   55, "2026-02-14"),
-        ("other",            400, "2026-02-17"),
-        ("groceries",       100, "2026-02-20"),
+        ("other",            700, "2026-02-17"),
+        ("groceries",       150, "2026-02-20"),
         ("entertainment",    50, "2026-02-22"),
         ("transportation",   25, "2026-02-26"),
         # March 2026
@@ -614,7 +614,7 @@ def seed_data():
     conn.commit()
     cursor.close()
     conn.close()
-    return "Test data added! Remove this route before final deploy."
+    return "Test data added!"
 
 
 @app.route("/clear_db")
