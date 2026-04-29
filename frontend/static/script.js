@@ -376,8 +376,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const recentList = document.getElementById("recentPurchases");
     if (recentList) loadRecentPurchases();
 
-});
+}); // end DOMContentLoaded
 
+
+/* load reset hint */
 
 async function loadResetHint() {
     const res  = await fetch("/settings");
@@ -389,7 +391,7 @@ async function loadResetHint() {
         const date = new Date(data.budget_reset_at);
         hint.textContent = `Month started: ${date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
     } else {
-        hint.textContent = "Click \"New Month\" at the start of each month to reset your spending view.";
+        hint.textContent = 'Click "New Month" at the start of each month to reset your spending view.';
     }
 }
 
@@ -675,6 +677,17 @@ async function executeTransfer(msg) {
     msg.textContent = data.message;
     msg.style.color = "green";
 
+    // Zero out remaining display visually
+    const rows = document.querySelectorAll('#categoryTable li');
+    rows.forEach(row => {
+        const spans = row.querySelectorAll('span');
+        if (spans.length >= 3) {
+            const remainingSpan = spans[spans.length - 1];
+            remainingSpan.textContent = '$0.00';
+            remainingSpan.className = 'remaining-ok';
+        }
+    });
+
     const resGoalAfter = await fetch("/travel_goals");
     const goalsAfter   = await resGoalAfter.json();
 
@@ -688,7 +701,6 @@ async function executeTransfer(msg) {
         }
     }
 
-    await loadCategories();
     await loadTravelGoal();
 }
 
