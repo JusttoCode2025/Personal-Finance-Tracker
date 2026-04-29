@@ -129,6 +129,9 @@ document.head.appendChild(notificationStyles);
 const MAX_AMOUNT = 10000;
 const MAX_GOAL   = 1000000;
 
+// Flag to track if budget has been transferred this session
+window.budgetTransferred = false;
+
 document.addEventListener('DOMContentLoaded', () => {
 
     /* home travel bar */
@@ -379,7 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
 }); // end DOMContentLoaded
 
 
-/* load reset hint */
+/* load reset */
 
 async function loadResetHint() {
     const res  = await fetch("/settings");
@@ -402,6 +405,7 @@ async function startNewMonth() {
     showConfirm(
         "Start a new month?\n\nYour category limits will be kept but spending will reset to $0. Past purchases are saved in the dashboard history.",
         async () => {
+            window.budgetTransferred = false; // reset transfer flag
             await fetch("/new_month", { method: "POST" });
             loadResetHint();
             loadCategories();
@@ -554,9 +558,17 @@ async function loadRecentPurchases() {
 /* add purchase */
 
 async function addPurchase() {
+    const msg = document.getElementById("purchaseMessage");
+
+    // Block purchases after transfer until new month is started
+    if (window.budgetTransferred) {
+        msg.textContent = "Budget has been transferred. Please start a new month first.";
+        msg.style.color = "red";
+        return;
+    }
+
     const category = document.getElementById("purchaseCategory").value.toLowerCase();
     const amount   = parseFloat(document.getElementById("purchaseAmount").value);
-    const msg      = document.getElementById("purchaseMessage");
 
     if (!category || !amount) {
         msg.textContent = "Please select a category and enter an amount.";
@@ -677,12 +689,15 @@ async function executeTransfer(msg) {
     msg.textContent = data.message;
     msg.style.color = "green";
 
-    // Zero out remaining display visually
+    // Set transfer flag to block new purchases
+    window.budgetTransferred = true;
+
+    // Zero out remaining visually
     const rows = document.querySelectorAll('#categoryTable li');
     rows.forEach(row => {
         const spans = row.querySelectorAll('span');
         if (spans.length >= 3) {
-            const remainingSpan = spans[spans.length - 1];
+            const remainingSpan = spans[spans.length - 2]; // last span before actions
             remainingSpan.textContent = '$0.00';
             remainingSpan.className = 'remaining-ok';
         }
