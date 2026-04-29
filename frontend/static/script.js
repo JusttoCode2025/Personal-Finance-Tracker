@@ -382,7 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
 }); // end DOMContentLoaded
 
 
-/* load reset */
+/* load reset hint */
 
 async function loadResetHint() {
     const res  = await fetch("/settings");
@@ -689,17 +689,16 @@ async function executeTransfer(msg) {
     msg.textContent = data.message;
     msg.style.color = "green";
 
-    // Set transfer flag to block new purchases
+    // Set transfer flag — blocks new purchases until New Month is clicked
     window.budgetTransferred = true;
 
-    // Zero out remaining visually
+    // Zero out remaining column visually — spans[2] is always the remaining span
     const rows = document.querySelectorAll('#categoryTable li');
     rows.forEach(row => {
         const spans = row.querySelectorAll('span');
         if (spans.length >= 3) {
-            const remainingSpan = spans[spans.length - 2]; // last span before actions
-            remainingSpan.textContent = '$0.00';
-            remainingSpan.className = 'remaining-ok';
+            spans[2].textContent = '$0.00';
+            spans[2].className = 'remaining-ok';
         }
     });
 
