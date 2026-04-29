@@ -16,6 +16,7 @@
 
 ## 3. Architectural Design
 - **System Architecture Diagram**:
+- 
 - **Component Breakdown**:
   - - Html, Java, and CSS: Displays system UI, sends a request, and updates data
   - - Flask: Routing and validation
@@ -75,7 +76,36 @@ CREATE TABLE settings (
 
 ## 6. Testing Strategy
 
+Test Site: https://personal-finance-tracker-3-a9j9.onrender.com
+Testing is performed manually using dummy inputs across all key flows:
+Budget Page
 
+Negative purchase amounts → blocked
+Purchase exceeding category limit → confirm dialog
+Empty category selection → error message
+Limit over $1,000 → confirm dialog
+Limit over $10,000 → hard block
+Edit limit below amount already spent → hard block
+
+Travel Goal Page
+
+Contribution larger than goal → blocked
+Goal over $10,000 → confirm dialog
+Goal over $1,000,000 → hard block
+Contribution over 50% of goal → confirm dialog
+Reset goal → confirm dialog
+
+Dashboard
+
+Month selector filters all charts correctly
+Charts destroy and redraw on month change
+Progress bar caps at 100% display
+
+New Month Flow
+
+Spending resets to $0 visually
+Past purchases preserved in dashboard history
+Transfer blocks purchases until new month clicked
 ---
 
 ## 7.
