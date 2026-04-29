@@ -110,7 +110,7 @@ def travel_goal():
     return render_template("travel_goal.html")
 
 
-# New month — updates reset timestamp and resets remaining to full limits
+# New month
 @app.route("/new_month", methods=["POST"])
 def new_month():
     conn = db_connection()
@@ -263,7 +263,6 @@ def view_limits():
     reset_at = get_budget_reset_at(cursor)
 
     if reset_at:
-        # Filter purchases since the last New Month reset
         cursor.execute("""
             SELECT s.category, s.limit_amount,
                    COALESCE(SUM(p.amount), 0) as spent_since_reset
@@ -273,7 +272,6 @@ def view_limits():
             GROUP BY s.category, s.limit_amount
         """, (reset_at,))
     else:
-        # No reset yet — default to current month only
         cursor.execute("""
             SELECT s.category, s.limit_amount,
                    COALESCE(SUM(p.amount), 0) as spent_since_reset
@@ -511,7 +509,31 @@ def transfer_to_travel():
     conn = db_connection()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT COALESCE(SUM(remaining), 0) FROM spending_limits")
+    reset_at = get_budget_reset_at(cursor)
+
+    # Calculate remaining dynamically same as /limits
+    if reset_at:
+        cursor.execute("""
+            SELECT COALESCE(SUM(s.limit_amount - COALESCE(p.spent, 0)), 0)
+            FROM spending_limits s
+            LEFT JOIN (
+                SELECT category, SUM(amount) as spent
+                FROM purchases WHERE date >= %s
+                GROUP BY category
+            ) p ON p.category = s.category
+        """, (reset_at,))
+    else:
+        cursor.execute("""
+            SELECT COALESCE(SUM(s.limit_amount - COALESCE(p.spent, 0)), 0)
+            FROM spending_limits s
+            LEFT JOIN (
+                SELECT category, SUM(amount) as spent
+                FROM purchases
+                WHERE DATE_TRUNC('month', date) = DATE_TRUNC('month', CURRENT_DATE)
+                GROUP BY category
+            ) p ON p.category = s.category
+        """)
+
     total_remaining = float(cursor.fetchone()[0])
 
     if total_remaining <= 0:
@@ -551,21 +573,21 @@ def seed_data():
         ("groceries",        95, "2026-01-11"),
         ("transportation",   45, "2026-01-13"),
         ("entertainment",    60, "2026-01-15"),
-        ("groceries",       210, "2026-01-19"),
+        ("groceries",       110, "2026-01-19"),
         ("transportation",   30, "2026-01-22"),
         ("entertainment",    35, "2026-01-25"),
         ("other",            50, "2026-01-28"),
         # February 2026
         ("rent",           1500, "2026-02-01"),
-        ("utilities",        92, "2026-02-03"),
+        ("utilities",        200, "2026-02-03"),
         ("groceries",       130, "2026-02-06"),
-        ("entertainment",    456, "2026-02-08"),
-        ("groceries",        100, "2026-02-12"),
+        ("entertainment",    175, "2026-02-08"),
+        ("groceries",        88, "2026-02-12"),
         ("transportation",   55, "2026-02-14"),
-        ("other",            700, "2026-02-17"),
-        ("groceries",       150, "2026-02-20"),
+        ("other",            450, "2026-02-17"),
+        ("groceries",       200, "2026-02-20"),
         ("entertainment",    50, "2026-02-22"),
-        ("transportation",   25, "2026-02-26"),
+        ("transportation",   50, "2026-02-26"),
         # March 2026
         ("rent",           1500, "2026-03-01"),
         ("utilities",        78, "2026-03-03"),
@@ -610,6 +632,13 @@ def seed_data():
             "INSERT INTO spending_limits (category, limit_amount, remaining) VALUES (%s, %s, %s) ON CONFLICT (category) DO NOTHING",
             (category, limit, limit)
         )
+
+    # Seed travel goal with existing savings
+    cursor.execute("DELETE FROM travel_goals")
+    cursor.execute("""
+        INSERT INTO travel_goals (destination, target_amount, saved_amount, note, target_date)
+        VALUES (%s, %s, %s, %s, %s)
+    """, ("Tokyo, Japan", 3000, 850, "Flights + hotel for 7 nights. Need travel insurance too!", "2026-12-01"))
 
     conn.commit()
     cursor.close()
