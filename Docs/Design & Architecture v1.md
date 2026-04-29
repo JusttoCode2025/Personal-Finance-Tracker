@@ -14,7 +14,6 @@
 - **Design Goals**: Maintainability and simplicity
 - **Architecture Summary**: Flask 
 - **System Context Diagram**:
-  - *Use Mermaid diagram here.*
   - Example placeholder:
     ```mermaid
 <img width="500" height="500" alt="image" src="https://github.com/user-attachments/assets/25fb445c-bde7-42e5-aca8-1aa42288c59d" />
@@ -29,12 +28,7 @@
   - - Html, Java, and CSS: Displays system UI, sends a request, and updates data
   - - Flask: Routing and validation
     - Database: Stores limits and purchases
-- **Technology Stack**: Python, Flask, HTML, CSS, JavaScript, SQLite, Gunicorn (deployment), and Render (hosting)
-
-- **Data Flow and Control Flow**:
-  - <img width="700" height="518" alt="image" src="https://github.com/user-attachments/assets/d91c038a-601e-4c36-a450-829c613974aa" />
-
-
+- **Technology Stack**: Python, Flask, HTML, CSS, JavaScript, Postgresql, Gunicorn (deployment), and Render (hosting)
 ---
 
 ## 4. Detailed Design
@@ -47,67 +41,65 @@ For each module/component:
   - Outputs: Json warning or validation and updated balances
   - Error Handling: Invalid inputs are rejected and if there is missing info it is rejected
 - **Data Structures**: spending limits and purchase history
-- **Algorithms/Logic**: [Design patterns or important logic.]
-- **State Management**: [How is state handled?]
 
 ---
 
-## 5. Database Design
-- **ER Diagram / Schema Diagram**:
-  - *Use Mermaid ER diagram here.*
-- **Tables/Collections**: [Define each with fields and constraints.]
-- **Relationships**: [Describe relationships between entities.]
-- **Migration Strategy**: [If applicable.]
+## 5. Database Schema
+-- Stores category spending limits
+CREATE TABLE spending_limits (
+    id SERIAL PRIMARY KEY,
+    category TEXT UNIQUE NOT NULL,
+    limit_amount REAL NOT NULL,
+    remaining REAL NOT NULL
+);
+
+-- Stores all purchases
+CREATE TABLE purchases (
+    id SERIAL PRIMARY KEY,
+    category TEXT NOT NULL,
+    amount REAL NOT NULL,
+    date TIMESTAMP NOT NULL
+);
+
+-- Stores the travel savings goal
+CREATE TABLE travel_goals (
+    id SERIAL PRIMARY KEY,
+    destination TEXT NOT NULL,
+    target_amount REAL NOT NULL,
+    saved_amount REAL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    note TEXT DEFAULT '',
+    target_date DATE DEFAULT NULL
+);
+
+-- Stores app-wide settings (monthly reset timestamp)
+CREATE TABLE settings (
+    id SERIAL PRIMARY KEY,
+    budget_reset_at TIMESTAMP DEFAULT NULL
+);
 
 ---
 
-## 6. External Interfaces
-- **User Interface**: Login, budget, dashboard, about and contact page.
-- **External APIs**: [Integrations and dependencies.]
-- **Hardware Interfaces**: [If any.]
-- **Network Protocols/Communication**:
-  - [REST, GraphQL, gRPC, WebSockets, etc.]
+
+## 6. Testing Strategy
+
 
 ---
 
-## 7. Security Considerations
-- **Authorization**: Only the UI will be used 
-- **Data Protection**: NA
-- **Compliance**: [GDPR, HIPAA, etc.]
-- **Threat Model**:
-  - *Use Mermaid diagram here if helpful.*
-
----
-
-## 8. Performance and Scalability
-- **Expected Load**: [Requests per second, data volume.]
-- **Caching Strategy**: [Describe caches used.]
-- **Database Optimization**: [Indexes, partitioning.]
-- **Scaling Strategy**: [Vertical/horizontal.]
-
----
-
-## 9. Deployment Architecture
-- **Environments**: [Dev, staging, production.]
-- **CI/CD Pipeline**: [Tools and stages.]
-- **Infrastructure Diagram**:
-  - *Use Mermaid diagram here.*
-- **Cloud/Hosting**: Render
-- **Containerization/Orchestration**: [Docker, Kubernetes.]
-
----
-
-## 10. Testing Strategy
-- **Unit Testing**: [Tools, coverage goals.]
-- **Integration Testing**: [Approach and tools.]
-- **End-to-End Testing**: [Scope and tools.]
-- **Quality Metrics**: [Code coverage, linting, etc.]
-
----
-
-## 11. Appendices
-- **Diagrams**: [All referenced diagrams.]
-- **Glossary**: [Terms and definitions.]
-- **Change History**:
-  - [Version, Date, Author, Changes]
+## 7.
+Project Structure
+Personal-Finance-Tracker/
+├── app.py                  # Flask backend, all routes
+├── frontend/
+│   ├── templates/          # HTML pages
+│   │   ├── login.html
+│   │   ├── signup.html
+│   │   ├── home.html
+│   │   ├── budget.html
+│   │   ├── dashboard.html
+│   │   ├── travel_goal.html
+│   │   └── about.html
+│   └── static/
+│       └── script.js       # All frontend JavaScript
+└── README.md
 
