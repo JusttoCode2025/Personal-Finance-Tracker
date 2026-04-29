@@ -1,8 +1,11 @@
-# Personal Finance Tracker
+# Haven — Personal Finance Tracker
 
-A simple web application designed to help users track income, expenses, and savings goals in a clear and easy-to-use way.
+A clean, simple web application that helps users track monthly spending, set budget limits by category, and save toward a travel goal.
 
----
+**Live Site:** https://personal-finance-tracker-1-0y9r.onrender.com  
+**Test Site:** https://personal-finance-tracker-3-a9j9.onrender.com  
+**GitHub:** https://github.com/JusttoCode2025/Personal-Finance-Tracker/tree/main  
+**Version:** v1.0.0
 
 ## Project Overview
 
@@ -29,132 +32,130 @@ The Personal Finance Tracker provides a clean dashboard, goal tracking, and help
 - Advanced or automated budgeting tools
 
 ---
+---
 
-## Primary Workflow
+## Team
 
-1. User creates an account and logs in
-2. User creates a financial goal (amount, category, target date, optional notes)
-3. Application calculates required monthly savings
-4. Dashboard updates to show:
-   - Total income vs expenses
-   - Category breakdown
-   - Monthly summary
-   - Goal progress
+| Name | Role |
+|------|------|
+| Fairooz Siddiquee | Project Lead, Sign-Up Page, Home Page |
+| Jasmine Anike | About Page, Contact Page |
+| Jana Saleh | Dashboard Page |
+| Keyana Bernard | Budget Page |
+| Daniela Jaggan | Login Page |
+----
+
+**Frontend:** HTML, CSS, Vanilla JavaScript, Chart.js  
+**Backend:** Python Flask  
+**Database:** PostgreSQL hosted on Render  
+**Form Handling:** Formspree (About/Contact page)  
+**Deployment:** Render (both production and test site)
 
 ---
 
-## Scaffold
+## Pages
 
-- **Frontend:** HTML, CSS, JavaScript
-- **Backend:** Python 
-- **Database:** SQLite
-- **Version Control:** GitHub
+| Page | File | Description |
+|------|------|-------------|
+| Login | `login.html` | Entry point — two preset accounts |
+| Sign Up | `signup.html` | Form UI only — redirects to login |
+| Home | `home.html` | Overview with travel goal progress bar |
+| Budget | `budget.html` | Set limits, add purchases, transfer to travel |
+| Dashboard | `dashboard.html` | Charts, monthly breakdown, month selector |
+| Travel Goal | `travel_goal.html` | Goal tracking, notes, target date |
+| About | `about.html` | About the app + contact form via Formspree |
 
+---
 
-## Work Plan
-- Fairooz Siddiquee: Acts as the primary point of contact between development team and the professor. Responsible for delivering weekly status reports regarding the Finance Tracker's development milestones, communicating technical or resource-based roadblocks, and ensuring the project's trajectory aligns with the grading rubric and course objectives.
+## Demo Login Credentials
 
-  
-- Jasmine Anike: Responsible for the end-to-end development of the Contact and About pages, managing both Frontend and backend logic. Contact page shoup provide hyperlinks that allows the user to report a bug or ask for help while the about page explains the purpose of the tool and provides credit to the developers. 
+Two preset accounts are available for testing:
 
-- Jana Saleh: Responsible for the end-to-end architecture of the Main Dashboard, which serves as the central nervous system of the Finance Tracker. The dashboard should automatically calculate the breakdown for all categories
+| Name | Email | Password |
+|------|-------|----------|
+| Jane Doe | janedoe@gmail.com | haventracker |
+| John Doe | johndoe@gmail.com | haventracker |
 
-- Keyana Bernard: Responsible for the end-to-end development of the Budget Limits page. This member owns both the back and front end implementation of the category-based budgeting system, where users can set maximum spending caps for specific areas (e.g., Food, Rent, Entertainment) and add purchases that deduct for spending limits. 
+> The PostgreSQL database is hosted on Render. Contact the team for the connection string, or use the live site directly.
 
-- Daniela Jaggan: Responsible for the end-to-end development of the Secure Login Gateway. owning both the UI of the login screen and the Backend Authentication Logic. As the project is currently designed for a single-user environment, this member must ensure that only the correct credentials grant entry to the homepage, while all unauthorized attempts are securely blocked with clear user feedback.
+## Key Features
 
+### Budget Tracking
+- Set monthly spending limits per category (Rent, Groceries, Utilities, Transportation, Entertainment, Other)
+- Add purchases that deduct from the category limit
+- Remaining turns **yellow** at 80% used, **red** when over budget
+- Edit existing limits — cannot set below amount already spent
 
+### Monthly Reset
+- Click **New Month** to reset the spending view without deleting history
+- Past purchases remain visible in the Dashboard month selector
+- After transferring budget to travel, new purchases are blocked until New Month is clicked
 
-## Work-flow
+### Dashboard Analytics
+- Pie chart — spending by category for selected month
+- Bar chart — actual spending vs budget limit per category
+- Line chart — daily spending over the last 30 days
+- Month selector — browse spending history by month
 
-Sign-in Page - Fairooz
-Purpose: Allow new users to create an account.
-Functionality:
-- User can enter:
-  First name
-  Last name
-  Email address
-  Username
-  Password
+### Travel Goal
+- Set a savings goal with a target amount, destination, target date, and notes
+- Daily savings target calculated automatically based on days remaining
+- Transfer remaining budget directly to travel savings
 
-Basic form validation (required fields, password length).
-- After successful sign-up:
-    User is redirected to the Login page.
-- If the user already has an account:
-   A link directs them to the Login page.
+---
 
-Login page - Daniela
-Purpose: Authenticate existing users.
-Functionality:
-- User enters:
-- Username or email
-- Password
-If credentials are correct:
-- User is redirected to the Homepage.
-If credentials are incorrect:
-- An error message is displayed.
-If the user does not have an account:
-- A link redirects them to the Sign-Up page.
+## API Routes
 
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/limits` | Get all category limits with dynamic spent/remaining |
+| POST | `/limit` | Set or update a category limit |
+| POST | `/purchase` | Add a purchase |
+| GET | `/recent_purchases` | Get last 5 purchases since reset |
+| GET | `/dashboard_data` | Get spending data, accepts `?month=YYYY-MM` |
+| GET | `/travel_goals` | Get current travel goal |
+| POST | `/travel_goal` | Create a new travel goal |
+| POST | `/travel_goal/save` | Add a contribution to the goal |
+| POST | `/travel_goal/note` | Save a note to the goal |
+| POST | `/travel_goal/date` | Save target date to the goal |
+| POST | `/travel_goal/reset` | Delete the travel goal |
+| POST | `/transfer_to_travel` | Transfer remaining budget to travel goal |
+| POST | `/new_month` | Reset spending view for new month |
+| GET | `/settings` | Get current reset timestamp |
 
-Homepage - Fairooz home.html
-Purpose: Overview and starting point for budgeting.
-Functionality:
-Displays a progress indicator for money saved toward a goal.
-User can:
-- Set an income amount (optional).
-- Set a savings goal.
-Provides navigation buttons to:
-- Budget page
-- Dashboard page
-- About page
-- Contact page
+---
 
+## Testing
 
-Budget page- Keyanna budget.html
-Purpose: Core budgeting functionality.
-Functionality:
-- Nav bar that goes to other pages
-Users can:
-- Set spending limits for categories (e.g., Food, Rent, Entertainment).
-- Enter purchases under selected categories.
-- Displays a Category Overview Table showing:
-Category
-- Spending limit
-- Amount spent
-- Remaining balance
-- Options:
-- Table showing the last 5 purchases
-- Table showing the highest purchase per category
+Testing is performed manually using dummy inputs across all key flows:
 
-Dashboard page- Jana dashboard.html
-Purpose: Visual analysis of spending habits.
-Functionality:
-- Nav bar that goes to other pages
-Pie chart showing:
-- Percentage of total budget spent per category.
-Bar chart showing:
-- Budgeted amount vs amount spent per category.
+**Budget Page**
+- Negative purchase amounts → blocked
+- Purchase exceeding category limit → confirm dialog
+- Empty category selection → error message
+- Limit over $1,000 → confirm dialog
+- Limit over $10,000 → hard block
+- Edit limit below amount already spent → hard block
 
-Additional optional visualizations:
-- Monthly spending trends
-- Category comparison insights
+**Travel Goal Page**
+- Contribution larger than goal → blocked
+- Goal over $10,000 → confirm dialog
+- Goal over $1,000,000 → hard block
+- Contribution over 50% of goal → confirm dialog
+- Reset goal → confirm dialog
 
-Contact page- Jasmine contact.html
-Purpose: User communication and feedback.
-Functionality:
-- Nav bar that goes to other pages
-Displays:
-- Website email
-- Phone number
-- Users can submit feedback through a form.
-  Form submissions are handled via a third-party service.
+**Dashboard**
+- Month selector filters all charts correctly
+- Charts destroy and redraw on month change
+- Progress bar caps at 100% display
 
-About us page - Jasmine about.html
-Purpose: Inform users about the application.
-Functionality:
-- Nav bar that goes to other pages
-Explains:
-- Purpose of the website
-- Goals of the budgeting tool
-- How it helps users manage finances
+**New Month Flow**
+- Spending resets to $0 visually
+- Past purchases preserved in dashboard history
+- Transfer blocks purchases until new month clicked
+
+## Known Limitations
+
+- No real user authentication — login is handled client-side with localStorage
+- All users share the same database (no per-user data isolation)
+- Sign-up page is UI only and does not create real accounts
