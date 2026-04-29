@@ -16,7 +16,8 @@
 
 ## 3. Architectural Design
 - **System Architecture Diagram**:
-- <svg id="export-svg" width="100%" xmlns="http://www.w3.org/2000/svg" style="max-width: 850px; background: rgb(255, 255, 255);" viewBox="-50 -10 850 489" role="graphics-document document" aria-roledescription="sequence">
+<img width="4250" height="2445" alt="image" src="https://github.com/user-attachments/assets/ab1db740-c15e-4436-b62b-c553cb7dadf0" />
+
   - - Html, Java, and CSS: Displays system UI, sends a request, and updates data
   - - Flask: Routing and validation
     - Database: Stores limits and purchases
